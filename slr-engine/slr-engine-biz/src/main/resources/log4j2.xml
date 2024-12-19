@@ -2,7 +2,7 @@
 <configuration monitorInterval="5">
     <Properties>
         <property name="LOG_PATTERN" value="%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
-        <property name="LOG_LEVEL" value="INFO" />
+        <property name="LOG_LEVEL" value="WARN" />
     </Properties>
 
     <appenders>
