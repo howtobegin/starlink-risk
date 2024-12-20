@@ -54,20 +54,4 @@ public class EngineApplication {
         env.execute();
     }
 
-    /**
-     * 构建水位线
-     */
-//    private static WatermarkStrategy<EventKafkaDTO> buildWatermarkStrategy(ParameterTool parameterTool) {
-//        return WatermarkStrategy
-//                //水印生成器: 实现一个延迟10秒的固定延迟水印
-//                .<EventKafkaDTO>forBoundedOutOfOrderness(Duration.ofMillis(
-//                        TimeUnit.SECONDS.toMillis(parameterTool.getInt(
-//                                ParameterConstants.FLINK_MAXOUTOFORDERNESS
-//                        ))
-//                ))
-//                //时间戳生成器：提取事件流的event_time字段
-//                .withTimestampAssigner((eventKafkaDTO, eventKafkaTimestamp) -> Long.parseLong(eventKafkaDTO.getTimestamp()))
-//                // 空闲检查时间，防止水位线停止推进
-//                .withIdleness(Duration.ofSeconds(5));
-//    }
 }

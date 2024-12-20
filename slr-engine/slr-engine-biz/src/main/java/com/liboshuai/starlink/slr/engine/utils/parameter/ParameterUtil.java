@@ -1,8 +1,10 @@
 package com.liboshuai.starlink.slr.engine.utils.parameter;
 
+import com.liboshuai.starlink.slr.engine.common.FlinkEnvConstants;
 import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.exception.FlinkPropertiesException;
 import com.liboshuai.starlink.slr.engine.exception.FlinkPropertiesExceptionInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
@@ -11,12 +13,18 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * author: liboshuai
  * description: 配置信息读取类
  * date: 2023
  */
+@Slf4j
 public class ParameterUtil {
 
     /**
@@ -167,7 +175,11 @@ public class ParameterUtil {
     public static void envWithConfig(
             StreamExecutionEnvironment env,
             ParameterTool parameterTool
-    ) {
+    ) throws IOException, URISyntaxException {
+        // local模式下设置临时目录
+        setupTemporaryDirectory(parameterTool);
+        //并行度设置
+        env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
         // 启用 checkpoint，并设置时间间隔为 1 分钟
         env.enableCheckpointing(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_INTERVAL));
         CheckpointConfig checkpointConfig = env.getCheckpointConfig();
@@ -181,15 +193,93 @@ public class ParameterUtil {
         checkpointConfig.setTolerableCheckpointFailureNumber(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_FAILURENUMBER));
         // 同一时间只允许一个 checkpoint 进行
         checkpointConfig.setMaxConcurrentCheckpoints(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_MAXCONCURRENT));
-        // 设置 checkpoint 存储地址 hdfs 的用户名
-        System.setProperty("HADOOP_USER_NAME", parameterTool.get(ParameterConstants.FLINK_CHECKPOINT_HDFS_USERNAME));
-        // 设置 checkpoint 存储地址 hdfs 的路径
-        checkpointConfig.setCheckpointStorage(parameterTool.get(ParameterConstants.FLINK_CHECKPOINT_HDFS_URL));
+        // 设置 checkpoint 存储位置
+        setupCheckpointStorage(parameterTool, checkpointConfig);
         //设置 StateBacked 为 rocksDB，并开启增量存储
         env.setStateBackend(new EmbeddedRocksDBStateBackend(true));
-        //并行度设置
-        env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
     }
 
+    /**
+     * 配置 Flink 的临时目录。
+     * 仅在本地环境下设置临时目录系统属性，并确保临时目录存在。
+     *
+     * @param parameterTool 参数工具，包含配置参数
+     * @throws IOException              如果无法创建临时目录
+     * @throws IllegalArgumentException 如果必要的参数未配置
+     */
+    public static void setupTemporaryDirectory(ParameterTool parameterTool) throws IOException {
+        // 获取 Flink 环境的激活状态，默认值为 "local"
+        String flinkEnvActive = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE, FlinkEnvConstants.LOCAL);
+        // 仅在本地环境进行设置
+        if (!FlinkEnvConstants.LOCAL.equalsIgnoreCase(flinkEnvActive)) {
+            log.info("当前环境为非本地环境（{}），跳过临时目录设置。", flinkEnvActive);
+            return;
+        }
+        // 获取临时目录路径
+        String tmpDirPath = parameterTool.get(ParameterConstants.FLINK_TMPDIR);
+        if (tmpDirPath == null || tmpDirPath.trim().isEmpty()) {
+            throw new IllegalArgumentException("FLINK_TMPDIR 参数未配置或为空");
+        }
+        // 将临时目录路径转换为 Path 对象
+        Path tmpPath = Paths.get(tmpDirPath);
+        // 确保临时目录存在，如果不存在则创建
+        if (Files.notExists(tmpPath)) {
+            try {
+                Files.createDirectories(tmpPath);
+                log.info("已成功创建临时目录: {}", tmpPath.toAbsolutePath());
+            } catch (IOException e) {
+                log.error("无法创建临时目录: {}", tmpPath.toAbsolutePath(), e);
+                throw new IOException("无法创建临时目录: " + tmpPath.toAbsolutePath(), e);
+            }
+        } else {
+            log.info("临时目录已存在: {}", tmpPath.toAbsolutePath());
+        }
+        // 设置临时目录系统属性
+        System.setProperty("java.io.tmpdir", tmpDirPath);
+        log.info("已设置系统临时目录 'java.io.tmpdir' 为: {}", tmpDirPath);
+    }
 
+    /**
+     * 配置 Flink 的 checkpoint 存储。
+     *
+     * @param parameterTool    参数工具，包含配置参数
+     * @param checkpointConfig 检查点配置对象
+     * @throws IOException 如果在本地环境下无法创建 checkpoint 目录
+     */
+    public static void setupCheckpointStorage(ParameterTool parameterTool, CheckpointConfig checkpointConfig)
+            throws IOException, URISyntaxException {
+        // 获取 checkpoint 存储的 URL
+        String flinkCheckpointUrl = parameterTool.get(ParameterConstants.FLINK_CHECKPOINT_URL);
+        if (flinkCheckpointUrl == null || flinkCheckpointUrl.isEmpty()) {
+            throw new IllegalArgumentException("FLINK_CHECKPOINT_URL 参数未配置或为空");
+        }
+        // 获取 Flink 环境的激活状态
+        String flinkEnvActive = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE, FlinkEnvConstants.LOCAL);
+        if (FlinkEnvConstants.LOCAL.equalsIgnoreCase(flinkEnvActive)) {
+            // 本地环境，确保 checkpoint 目录存在
+            Path checkpointPath = Paths.get(new URI(flinkCheckpointUrl));
+            if (Files.notExists(checkpointPath)) {
+                try {
+                    Files.createDirectories(checkpointPath);
+                    log.info("已成功创建 checkpoint 目录: {}", checkpointPath.toAbsolutePath());
+                } catch (IOException e) {
+                    log.error("无法创建 checkpoint 目录: {}", checkpointPath.toAbsolutePath(), e);
+                    throw new IOException("无法创建 checkpoint 目录: " + checkpointPath.toAbsolutePath(), e);
+                }
+            } else {
+                log.info("checkpoint 目录已存在: {}", checkpointPath.toAbsolutePath());
+            }
+        } else {
+            // 非本地环境，设置 HDFS 的用户名
+            String hdfsUsername = parameterTool.get(ParameterConstants.FLINK_CHECKPOINT_HDFS_USERNAME);
+            if (hdfsUsername == null || hdfsUsername.isEmpty()) {
+                throw new IllegalArgumentException("FLINK_CHECKPOINT_HDFS_USERNAME 参数在非本地环境下必须配置");
+            }
+            System.setProperty("HADOOP_USER_NAME", hdfsUsername);
+            log.info("已设置 HADOOP_USER_NAME 为: {}", hdfsUsername);
+        }
+        // 配置 checkpoint 存储路径
+        checkpointConfig.setCheckpointStorage(flinkCheckpointUrl);
+        log.info("已设置 checkpoint 存储路径为: {}", flinkCheckpointUrl);
+    }
 }

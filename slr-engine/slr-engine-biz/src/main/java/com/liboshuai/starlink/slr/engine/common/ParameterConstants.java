@@ -15,6 +15,8 @@ public class ParameterConstants {
      *
      * *********************/
 
+    // flink 本地模式运行临时目录
+    public static final String FLINK_TMPDIR = "flink.tmpdir";
     //触发checkpoint时间间隔
     public static final String FLINK_CHECKPOINT_INTERVAL = "flink.checkpoint.interval";
     //checkpoint超时
@@ -25,8 +27,8 @@ public class ParameterConstants {
     public static final String FLINK_CHECKPOINT_MAXCONCURRENT = "flink.checkpoint.maxConcurrent";
     // flink checkpoint 存储的 hdfs 用户名
     public static final String FLINK_CHECKPOINT_HDFS_USERNAME = "flink.checkpoint.hdfs.username";
-    // flink checkpoint 存储的 hdfs 路径
-    public static final String FLINK_CHECKPOINT_HDFS_URL = "flink.checkpoint.hdfs.url";
+    // flink checkpoint 存储的路径
+    public static final String FLINK_CHECKPOINT_URL = "flink.checkpoint.url";
     //并行度
     public static final String FLINK_PARALLELISM = "flink.parallelism";
     //数据延迟的最大时间
@@ -96,6 +98,5 @@ public class ParameterConstants {
     public static final String FLINK_ROOT_FILE = "flink.properties";
     //不同环境配置文件
     public static final String FLINK_ENV_FILE = "flink-%s.properties";
-
 
 }
