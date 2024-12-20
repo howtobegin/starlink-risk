@@ -1,6 +1,5 @@
 package com.liboshuai.starlink.slr.engine.dto;
 
-import com.liboshuai.starlink.slr.engine.api.constants.ChannelConstants;
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,6 @@ public class WarnInfoDTO implements Serializable {
 
     /**
      * 渠道
-     * {@link ChannelConstants}
      * {@link ChannelEnum}
      */
     private String channel;

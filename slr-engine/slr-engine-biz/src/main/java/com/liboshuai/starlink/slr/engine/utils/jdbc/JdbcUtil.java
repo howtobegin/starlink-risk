@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.utils.jdbc;
 
-import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
 import com.liboshuai.starlink.slr.engine.utils.string.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -186,28 +186,28 @@ public class JdbcUtil {
                 return ((BigDecimal) columnValue).doubleValue();
             } else if (columnValue instanceof Integer) {
                 // MySQL TINYINT, SMALLINT, MEDIUMINT, INT or INTEGER can be java.lang.Integer
-                return (Integer) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Double) {
                 // MySQL FLOAT, DOUBLE can be java.lang.Double
-                return (Double) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Byte[]) {
                 // MySQL BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB can be byte[]
-                return (Byte[]) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Boolean) {
                 // MySQL BIT, BOOL, BOOLEAN can be java.lang.Boolean
-                return (Boolean) columnValue;
+                return columnValue;
             } else if (columnValue instanceof String) {
                 // MySQL CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET can be java.lang.String
-                return (String) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Date) {
                 // MySQL YEAR, DATE can be java.sql.Date
-                return (Date) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Time) {
                 // MySQL TIME can be java.sql.Time
-                return (Time) columnValue;
+                return columnValue;
             } else if (columnValue instanceof Timestamp) {
                 // MySQL DATETIME, TIMESTAMP can be java.sql.Timestamp
-                return (Timestamp) columnValue;
+                return columnValue;
             }
             // Add more conversions as needed
 

@@ -1,7 +1,7 @@
 package com.liboshuai.starlink.slr.engine.utils.parameter;
 
-import com.liboshuai.starlink.slr.engine.common.FlinkEnvConstants;
-import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
+import com.liboshuai.starlink.slr.engine.constants.FlinkEnvConstants;
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.exception.FlinkPropertiesException;
 import com.liboshuai.starlink.slr.engine.exception.FlinkPropertiesExceptionInfo;
 import lombok.extern.slf4j.Slf4j;

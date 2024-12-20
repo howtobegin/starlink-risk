@@ -1,28 +1,55 @@
 package com.liboshuai.starlink.slr.engine.api.enums;
 
-import com.liboshuai.starlink.slr.engine.api.constants.ChannelConstants;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Objects;
 
 /**
  * 渠道枚举
- * {@link ChannelConstants}
  */
 @Getter
-@AllArgsConstructor
 public enum ChannelEnum {
 
-    GAME("game","游戏"),
-    HJF("hjf", "花积分"),
-    MALL("mall", "商场")
+    GAME("GAME", "游戏"),
+    HJF("HJF", "花积分"),
+    MALL("MALL", "商场")
     ;
 
     /**
-     * 编号
+     * 编码
      */
     private final String code;
     /**
-     * 名称
+     * 描述
      */
-    private final String name;
+    private final String desc;
+
+    ChannelEnum(String code, String desc) {
+        this.code = code;
+        this.desc = desc;
+    }
+
+    /**
+     * 通过代码查找枚举值
+     */
+    public static ChannelEnum fromCode(String code) {
+        for (ChannelEnum status : ChannelEnum.values()) {
+            if (Objects.equals(status.getCode(), code)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("未知的code: " + code);
+    }
+
+    /**
+     * 通过描述查找枚举值
+     */
+    public static ChannelEnum fromDesc(String desc) {
+        for (ChannelEnum status : ChannelEnum.values()) {
+            if (status.getDesc().equals(desc)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("未知的desc: " + desc);
+    }
 }

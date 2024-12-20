@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.utils.data;
 
-import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.HostAndPort;

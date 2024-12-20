@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.common;
+package com.liboshuai.starlink.slr.engine.enums;
 
 /**
  * @Author liboshuai

@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.utils.data;
 
-import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.serialize.MysqlCdcDeserializationSchema;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;

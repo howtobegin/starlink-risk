@@ -1,7 +1,7 @@
 package com.liboshuai.starlink.slr.engine.utils.date;
 
 
-import com.liboshuai.starlink.slr.engine.common.RuleUnitEnum;
+import com.liboshuai.starlink.slr.engine.enums.RuleUnitEnum;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;

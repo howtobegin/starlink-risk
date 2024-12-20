@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.utils.log;
 
-import com.liboshuai.starlink.slr.engine.common.ConsoleLogLevelEnum;
+import com.liboshuai.starlink.slr.engine.enums.ConsoleLogLevelEnum;
 import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil;
 import com.liboshuai.starlink.slr.engine.utils.string.StringUtil;
 import lombok.extern.slf4j.Slf4j;

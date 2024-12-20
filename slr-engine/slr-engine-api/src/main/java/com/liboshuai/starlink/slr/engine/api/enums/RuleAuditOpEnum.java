@@ -4,14 +4,10 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-/**
- * 规则类型枚举
- */
 @Getter
-public enum RuleTypeEnum {
-    RANGE("RANGE", "范围规则"),
-    PERIODIC("PERIODIC", "周期规则")
-    ;
+public enum RuleAuditOpEnum {
+    APPROVE("APPROVE", "通过"),
+    REJECT("REJECT", "拒绝");
 
     /**
      * 编码
@@ -22,7 +18,7 @@ public enum RuleTypeEnum {
      */
     private final String desc;
 
-    RuleTypeEnum(String code, String desc) {
+    RuleAuditOpEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -30,8 +26,8 @@ public enum RuleTypeEnum {
     /**
      * 通过代码查找枚举值
      */
-    public static RuleTypeEnum fromCode(String code) {
-        for (RuleTypeEnum status : RuleTypeEnum.values()) {
+    public static RuleAuditOpEnum fromCode(String code) {
+        for (RuleAuditOpEnum status : RuleAuditOpEnum.values()) {
             if (Objects.equals(status.getCode(), code)) {
                 return status;
             }
@@ -42,8 +38,8 @@ public enum RuleTypeEnum {
     /**
      * 通过描述查找枚举值
      */
-    public static RuleTypeEnum fromDesc(String desc) {
-        for (RuleTypeEnum status : RuleTypeEnum.values()) {
+    public static RuleAuditOpEnum fromDesc(String desc) {
+        for (RuleAuditOpEnum status : RuleAuditOpEnum.values()) {
             if (status.getDesc().equals(desc)) {
                 return status;
             }

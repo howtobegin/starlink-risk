@@ -6,7 +6,7 @@ import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO
 import com.liboshuai.starlink.slr.engine.api.dto.ProcessorDTO
 import com.liboshuai.starlink.slr.engine.api.dto.RuleConditionDTO
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO
-import com.liboshuai.starlink.slr.engine.api.enums.RuleConditionOperatorTypeEnum
+import com.liboshuai.starlink.slr.engine.api.enums.RuleCondCombOpEnum
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil
 import com.liboshuai.starlink.slr.engine.exception.BusinessException
 import com.liboshuai.starlink.slr.engine.processor.Processor
@@ -350,18 +350,18 @@ class ProcessorOne implements Processor {
             return false
         }
         // 初始化结果变量，根据条件操作符判断初始值
-        boolean result = conditionOperator == RuleConditionOperatorTypeEnum.AND.getCode()
+        boolean result = conditionOperator == RuleCondCombOpEnum.AND.getCode()
 
         // 遍历事件结果的 Map
         for (Boolean eventResult : eventCodeAndWarnResult.values()) {
-            if (conditionOperator == RuleConditionOperatorTypeEnum.AND.getCode()) {
+            if (conditionOperator == RuleCondCombOpEnum.AND.getCode()) {
                 // 对于 AND，只有当所有结果都为 true 时，结果才为 true
                 result = eventResult
                 // 提前结束循环，如果结果已经为 false
                 if (!result) {
                     break
                 }
-            } else if (conditionOperator == RuleConditionOperatorTypeEnum.OR.getCode()) {
+            } else if (conditionOperator == RuleCondCombOpEnum.OR.getCode()) {
                 // 对于 OR，只要有一个结果为 true，结果就为 true
                 result = eventResult
                 // 提前结束循环，如果结果已经为 true

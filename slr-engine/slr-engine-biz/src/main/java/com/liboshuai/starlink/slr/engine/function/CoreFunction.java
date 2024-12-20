@@ -1,7 +1,7 @@
 package com.liboshuai.starlink.slr.engine.function;
 
 import com.liboshuai.starlink.slr.engine.api.dto.*;
-import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
 import com.liboshuai.starlink.slr.engine.processor.Processor;
