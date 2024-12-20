@@ -134,8 +134,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             throw new BusinessException("Mysql Cdc 广播流 ruleInfoDTO 必须非空");
         }
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        // 上下线规则
         Integer status = ruleInfoDTO.getStatus();
+        // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 意味着规则数据刚刚被插入到数据库中，我们需要将doris数据发布到redis，就一定要进行上线操作，故忽略
             log.info("cdc 规则数据 create 操作，忽略......");
@@ -153,7 +153,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
                 removeProcessor(ruleCode, broadcastState);
             }
         } else if (Envelope.Operation.DELETE.code().equals(op)) {
-            // 防止给规则数据被误删除，我们只允许下线规则
+            // create: 防止给规则数据被误删除，我们只允许下线规则
             log.warn("规则运算机不支持删除，仅能进行下线操作！");
         }
         log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
