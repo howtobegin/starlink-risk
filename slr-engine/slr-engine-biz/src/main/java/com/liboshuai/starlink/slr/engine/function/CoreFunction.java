@@ -1,7 +1,6 @@
 package com.liboshuai.starlink.slr.engine.function;
 
 import com.liboshuai.starlink.slr.engine.api.dto.*;
-import com.liboshuai.starlink.slr.engine.api.enums.RuleStatusEnum;
 import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
@@ -134,13 +133,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             throw new BusinessException("Mysql Cdc 广播流 ruleInfoDTO 必须非空");
         }
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        Integer status = ruleInfoDTO.getStatus();
         // 上下线规则运算机
-        if (Envelope.Operation.CREATE.code().equals(op) && RuleStatusEnum.ONLINE.getCode() == status) {
+        if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
             loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
-        }  else if (Envelope.Operation.READ.code().equals(op) &&
-                (RuleStatusEnum.ONLINE.getCode() == status || RuleStatusEnum.PENDING_OFFLINE_REVIEW.getCode() == status)) {
+        } else if (Envelope.Operation.READ.code().equals(op)) {
             // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
             loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
         }else if (Envelope.Operation.UPDATE.code().equals(op)) {
