@@ -26,7 +26,7 @@ public class EngineApplication {
     public static void main(String[] args) throws Exception {
         //流式计算上下文环境/
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port",8989);
+        configuration.setInteger("rest.port", 8989); // 设置本地 web 页面端口
         final StreamExecutionEnvironment env =
                 StreamExecutionEnvironment.getExecutionEnvironment(configuration);
         //ParameterTool 注册为 global
