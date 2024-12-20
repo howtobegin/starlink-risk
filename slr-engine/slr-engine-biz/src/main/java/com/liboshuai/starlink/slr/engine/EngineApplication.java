@@ -47,8 +47,10 @@ public class EngineApplication {
                 .keyBy(EventKafkaDTO::getKeyCode);// keyBy分组
 
         // 连接业务数据流和规则配置流
-        SingleOutputStreamOperator<String> warnMessageStream = eventKafkaDTOStringKeyedStream.connect(broadcastStream)
-                .process(new CoreFunction()).uid("engine-core-function");
+        SingleOutputStreamOperator<String> warnMessageStream = eventKafkaDTOStringKeyedStream
+                .connect(broadcastStream)
+                .process(new CoreFunction())
+                .uid("engine-core-function");
         // 将告警信息写入kafka
         KafkaUtil.writer(warnMessageStream, parameterTool);
         env.execute();

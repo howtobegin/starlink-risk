@@ -5,8 +5,6 @@ import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
 
-import java.io.IOException;
-
 /**
  * 运算机通用接口
  */
@@ -15,7 +13,7 @@ public interface Processor {
     /**
      * 初始化
      */
-    void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws IOException;
+    void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception;
 
     /**
      * 处理单条数据

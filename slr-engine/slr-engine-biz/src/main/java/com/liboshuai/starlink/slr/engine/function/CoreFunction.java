@@ -21,7 +21,6 @@ import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -144,6 +143,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         ) {
             // 在读取、创建、更新，且状态为上线时，则上线一个运算机
             Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+//            Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
             processorByRuleCodeMap.put(ruleCode, processor);
             broadcastState.put(ruleCode, ruleInfoDTO);
             log.warn("上线或更新一个运算机，规则编号为:{}", ruleCode);
@@ -158,7 +158,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
                 log.warn("下线一个运算机，规则编号为:{}", ruleCode);
             }
         }
-        log.warn("当前规则运算机数量: {}", processorByRuleCodeMap.keySet().size());
+        log.warn("当前规则运算机数量: {}", processorByRuleCodeMap.size());
     }
 
     /**
@@ -182,8 +182,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * 构造运算机对象
      */
-    private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO)
-            throws InstantiationException, IllegalAccessException, IOException {
+    private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleModelGroovyCode = ruleInfoDTO.getRuleModelGroovyCode();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
@@ -197,8 +196,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * mock运算机对象
      */
-//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO)
-//            throws InstantiationException, IllegalAccessException, IOException {
+//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception{
 //        Processor processor = new ProcessorOne();
 //        processor.init(runtimeContext, ruleInfoDTO);
 //        return processor;
@@ -246,7 +244,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * 等待所有运算机初始化完成
      */
-    private void waitForInitAllProcessor() throws IOException, InterruptedException {
+    private void waitForInitAllProcessor() throws InterruptedException {
         long currentOnlineRuleCount = getCurrentOnlineRuleCount();
         while (onlineRuleCount.get() != currentOnlineRuleCount) {
             log.warn("等待所有运算机初始化完成: MySQL库中上线规则数量={}, 运算机池中上线的规则数量={}", onlineRuleCount, currentOnlineRuleCount);

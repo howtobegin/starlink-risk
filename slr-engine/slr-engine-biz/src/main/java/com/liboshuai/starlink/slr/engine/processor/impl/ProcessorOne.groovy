@@ -56,7 +56,7 @@ class ProcessorOne implements Processor {
     private ValueState<Long> lastWarningTimeState
 
     @Override
-    void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) {
+    void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleCode = ruleInfoDTO.getRuleCode()
         // 状态变量注册使用 ruleCode 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(
@@ -78,8 +78,7 @@ class ProcessorOne implements Processor {
     }
 
     @Override
-    void processElement(long timestamp, EventKafkaDTO eventKafkaDTO, RuleInfoDTO ruleInfoDTO, Collector<String> out)
-            throws Exception {
+    void processElement(long timestamp, EventKafkaDTO eventKafkaDTO, RuleInfoDTO ruleInfoDTO, Collector<String> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -256,32 +255,32 @@ class ProcessorOne implements Processor {
      */
     private EventKafkaDTO getLatestEventKafkaDto() throws Exception {
         // 初始化变量，用于存储最新的 EventKafkaDTO 和对应的最大时间戳
-        EventKafkaDTO latestEventKafkaDTO = null;
-        Long maxTimestamp = Long.MIN_VALUE;
+        EventKafkaDTO latestEventKafkaDTO = null
+        Long maxTimestamp = Long.MIN_VALUE
 
         // 遍历 bigMapState 中的每一个大键（eventCode）及其对应的内部映射
         for (Map.Entry<String, Map<Long, Tuple2<Long, EventKafkaDTO>>> bigMapEntry : bigMapState.entries()) {
             // 获取当前 eventCode 对应的时间戳与事件数据的映射
-            Map<Long, Tuple2<Long, EventKafkaDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue();
+            Map<Long, Tuple2<Long, EventKafkaDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
 
             // 获取当前映射中的所有条目（时间戳与事件数据对）
-            Set<Map.Entry<Long, Tuple2<Long, EventKafkaDTO>>> entrySet = timestampAndEventValueKafkaDtoMap.entrySet();
+            Set<Map.Entry<Long, Tuple2<Long, EventKafkaDTO>>> entrySet = timestampAndEventValueKafkaDtoMap.entrySet()
 
             // 遍历当前 eventCode 下的所有时间戳和事件数据对
             for (Map.Entry<Long, Tuple2<Long, EventKafkaDTO>> entry : entrySet) {
-                Long currentTimestamp = entry.getKey(); // 当前条目的时间戳
-                Tuple2<Long, EventKafkaDTO> value = entry.getValue(); // 包含累加值和事件数据的元组
+                Long currentTimestamp = entry.getKey() // 当前条目的时间戳
+                Tuple2<Long, EventKafkaDTO> value = entry.getValue() // 包含累加值和事件数据的元组
 
                 // 如果当前时间戳大于已记录的最大时间戳，则更新最大时间戳和最新的事件数据
                 if (currentTimestamp > maxTimestamp) {
-                    maxTimestamp = currentTimestamp;
-                    latestEventKafkaDTO = value.f1; // 获取元组中的 EventKafkaDTO 对象
+                    maxTimestamp = currentTimestamp
+                    latestEventKafkaDTO = value.f1 // 获取元组中的 EventKafkaDTO 对象
                 }
             }
         }
 
         // 返回找到的最新的 EventKafkaDTO 对象
-        return latestEventKafkaDTO;
+        return latestEventKafkaDTO
     }
 
 
