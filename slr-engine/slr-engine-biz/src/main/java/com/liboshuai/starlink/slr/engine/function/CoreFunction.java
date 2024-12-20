@@ -136,25 +136,19 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         Integer status = ruleInfoDTO.getStatus();
         // 上下线规则运算机
-        if (Envelope.Operation.CREATE.code().equals(op)) {
-            // create: 意味着规则数据刚刚被插入到数据库中，我们需要将doris数据发布到redis，就一定要进行上线操作，故忽略
-            log.info("cdc 规则数据 create 操作，忽略......");
+        if (Envelope.Operation.CREATE.code().equals(op) && RuleStatusEnum.ONLINE.getCode() == status) {
+            // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
+            loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
         }  else if (Envelope.Operation.READ.code().equals(op) &&
                 (RuleStatusEnum.ONLINE.getCode() == status || RuleStatusEnum.PENDING_OFFLINE_REVIEW.getCode() == status)) {
-            // read: 意味着系统时刚刚启动，规则数据都是从库里面查询过来的，所以需要将'已上线'和'下线待审核'的规则都直接加载为运算机
+            // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
             loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
         }else if (Envelope.Operation.UPDATE.code().equals(op)) {
-            // update: 意味着规则数据的变动，但是我们只需要关注那边规则状态更为了'已上线'和'已下线'，然后进行上线或下线操作
-            if (RuleStatusEnum.ONLINE.getCode() == status) {
-                // 状态变更为'已上线'时，加载规则运算机
-                loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
-            } else if (RuleStatusEnum.OFFLINE.getCode() == status) {
-                // 状态变更为'已下线'时，移除规则运算机
-                removeProcessor(ruleCode, broadcastState);
-            }
+            // update: 因为上线规则时进行insert，下线规则时直接delete了，其他更新操作不会同步到rule_json表中，故忽略
+            log.warn("规则运算机不支持在线热更新，请不要直接 update rule_json 表中的数据！");
         } else if (Envelope.Operation.DELETE.code().equals(op)) {
-            // create: 防止给规则数据被误删除，我们只允许下线规则
-            log.warn("规则运算机不支持删除，仅能进行下线操作！");
+            // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
+            removeProcessor(ruleCode, broadcastState);
         }
         log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
     }
