@@ -38,9 +38,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     private static final long serialVersionUID = -5913085790319815064L;
 
     /**
-     * 运算机map：key-规则编号，value-运算机
+     * 规则运算机池：key-规则编号，value-运算机对象
      */
-    private Map<String, Processor> processorByRuleCodeMap;
+    private Map<String, Processor> ruleProcessorPool;
 
     /**
      * groovy加载器
@@ -72,7 +72,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
      */
     @Override
     public void open(Configuration parameters) throws Exception {
-        processorByRuleCodeMap = new ConcurrentHashMap<>();
+        ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_LIST_STATE_DESC
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(15)).neverReturnExpired().build());
@@ -97,7 +97,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
-        for (Map.Entry<String, Processor> stringProcessorEntry : processorByRuleCodeMap.entrySet()) {
+        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
@@ -117,21 +117,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
-    private static Set<Integer> getOnlineStatuses() {
-        Set<Integer> onlineStatuses = new HashSet<>();
-        onlineStatuses.add(RuleStatusEnum.ONLINE.getCode());
-        onlineStatuses.add(RuleStatusEnum.PENDING_OFFLINE_REVIEW.getCode());
-        return onlineStatuses;
-    }
-
-    private static Set<String> getValidOperations() {
-        Set<String> validOperations = new HashSet<>();
-        validOperations.add(Envelope.Operation.READ.code());
-        validOperations.add(Envelope.Operation.CREATE.code());
-        validOperations.add(Envelope.Operation.UPDATE.code());
-        return validOperations;
-    }
-
     @Override
     public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
                                         KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String>.Context ctx,
@@ -149,38 +134,58 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             throw new BusinessException("Mysql Cdc 广播流 ruleInfoDTO 必须非空");
         }
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        // 上线规则时cdc操作类型集合
-        Set<String> validOperations = getValidOperations();
-        // 已上线规则状态集合
-        Set<Integer> onlineStatuses = getOnlineStatuses();
         // 上下线规则
-        if (Envelope.Operation.READ.code().equals(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
-            // read 操作时，将'已上线'、'下线待审核' 的规则均进行加载
-            Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
-            processorByRuleCodeMap.put(ruleCode, processor);
-            broadcastState.put(ruleCode, ruleInfoDTO);
-            log.warn("上线一个运算机，规则编号为: {}", ruleCode);
-        } else if (Envelope.Operation.CREATE.code().equals(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
-
-        }
-
-        if (validOperations.contains(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
-            // 在读取、创建、更新，且状态为上线、下线待审核时，则上线一个运算机
-            // Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
-            Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
-            processorByRuleCodeMap.put(ruleCode, processor);
-            broadcastState.put(ruleCode, ruleInfoDTO);
-            log.warn("上线或更新一个运算机，规则编号为: {}", ruleCode);
-        } else if (Envelope.Operation.UPDATE.code().equals(op)
-                && RuleStatusEnum.OFFLINE.getCode() == ruleInfoDTO.getStatus()) {
-            // 在更新，且状态为下线时，则下线一个运算机
-            if (processorByRuleCodeMap.containsKey(ruleCode)) {
-                processorByRuleCodeMap.remove(ruleCode);
-                broadcastState.remove(ruleCode);
-                log.warn("下线一个运算机，规则编号为: {}", ruleCode);
+        Integer status = ruleInfoDTO.getStatus();
+        if (Envelope.Operation.CREATE.code().equals(op)) {
+            // create: 意味着规则数据刚刚被插入到数据库中，我们需要将doris数据发布到redis，就一定要进行上线操作，故忽略
+            log.info("cdc 规则数据 create 操作，忽略......");
+        }  else if (Envelope.Operation.READ.code().equals(op) &&
+                (RuleStatusEnum.ONLINE.getCode() == status || RuleStatusEnum.PENDING_OFFLINE_REVIEW.getCode() == status)) {
+            // read: 意味着系统时刚刚启动，规则数据都是从库里面查询过来的，所以需要将'已上线'和'下线待审核'的规则都直接加载为运算机
+            loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
+        }else if (Envelope.Operation.UPDATE.code().equals(op)) {
+            // update: 意味着规则数据的变动，但是我们只需要关注那边规则状态更为了'已上线'和'已下线'，然后进行上线或下线操作
+            if (RuleStatusEnum.ONLINE.getCode() == status) {
+                // 状态变更为'已上线'时，加载规则运算机
+                loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
+            } else if (RuleStatusEnum.OFFLINE.getCode() == status) {
+                // 状态变更为'已下线'时，移除规则运算机
+                removeProcessor(ruleCode, broadcastState);
             }
+        } else if (Envelope.Operation.DELETE.code().equals(op)) {
+            // 防止给规则数据被误删除，我们只允许下线规则
+            log.warn("规则运算机不支持删除，仅能进行下线操作！");
         }
-        log.warn("当前规则运算机数量: {}", processorByRuleCodeMap.size());
+        log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
+    }
+
+    /**
+     * 移除规则运算机
+     */
+    private void removeProcessor(String ruleCode, BroadcastState<String, RuleInfoDTO> broadcastState) throws Exception {
+        if (!ruleProcessorPool.containsKey(ruleCode)) {
+            log.warn("规则运算机不存在，无需移除，规则编号为: {}", ruleCode);
+            return;
+        }
+        ruleProcessorPool.remove(ruleCode);
+        broadcastState.remove(ruleCode);
+        log.warn("下线一个规则运算机，规则编号为: {}", ruleCode);
+    }
+
+    /**
+     * 加载规则运算机
+     */
+    private void loadProcessor(String ruleCode, BroadcastState<String, RuleInfoDTO> broadcastState,
+                               RuleInfoDTO ruleInfoDTO) throws Exception {
+        if (ruleProcessorPool.containsKey(ruleCode)) {
+            log.warn("规则运算机已存在，无需再次加载，规则编号为: {}", ruleCode);
+            return;
+        }
+        // 构建规则运算机
+        Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+        ruleProcessorPool.put(ruleCode, processor);
+        broadcastState.put(ruleCode, ruleInfoDTO);
+        log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -193,7 +198,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
-        for (Map.Entry<String, Processor> stringProcessorEntry : processorByRuleCodeMap.entrySet()) {
+        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
@@ -280,10 +285,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
      * 获取当前在线规则的数量
      */
     private long getCurrentOnlineRuleCount() {
-        Set<String> ruleCodeCount = processorByRuleCodeMap.keySet();
+        Set<String> ruleCodeCount = ruleProcessorPool.keySet();
         return ruleCodeCount.size();
     }
 
+    /**
+     * 获取窗口开始时间
+     */
     private long getWindowStartWithOffset(long timestamp, long offset, long windowSize) {
         final long remainder = (timestamp - offset) % windowSize;
         // handle both positive and negative cases
