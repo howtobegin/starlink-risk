@@ -1,6 +1,7 @@
 package com.liboshuai.starlink.slr.engine;
 
 
+import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
 import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
@@ -44,7 +45,9 @@ public class EngineApplication {
                 .map(s -> JsonUtil.parseObject(s, EventKafkaDTO.class)) // 转换string为eventKafkaDTO对象
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()) // 使用处理时间
                 .uid("register-watermark")
-                .keyBy(EventKafkaDTO::getKeyCode);// keyBy分组
+                .keyBy(eventKafkaDTO ->
+                        eventKafkaDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + eventKafkaDTO.getKeyValue()
+                );// keyBy分组
 
         // 连接业务数据流和规则配置流
         SingleOutputStreamOperator<String> warnMessageStream = eventKafkaDTOStringKeyedStream

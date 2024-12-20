@@ -3,26 +3,24 @@ package com.liboshuai.starlink.slr.engine.api.enums;
 import lombok.Getter;
 
 @Getter
-public enum RuleStatusEnum {
-    DRAFT(0, "草稿"),
-    PENDING_ONLINE_REVIEW(1, "上线待审核"),
-    ONLINE(2, "已上线"),
-    PENDING_OFFLINE_REVIEW(3, "下线待审核"),
-    OFFLINE(4, "已下线");
+public enum RuleAuditOperatorEnum {
+    APPROVE(0, "通过"),
+    REJECT(1, "拒绝");
 
-    // 状态码
-    private final int code;
-    // 状态描述
+    // 审核操作码
+    private final Integer code;
+
+    // 审核操作描述
     private final String desc;
 
-    RuleStatusEnum(int code, String desc) {
+    RuleAuditOperatorEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
     // 通过代码查找状态
-    public static RuleStatusEnum fromCode(int code) {
-        for (RuleStatusEnum status : RuleStatusEnum.values()) {
+    public static RuleAuditOperatorEnum fromCode(int code) {
+        for (RuleAuditOperatorEnum status : RuleAuditOperatorEnum.values()) {
             if (status.getCode() == code) {
                 return status;
             }
@@ -31,8 +29,8 @@ public enum RuleStatusEnum {
     }
 
     // 通过描述查找状态
-    public static RuleStatusEnum fromDescription(String description) {
-        for (RuleStatusEnum status : RuleStatusEnum.values()) {
+    public static RuleAuditOperatorEnum fromDescription(String description) {
+        for (RuleAuditOperatorEnum status : RuleAuditOperatorEnum.values()) {
             if (status.getDesc().equals(description)) {
                 return status;
             }

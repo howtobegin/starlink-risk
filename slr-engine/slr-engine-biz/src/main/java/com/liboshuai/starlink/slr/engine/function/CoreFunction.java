@@ -6,6 +6,7 @@ import com.liboshuai.starlink.slr.engine.common.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
 import com.liboshuai.starlink.slr.engine.processor.Processor;
+import com.liboshuai.starlink.slr.engine.processor.impl.ProcessorOne;
 import com.liboshuai.starlink.slr.engine.utils.jdbc.JdbcUtil;
 import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
 import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil;
@@ -116,6 +117,21 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
+    private static Set<Integer> getOnlineStatuses() {
+        Set<Integer> onlineStatuses = new HashSet<>();
+        onlineStatuses.add(RuleStatusEnum.ONLINE.getCode());
+        onlineStatuses.add(RuleStatusEnum.PENDING_OFFLINE_REVIEW.getCode());
+        return onlineStatuses;
+    }
+
+    private static Set<String> getValidOperations() {
+        Set<String> validOperations = new HashSet<>();
+        validOperations.add(Envelope.Operation.READ.code());
+        validOperations.add(Envelope.Operation.CREATE.code());
+        validOperations.add(Envelope.Operation.UPDATE.code());
+        return validOperations;
+    }
+
     @Override
     public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
                                         KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String>.Context ctx,
@@ -133,29 +149,35 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             throw new BusinessException("Mysql Cdc 广播流 ruleInfoDTO 必须非空");
         }
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        if (
-                (
-                        Objects.equals(op, Envelope.Operation.READ.code())
-                                || Objects.equals(op, Envelope.Operation.CREATE.code())
-                                || Objects.equals(op, Envelope.Operation.UPDATE.code())
-                )
-                        && Objects.equals(ruleInfoDTO.getStatus(), RuleStatusEnum.ENABLE.getCode())
-        ) {
-            // 在读取、创建、更新，且状态为上线时，则上线一个运算机
+        // 上线规则时cdc操作类型集合
+        Set<String> validOperations = getValidOperations();
+        // 已上线规则状态集合
+        Set<Integer> onlineStatuses = getOnlineStatuses();
+        // 上下线规则
+        if (Envelope.Operation.READ.code().equals(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
+            // read 操作时，将'已上线'、'下线待审核' 的规则均进行加载
             Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
-//            Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
             processorByRuleCodeMap.put(ruleCode, processor);
             broadcastState.put(ruleCode, ruleInfoDTO);
-            log.warn("上线或更新一个运算机，规则编号为:{}", ruleCode);
-        } else if (
-                Objects.equals(op, Envelope.Operation.UPDATE.code())
-                        && Objects.equals(ruleInfoDTO.getStatus(), RuleStatusEnum.DISABLE.getCode())
-        ) {
+            log.warn("上线一个运算机，规则编号为: {}", ruleCode);
+        } else if (Envelope.Operation.CREATE.code().equals(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
+
+        }
+
+        if (validOperations.contains(op) && onlineStatuses.contains(ruleInfoDTO.getStatus())) {
+            // 在读取、创建、更新，且状态为上线、下线待审核时，则上线一个运算机
+            // Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+            Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
+            processorByRuleCodeMap.put(ruleCode, processor);
+            broadcastState.put(ruleCode, ruleInfoDTO);
+            log.warn("上线或更新一个运算机，规则编号为: {}", ruleCode);
+        } else if (Envelope.Operation.UPDATE.code().equals(op)
+                && RuleStatusEnum.OFFLINE.getCode() == ruleInfoDTO.getStatus()) {
             // 在更新，且状态为下线时，则下线一个运算机
             if (processorByRuleCodeMap.containsKey(ruleCode)) {
                 processorByRuleCodeMap.remove(ruleCode);
                 broadcastState.remove(ruleCode);
-                log.warn("下线一个运算机，规则编号为:{}", ruleCode);
+                log.warn("下线一个运算机，规则编号为: {}", ruleCode);
             }
         }
         log.warn("当前规则运算机数量: {}", processorByRuleCodeMap.size());
@@ -196,11 +218,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * mock运算机对象
      */
-//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception{
-//        Processor processor = new ProcessorOne();
-//        processor.init(runtimeContext, ruleInfoDTO);
-//        return processor;
-//    }
+    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+        Processor processor = new ProcessorOne();
+        processor.init(runtimeContext, ruleInfoDTO);
+        return processor;
+    }
 
     /**
      * 查询上线的规则数量
