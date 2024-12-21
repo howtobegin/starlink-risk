@@ -118,7 +118,7 @@ public class EvaluateEventResultsTest {
         map.put("event2", false);
 
         // 假设对于无效的操作符，方法应返回false
-        int invalidOperator = 3;
+        String invalidOperator = "hh";
         boolean result = processorOne.evaluateEventResults(map, invalidOperator);
         Assertions.assertFalse(result, "无效的操作符应返回false");
     }

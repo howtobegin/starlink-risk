@@ -3,28 +3,18 @@ package com.liboshuai.starlink.slr.engine.utils.jdbc;
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
 import com.liboshuai.starlink.slr.engine.utils.string.StringUtil;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.lang.reflect.Field;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-/**
- * @Author liboshuai
- * @Date 2023/10/29 23:31
- */
 @Slf4j
 public class JdbcUtil {
-
-    private static String url;
-    private static String username;
-    private static String password;
-
+    private static HikariDataSource dataSource;
 
     static {
         try {
@@ -32,187 +22,221 @@ public class JdbcUtil {
             String hostname = parameterTool.get(ParameterConstants.MYSQL_HOSTNAME);
             String port = parameterTool.get(ParameterConstants.MYSQL_PORT);
             String database = parameterTool.get(ParameterConstants.MYSQL_DATABASE);
-            username = parameterTool.get(ParameterConstants.MYSQL_USERNAME);
-//            password = CryptoUtils.decrypt(parameterTool.get(ParameterConstants.MYSQL_PASSWORD));
-            password = parameterTool.get(ParameterConstants.MYSQL_PASSWORD);
-            url = StringUtil.format("jdbc:mysql://{}:{}/{}?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false",
+            String username = parameterTool.get(ParameterConstants.MYSQL_USERNAME);
+            String password = parameterTool.get(ParameterConstants.MYSQL_PASSWORD);
+            String url = StringUtil.format("jdbc:mysql://{}:{}/{}?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false",
                     hostname, port, database);
+
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+            config.setUsername(username);
+            config.setPassword(password);
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            // 配置连接池的其他参数，例如最大连接数等
+            config.setMaximumPoolSize(10);
+            dataSource = new HikariDataSource(config);
         } catch (Exception e) {
-            log.error("MySQL JDBC 初始化数据连接配置失败", e);
+            log.error("初始化数据库连接池失败", e);
         }
-
     }
 
+    /**
+     * 从连接池获取数据库连接
+     */
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, username, password);
+        return dataSource.getConnection();
     }
 
-    public static void close(Connection connection, PreparedStatement statement, ResultSet resultSet) {
-        try {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
+    /**
+     * 执行更新操作（INSERT、UPDATE、DELETE）
+     */
+    public static int update(String sql, Object... params) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            setParameters(stmt, params);
+            return stmt.executeUpdate();
         } catch (SQLException e) {
-            // Log exception
+            log.error("执行更新操作失败", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public static <T> T queryOne(String sql, RowMapper<T> rowMapper, Object... params) {
-        List<T> results = queryList(sql, rowMapper, params);
-        if (results != null) {
-            return results.isEmpty() ? null : results.get(0);
-        } else {
-            return null;
+    /**
+     * 执行批量更新操作
+     */
+    public static int[] batchUpdate(String sql, List<Object[]> batchArgs) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (Object[] params : batchArgs) {
+                setParameters(stmt, params);
+                stmt.addBatch();
+            }
+            return stmt.executeBatch();
+        } catch (SQLException e) {
+            log.error("执行批量更新操作失败", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public static <T> List<T> queryList(String sql, RowMapper<T> rowMapper, Object... params) {
-        List<T> results = new ArrayList<>();
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                setParameters(statement, params);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        results.add(rowMapper.mapRow(resultSet));
-                    }
+    /**
+     * 查询单个对象
+     */
+    public static <T> T queryForObject(String sql, RowMapper<T> rowMapper, Object... params) {
+        List<T> list = queryForList(sql, rowMapper, params);
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    /**
+     * 查询列表
+     */
+    public static <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, Object... params) {
+        List<T> result = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            setParameters(stmt, params);
+            try (ResultSet rs = stmt.executeQuery()) {
+                int rowNum = 0;
+                while (rs.next()) {
+                    result.add(rowMapper.mapRow(rs, rowNum++));
                 }
             }
         } catch (SQLException e) {
-            log.error("MySQL JDBC 查询失败", e);
-            return null;
+            log.error("执行查询操作失败", e);
+            throw new RuntimeException(e);
         }
-        return results;
+        return result;
     }
 
-    public static int update(String sql, Object... params) {
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                setParameters(statement, params);
-                return statement.executeUpdate();
+    /**
+     * 查询列表，结果为 List Map 嵌套 的列表
+     */
+    public static List<Map<String, Object>> queryForListMap(String sql, Object... params) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            setParameters(stmt, params);
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                while (rs.next()) {
+                    Map<String, Object> row = new LinkedHashMap<>(columnCount);
+                    for (int i = 1; i <= columnCount; i++) {
+                        row.put(meta.getColumnLabel(i), rs.getObject(i));
+                    }
+                    result.add(row);
+                }
             }
         } catch (SQLException e) {
-            // Log exception
-            return 0;
+            log.error("执行查询操作失败", e);
+            throw new RuntimeException(e);
         }
+        return result;
     }
 
-    private static void setParameters(PreparedStatement statement, Object... params) throws SQLException {
-        for (int i = 0; i < params.length; i++) {
-            statement.setObject(i + 1, params[i]);
-        }
+    /**
+     * 设置 PreparedStatement 的参数
+     */
+    private static void setParameters(PreparedStatement stmt, Object... params) throws SQLException {
+        if (params != null)
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
     }
 
+    /**
+     * RowMapper 接口，映射行数据到对象
+     */
     public interface RowMapper<T> {
-        T mapRow(ResultSet resultSet) throws SQLException;
+        T mapRow(ResultSet rs, int rowNum) throws SQLException;
     }
 
+    /**
+     * BeanPropertyRowMapper 实现，自动将列映射到对象属性
+     */
     public static class BeanPropertyRowMapper<T> implements RowMapper<T> {
-
         private final Class<T> mappedClass;
+        private final Map<String, Field> fieldMap = new HashMap<>();
 
         public BeanPropertyRowMapper(Class<T> mappedClass) {
             this.mappedClass = mappedClass;
+            initFieldMap();
+        }
+
+        private void initFieldMap() {
+            Field[] fields = mappedClass.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                fieldMap.put(field.getName().toLowerCase(), field);
+                // 如果需要支持下划线命名，可以在这里转换
+                fieldMap.put(convertCamelToUnderscore(field.getName()).toLowerCase(), field);
+            }
         }
 
         @Override
-        public T mapRow(ResultSet resultSet) throws SQLException {
+        public T mapRow(ResultSet rs, int rowNum) throws SQLException {
             T bean;
             try {
                 bean = mappedClass.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new SQLException("Failed to create new instance of " + mappedClass.getName(), e);
-            }
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
 
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-
-            for (int i = 1; i <= columnCount; i++) {
-                String columnName = metaData.getColumnLabel(i);
-                Object columnValue = resultSet.getObject(i);
-
-                // Convert column value to property value
-                columnValue = convertColumnValue(columnValue);
-
-                // Convert column name from underscore to camel case
-                String propertyName = convertUnderscoreToCamel(columnName);
-
-                // Use Java reflection to set the property value
-                try {
-                    java.lang.reflect.Field field = bean.getClass().getDeclaredField(propertyName);
-                    field.setAccessible(true);
-                    field.set(bean, columnValue);
-                } catch (Exception e) {
-                    throw new SQLException("Failed to set property " + propertyName + " on " + mappedClass.getName(), e);
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = meta.getColumnLabel(i);
+                    Object value = rs.getObject(i);
+                    Field field = fieldMap.get(columnName.toLowerCase());
+                    if (field != null && value != null) {
+                        try {
+                            field.set(bean, value);
+                        } catch (IllegalAccessException e) {
+                            log.error("无法设置属性值: " + field.getName(), e);
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                throw new SQLException("映射结果集到对象失败", e);
             }
-
             return bean;
         }
 
-        private String convertUnderscoreToCamel(String name) {
+        private String convertCamelToUnderscore(String camelCase) {
             StringBuilder result = new StringBuilder();
-            boolean nextIsUpper = false;
-            for (int i = 0; i < name.length(); i++) {
-                char ch = name.charAt(i);
-                if (ch == '_') {
-                    nextIsUpper = true;
-                } else if (nextIsUpper) {
-                    result.append(Character.toUpperCase(ch));
-                    nextIsUpper = false;
-                } else {
-                    result.append(Character.toLowerCase(ch));
+            if (camelCase != null && camelCase.length() > 0) {
+                result.append(camelCase.charAt(0));
+                for (int i = 1; i < camelCase.length(); i++) {
+                    char ch = camelCase.charAt(i);
+                    if (Character.isUpperCase(ch)) {
+                        result.append('_');
+                        result.append(Character.toLowerCase(ch));
+                    } else {
+                        result.append(ch);
+                    }
                 }
             }
             return result.toString();
         }
+    }
 
-        private Object convertColumnValue(Object columnValue) {
-            if (columnValue == null) {
+    /**
+     * 单列行映射器，用于将数据库查询结果中的单个列映射为指定类型对象
+     * 此映射器适用于期望从查询结果中提取单一列值并将其转换为特定Java类型的情况
+     *
+     * @param <T> 指定的类型参数，表示期望转换成的Java类型
+     */
+    public static class SingleColumnRowMapper<T> implements RowMapper<T> {
+        private final Class<T> requiredType;
+
+        public SingleColumnRowMapper(Class<T> requiredType) {
+            this.requiredType = requiredType;
+        }
+
+        @Override
+        public T mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Object value = rs.getObject(1);
+            if (value == null) {
                 return null;
-            } else if (columnValue instanceof BigInteger) {
-                // Convert BigInteger to Long
-                return ((BigInteger) columnValue).longValue();
-            } else if (columnValue instanceof LocalDateTime) {
-                // Convert LocalDateTime to java.util.Date
-                return Date.from(((LocalDateTime) columnValue).atZone(ZoneId.systemDefault()).toInstant());
-            } else if (columnValue instanceof BigDecimal) {
-                // Convert BigDecimal to Double
-                return ((BigDecimal) columnValue).doubleValue();
-            } else if (columnValue instanceof Integer) {
-                // MySQL TINYINT, SMALLINT, MEDIUMINT, INT or INTEGER can be java.lang.Integer
-                return columnValue;
-            } else if (columnValue instanceof Double) {
-                // MySQL FLOAT, DOUBLE can be java.lang.Double
-                return columnValue;
-            } else if (columnValue instanceof Byte[]) {
-                // MySQL BINARY, VARBINARY, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB can be byte[]
-                return columnValue;
-            } else if (columnValue instanceof Boolean) {
-                // MySQL BIT, BOOL, BOOLEAN can be java.lang.Boolean
-                return columnValue;
-            } else if (columnValue instanceof String) {
-                // MySQL CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET can be java.lang.String
-                return columnValue;
-            } else if (columnValue instanceof Date) {
-                // MySQL YEAR, DATE can be java.sql.Date
-                return columnValue;
-            } else if (columnValue instanceof Time) {
-                // MySQL TIME can be java.sql.Time
-                return columnValue;
-            } else if (columnValue instanceof Timestamp) {
-                // MySQL DATETIME, TIMESTAMP can be java.sql.Timestamp
-                return columnValue;
             }
-            // Add more conversions as needed
-
-            // If no conversion is needed, return the value as is
-            return columnValue;
+            return requiredType.cast(value);
         }
     }
+
 }

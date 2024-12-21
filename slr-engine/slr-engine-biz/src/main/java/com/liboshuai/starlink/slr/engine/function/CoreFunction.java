@@ -21,7 +21,10 @@ import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -63,8 +66,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
 
     /**
      * 银行数据
+     * （key为银行code，value为银行名称）
      */
-    private Map<String, String> bankMapState;
+    private Map<String, String> bankMap;
 
     /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
@@ -80,7 +84,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         // 查询在线规则数量
         onlineRuleCount = queryOnlineRuleCount();
         // 查询银行数据
-        bankMapState = queryBank();
+        bankMap = queryBank();
     }
 
     @Override
@@ -229,37 +233,36 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
      */
     private AtomicLong queryOnlineRuleCount() {
         // 获取规则表名
-        String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_RULE_COUNT);
+        String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_RULE_JSON);
         // 查询规则数据
-        String sql = "select online_count from " + tableName + " where deleted = 0";
-        RuleOnlineCountDTO ruleOnlineCountDTO = JdbcUtil.queryOne(
-                sql, new JdbcUtil.BeanPropertyRowMapper<>(RuleOnlineCountDTO.class)
-        );
-        if (Objects.isNull(ruleOnlineCountDTO)) {
-            throw new BusinessException("Mysql Jdbc 查询上线的规则数量为空！");
+        String sql = String.format("select count(*) from %s where deleted = ?", tableName);
+        Long ruleOnlineCount = JdbcUtil.queryForObject(
+                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), 0);
+        if (Objects.isNull(ruleOnlineCount)) {
+            throw new BusinessException("Mysql Jdbc 查询上线的规则数量为 null！");
         }
-        log.warn("Mysql Jdbc 查询上线的规则数量: {}", ruleOnlineCountDTO.getOnlineCount());
-        return new AtomicLong(ruleOnlineCountDTO.getOnlineCount());
+        log.warn("Mysql Jdbc 查询上线的规则数量: {}", ruleOnlineCount);
+        return new AtomicLong(ruleOnlineCount);
     }
 
     /**
      * 查询银行数据
      */
-    private Map<String, String> queryBank() throws Exception {
-        Map<String, String> bankMap = new HashMap<>();
+    private Map<String, String> queryBank() {
+        Map<String, String> bankMap = new ConcurrentHashMap<>();
         // 获取规则表名
         String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_BANK);
         // 查询规则数据
-        String sql = "select bank, name from " + tableName + " where is_deleted = 0";
-        List<BankDTO> bankDTOList = JdbcUtil.queryList(sql, new JdbcUtil.BeanPropertyRowMapper<>(BankDTO.class));
+        String sql = String.format("select bank, name from %s where is_deleted = ?", tableName);
+        List<BankDTO> bankDTOList = JdbcUtil.queryForList(sql, new JdbcUtil.BeanPropertyRowMapper<>(BankDTO.class), 0);
         if (CollectionUtil.isNullOrEmpty(bankDTOList)) {
             log.warn("Mysql Jdbc 预加载的银行对象集合bankDTOList为空！");
-            return new HashMap<>();
+            return new ConcurrentHashMap<>();
         }
-        log.warn("Mysql Jdbc 预加载的银行对象集合bankDTOList: {}", JsonUtil.toJsonString(bankDTOList));
         for (BankDTO bankDTO : bankDTOList) {
             bankMap.put(bankDTO.getBank(), bankDTO.getName());
         }
+        log.warn("Mysql Jdbc 预加载的银行对象集合 bankMap: {}", bankMap);
         return bankMap;
     }
 

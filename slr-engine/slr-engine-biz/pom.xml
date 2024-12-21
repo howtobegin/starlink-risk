@@ -202,6 +202,12 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <!-- HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
         <!-- ============ 工具 =================== -->
 
         <dependency>

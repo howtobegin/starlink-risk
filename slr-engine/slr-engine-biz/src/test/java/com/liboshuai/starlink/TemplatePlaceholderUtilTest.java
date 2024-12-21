@@ -1,6 +1,8 @@
 package com.liboshuai.starlink;
 
 import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.RuleCondDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,22 +64,24 @@ public class TemplatePlaceholderUtilTest {
                 .timestamp(System.currentTimeMillis())
                 .build();
 
-        List<RuleConditionDTO> ruleConditionDTOS = new ArrayList<>();
-        ruleConditionDTOS.add(RuleConditionDTO.builder()
+        List<RuleCondDTO> RuleCondDTOS = new ArrayList<>();
+        RuleCondDTOS.add(RuleCondDTO.builder()
                 .ruleCode("ruleCode1")
                 .eventCode("eventCode1")
-                .eventThreshold(10L)
-                .conditionType(1)
-                .windowSize(20L)
-                .isCrossHistory(true)
+                .threshold(10L)
+                .condType("CYCLE")
+                .windowValue(20L)
+                .windowUnit("MINUTE")
+                .crossHistory(true)
                 .build());
-        ruleConditionDTOS.add(RuleConditionDTO.builder()
+        RuleCondDTOS.add(RuleCondDTO.builder()
                 .ruleCode("ruleCode2")
                 .eventCode("eventCode2")
-                .eventThreshold(20L)
-                .conditionType(1)
-                .windowSize(30L)
-                .isCrossHistory(true)
+                .threshold(20L)
+                .condType("CYCLE")
+                .windowValue(20L)
+                .windowUnit("MINUTE")
+                .crossHistory(true)
                 .build());
         RuleInfoDTO ruleInfoDTO = RuleInfoDTO.builder()
                 .channel("game")
@@ -85,12 +89,13 @@ public class TemplatePlaceholderUtilTest {
                 .ruleName("ruleName1")
                 .ruleDesc("ruleDesc1")
                 .modelCode("modelCode1")
-                .combinedConditionOperator(0)
-                .warnMessage("warnMessage1")
-                .warnInterval(10L)
-                .status(1)
-                .ruleConditionGroup(ruleConditionDTOS)
-                .ruleModelGroovyCode("xxx")
+                .ruleCondCombOp("AND")
+                .alertMessage("warnMessage1")
+                .alertIntervalUnit("MINUTE")
+                .alertIntervalValue(10L)
+                .ruleStatus("ONLINE")
+                .ruleCondGroup(RuleCondDTOS)
+                .modelCode("xxx")
                 .build();
 
         String messageTemplate = "[异常高频抽奖]${EventKafkaDTO.attribute.bankName}：" +
