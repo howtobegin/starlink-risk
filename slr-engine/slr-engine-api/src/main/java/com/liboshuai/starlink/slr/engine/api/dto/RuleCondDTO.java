@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 规则条件组
@@ -44,14 +43,14 @@ public class RuleCondDTO implements Serializable {
     private String windowUnit;
     /**
      * 开始时间
-     * （仅在条件类型为范围时使用）
+     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
      */
-    private LocalDateTime beginTime;
+    private String beginTime;
     /**
      * 结束时间
-     * （仅在条件类型为范围时使用）
+     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
      */
-    private LocalDateTime endTime;
+    private String endTime;
     /**
      * 阈值
      */
@@ -62,8 +61,9 @@ public class RuleCondDTO implements Serializable {
     private Boolean crossHistory;
     /**
      * 跨历史时间点
+     * （格式：yyyy-MM-dd HH:mm:ss）
      */
-    private LocalDateTime crossHistoryTimeline;
+    private String crossHistoryTimeline;
     /**
      * 事件信息
      */

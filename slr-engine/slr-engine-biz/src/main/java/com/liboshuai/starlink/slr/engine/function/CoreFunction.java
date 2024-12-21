@@ -5,7 +5,6 @@ import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
 import com.liboshuai.starlink.slr.engine.processor.Processor;
-import com.liboshuai.starlink.slr.engine.processor.impl.ProcessorOne;
 import com.liboshuai.starlink.slr.engine.utils.jdbc.JdbcUtil;
 import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
 import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil;
@@ -152,6 +151,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             removeProcessor(ruleCode, broadcastState);
         }
         log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
+        log.warn("当前规则运算机规则编号列表: {}", ruleProcessorPool.keySet());
     }
 
     /**
@@ -222,11 +222,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * mock运算机对象
      */
-    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-        Processor processor = new ProcessorOne();
-        processor.init(runtimeContext, ruleInfoDTO);
-        return processor;
-    }
+//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+//        Processor processor = new ProcessorOne();
+//        processor.init(runtimeContext, ruleInfoDTO);
+//        return processor;
+//    }
 
     /**
      * 查询上线的规则数量
