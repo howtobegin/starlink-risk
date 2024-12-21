@@ -1,15 +1,15 @@
 {
   "channel": "GAME",
-  "ruleCode": "R1553673459123456000",
-  "ruleName": "游戏高频抽奖充值预警",
+  "ruleCode": "R1553673459123456002",
+  "ruleName": "游戏高频抽奖充值预警02",
   "ruleDesc": "游戏平台对于用户高频抽奖的同时进行大量充值的行为预警",
   "ruleStatus": "DRAFT",
   "alertIntervalValue": "3",
   "alertIntervalUnit": "MINUTE",
   "alertMessage": "[异常高频抽奖]${BANK_NAME}：${CAMPAIGN_NAME}(${CAMPAIGN_ID})中游戏用户(${USER_ID})最近${WINDOW_SIZE}内抽奖数量为${ACTUAL_VALUE}，超过${THRESHOLD}次，请您及时查看原因！",
-  "modelCode": "M1553673459123456001",
+  "modelCode": "R1553673459123456003",
   "modelInfoDTO": {
-    "modelCode": "M1553673459123456001",
+    "modelCode": "R1553673459123456003",
     "modelName": "运算机模型一",
     "modelDesc": "支持周期预警",
     "modelStatus": "ONLINE",
@@ -18,7 +18,7 @@
   "ruleCondCombOp": "AND",
   "ruleCondGroup": [
     {
-      "ruleCode": "R1553673459123456000",
+      "ruleCode": "R1553673459123456002",
       "eventCode": "GAME_LOTTERY",
       "condType": "CYCLE",
       "windowValue": "5",
@@ -50,7 +50,7 @@
       }
     },
     {
-      "ruleCode": "R1553673459123456000",
+      "ruleCode": "R1553673459123456002",
       "eventCode": "GAME_RECHARGE",
       "condType": "CYCLE",
       "windowValue": "10",
