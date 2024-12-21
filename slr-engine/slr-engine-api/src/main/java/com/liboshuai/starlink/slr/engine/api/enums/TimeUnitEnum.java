@@ -1,10 +1,12 @@
-package com.liboshuai.starlink.slr.engine.enums;
+package com.liboshuai.starlink.slr.engine.api.enums;
+
+import lombok.Getter;
 
 /**
- * @Author liboshuai
- * @Date 2023/11/6 17:08
+ * 时间单位枚举
  */
-public enum RuleUnitEnum {
+@Getter
+public enum TimeUnitEnum {
 
     MILLISECOND("MILLISECOND", "毫秒"),
     SECOND("SECOND", "秒"),
@@ -18,15 +20,7 @@ public enum RuleUnitEnum {
     private final String enUnit;
     private final String cnUnit;
 
-    public String getEnUnit() {
-        return this.enUnit;
-    }
-
-    public String getCnUnit() {
-        return this.cnUnit;
-    }
-
-    RuleUnitEnum(String enUnit, String cnUnit) {
+    TimeUnitEnum(String enUnit, String cnUnit) {
         this.enUnit = enUnit;
         this.cnUnit = cnUnit;
     }
@@ -37,9 +31,9 @@ public enum RuleUnitEnum {
      * @return 中文单位
      */
     public static String convertEnUnitToCnUnit(String enUnit) {
-        for (RuleUnitEnum ruleUnitEnum : RuleUnitEnum.values()) {
-            if (ruleUnitEnum.getEnUnit().equals(enUnit)) {
-                return ruleUnitEnum.getCnUnit();
+        for (TimeUnitEnum timeUnitEnum : TimeUnitEnum.values()) {
+            if (timeUnitEnum.getEnUnit().equals(enUnit)) {
+                return timeUnitEnum.getCnUnit();
             }
         }
         return "未知单位";
@@ -51,9 +45,9 @@ public enum RuleUnitEnum {
      * @return 英文单位
      */
     public static String convertCnUnitToEnUnit(String cnUnit) {
-        for (RuleUnitEnum ruleUnitEnum : RuleUnitEnum.values()) {
-            if (ruleUnitEnum.getCnUnit().equals(cnUnit)) {
-                return ruleUnitEnum.getEnUnit();
+        for (TimeUnitEnum timeUnitEnum : TimeUnitEnum.values()) {
+            if (timeUnitEnum.getCnUnit().equals(cnUnit)) {
+                return timeUnitEnum.getEnUnit();
             }
         }
         return "未知单位";
@@ -64,10 +58,10 @@ public enum RuleUnitEnum {
      * @param cnUnit 中文单位
      * @return 枚举
      */
-    public static RuleUnitEnum fromCnUnit(String cnUnit) {
-        for (RuleUnitEnum ruleUnitEnum : RuleUnitEnum.values()) {
-            if (ruleUnitEnum.getCnUnit().equals(cnUnit)) {
-                return ruleUnitEnum;
+    public static TimeUnitEnum fromCnUnit(String cnUnit) {
+        for (TimeUnitEnum timeUnitEnum : TimeUnitEnum.values()) {
+            if (timeUnitEnum.getCnUnit().equals(cnUnit)) {
+                return timeUnitEnum;
             }
         }
         return null;
@@ -78,10 +72,10 @@ public enum RuleUnitEnum {
      * @param enUnit 英文单位
      * @return 枚举
      */
-    public static RuleUnitEnum fromEnUnit(String enUnit) {
-        for (RuleUnitEnum ruleUnitEnum : RuleUnitEnum.values()) {
-            if (ruleUnitEnum.getEnUnit().equals(enUnit)) {
-                return ruleUnitEnum;
+    public static TimeUnitEnum fromEnUnit(String enUnit) {
+        for (TimeUnitEnum timeUnitEnum : TimeUnitEnum.values()) {
+            if (timeUnitEnum.getEnUnit().equals(enUnit)) {
+                return timeUnitEnum;
             }
         }
         return null;

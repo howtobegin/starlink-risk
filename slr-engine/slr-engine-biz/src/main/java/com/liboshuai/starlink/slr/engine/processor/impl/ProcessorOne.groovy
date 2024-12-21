@@ -4,14 +4,18 @@ import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants
 import com.liboshuai.starlink.slr.engine.api.constants.RedisKeyConstants
 import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO
 import com.liboshuai.starlink.slr.engine.api.dto.ProcessorDTO
-import com.liboshuai.starlink.slr.engine.api.dto.RuleConditionDTO
+import com.liboshuai.starlink.slr.engine.api.dto.RuleCondDTO
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO
 import com.liboshuai.starlink.slr.engine.api.enums.RuleCondCombOpEnum
+import com.liboshuai.starlink.slr.engine.api.enums.RuleCondTypeEnum
+import com.liboshuai.starlink.slr.engine.api.enums.RuleStatusEnum
+import com.liboshuai.starlink.slr.engine.api.enums.TimeUnitEnum
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil
 import com.liboshuai.starlink.slr.engine.exception.BusinessException
 import com.liboshuai.starlink.slr.engine.processor.Processor
 import com.liboshuai.starlink.slr.engine.utils.data.RedisUtil
 import com.liboshuai.starlink.slr.engine.utils.date.DateUtil
+import com.liboshuai.starlink.slr.engine.utils.date.TimeUtil
 import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil
 import com.liboshuai.starlink.slr.engine.utils.string.StringUtil
 import org.apache.flink.api.common.functions.RuntimeContext
@@ -82,28 +86,49 @@ class ProcessorOne implements Processor {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
+        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.ONLINE)
+                && !Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.OFFLINE_PENDING)) {
+            log.warn("加载到运算机池中的规则状态必须为'已上线'或'下线待审核'！规则编号：{}", ruleInfoDTO.getRuleCode())
+            return
+        }
+        // 事件与规则渠道匹配不上，则直接跳过
         String eventKafkaDTOChannel = eventKafkaDTO.getChannel()
         String ruleInfoChannel = ruleInfoDTO.getChannel()
         if (!Objects.equals(eventKafkaDTOChannel, ruleInfoChannel)) {
             return
         }
         // 获取规则条件
-        List<RuleConditionDTO> ruleConditionList = ruleInfoDTO.getRuleConditionGroup()
-        if (ruleConditionList == null || ruleConditionList.isEmpty()) {
-            throw new BusinessException("运算机 ruleConditionList 必须非空")
+        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup()
+        if (condGroupList == null || condGroupList.isEmpty()) {
+            throw new BusinessException("运算机 condGroupList 必须非空")
         }
-        // 多个规则条件进行窗口值累加
-        for (RuleConditionDTO ruleConditionDTO : ruleConditionList) {
+        // 此模型仅支持条件为周期类型的规则
+        for (RuleCondDTO condGroupDTO in condGroupList) {
+            String type = condGroupDTO.getCondType()
+            if (!Objects.equals(type, RuleCondTypeEnum.PERIODIC.getCode())) {
+                log.warn("ProcessorOne 模型仅支持条件为周期类型的规则！规则编号：{}", ruleInfoDTO.getRuleCode())
+                return
+            }
+        }
+        // 计算规则条件值
+        processRuleCondValue(condGroupList, eventKafkaDTO, timestamp)
+    }
+
+    /**
+     * 计算规则条件值
+     */
+    private void processRuleCondValue(List<RuleCondDTO> condGroupList, EventKafkaDTO eventKafkaDTO, long timestamp) {
+        for (RuleCondDTO condGroupDTO : condGroupList) {
             // 事件编号匹配不上，则直接跳过
-            if (!Objects.equals(eventKafkaDTO.getEventCode(), ruleConditionDTO.getEventCode())) {
+            if (!Objects.equals(eventKafkaDTO.getEventCode(), condGroupDTO.getEventCode())) {
                 continue
             }
             // 状态值防空
             if (smallMapState.get(eventKafkaDTO.getEventCode()) == null) {
                 smallMapState.put(eventKafkaDTO.getEventCode(), Tuple2.of(0L, eventKafkaDTO))
             }
-            if (ruleConditionDTO.getIsCrossHistory()) { //跨历史时间段
-                LocalDateTime crossHistoryTimeline = ruleConditionDTO.getCrossHistoryTimeline()
+            if (condGroupDTO.getCrossHistory()) { //跨历史时间段
+                LocalDateTime crossHistoryTimeline = condGroupDTO.getCrossHistoryTimeline()
                 // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
                 if (eventKafkaDTO.getTimestamp() <= DateUtil.convertLocalDateTime2Timestamp(crossHistoryTimeline)) {
                     continue
@@ -111,11 +136,14 @@ class ProcessorOne implements Processor {
                 // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，所以检查当前值是否已经通过redis初始化后，防止重复初始化
                 if (!smallInitMapState.contains(eventKafkaDTO.getEventCode())) {
                     // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值（注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
-                    String key = new StringBuilder().append(RedisKeyConstants.DORIS_HISTORY_VALUE)
+                    String key = new StringBuilder()
+                            .append(GlobalConstants.SYSTEM_NAME)
                             .append(GlobalConstants.REDIS_KEY_SEPARATOR)
-                            .append(ruleConditionDTO.getRuleCode())
+                            .append(RedisKeyConstants.DORIS)
                             .append(GlobalConstants.REDIS_KEY_SEPARATOR)
-                            .append(ruleConditionDTO.getEventCode())
+                            .append(condGroupDTO.getRuleCode())
+                            .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                            .append(condGroupDTO.getEventCode())
                     String keyCode = eventKafkaDTO.getKeyCode()
                     // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
                     String initValue = RedisUtil.hget(key, keyCode)
@@ -147,14 +175,14 @@ class ProcessorOne implements Processor {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
         // 获取规则条件
-        List<RuleConditionDTO> ruleConditionList = ruleInfoDTO.getRuleConditionGroup()
-        if (ruleConditionList == null || ruleConditionList.isEmpty()) {
-            throw new BusinessException("运算机 ruleConditionList 必须非空")
+        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondGroup()
+        if (groupGroup == null || groupGroup.isEmpty()) {
+            throw new BusinessException("运算机 groupGroup 必须非空")
         }
         // 将规则条件根据事件编号存储到map中，方便后续操作
-        Map<String, RuleConditionDTO> ruleConditionMapByEventCode = new HashMap<>()
-        for (RuleConditionDTO ruleConditionDTO : ruleConditionList) {
-            ruleConditionMapByEventCode.put(ruleConditionDTO.getEventCode(), ruleConditionDTO)
+        Map<String, RuleCondDTO> ruleConditionMapByEventCode = new HashMap<>()
+        for (RuleCondDTO ruleCondDTO : groupGroup) {
+            ruleConditionMapByEventCode.put(ruleCondDTO.getEventCode(), ruleCondDTO)
         }
         // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
         updateBigMapWithSmallMap(timestamp)
@@ -166,11 +194,16 @@ class ProcessorOne implements Processor {
         if (lastWarningTimeState.value() == null) {
             lastWarningTimeState.update(0L)
         }
-        if (eventResult && (timestamp - lastWarningTimeState.value() >= ruleInfoDTO.getWarnInterval())) {
+        // 获取预警间隔时间，单位为毫秒
+        long alertInterval = TimeUtil.toMillis(
+                ruleInfoDTO.getAlertIntervalValue(), TimeUnitEnum.fromEnUnit(ruleInfoDTO.getAlertIntervalUnit())
+        )
+        // 触发结果为true，且当前时间减去上次预警时间大于预警间隔时间，则进行预警
+        if (eventResult && (timestamp - lastWarningTimeState.value() >= alertInterval)) {
             lastWarningTimeState.update(timestamp)
             // 进行预警信息拼接组合
             String finalWarnMessage = TemplatePlaceholderUtil.replacePlaceholders(
-                    ruleInfoDTO.getWarnMessage(),
+                    ruleInfoDTO.getAlertMessage(),
                     ruleInfoDTO,
                     getLatestEventKafkaDto(),
                     getProcessorDto()
@@ -195,7 +228,7 @@ class ProcessorOne implements Processor {
      * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
      * @throws Exception 在评估过程中发生任何异常时抛出
      */
-    private boolean evaluateEventThresholds(Map<String, RuleConditionDTO> ruleConditionMapByEventCode,
+    private boolean evaluateEventThresholds(Map<String, RuleCondDTO> ruleConditionMapByEventCode,
                                             RuleInfoDTO ruleInfoDTO) throws Exception {
         Map<String, Boolean> eventCodeAndWarnResult = new HashMap<>()
         for (Map.Entry<String, Map<Long, Tuple2<Long, EventKafkaDTO>>> bigMapEntry : bigMapState.entries()) {
@@ -205,13 +238,13 @@ class ProcessorOne implements Processor {
                     .map(o -> o.f0)
                     .mapToLong(Long::longValue)
                     .sum()
-            RuleConditionDTO condition = ruleConditionMapByEventCode.get(eventCode)
-            if (condition != null) {
-                Long eventThreshold = condition.getEventThreshold()
+            RuleCondDTO ruleCondDTO = ruleConditionMapByEventCode.get(eventCode)
+            if (ruleCondDTO != null) {
+                Long eventThreshold = ruleCondDTO.getThreshold()
                 eventCodeAndWarnResult.put(eventCode, eventValueSum > eventThreshold)
             }
         }
-        boolean eventResult = evaluateEventResults(eventCodeAndWarnResult, ruleInfoDTO.getCombinedConditionOperator())
+        boolean eventResult = evaluateEventResults(eventCodeAndWarnResult, ruleInfoDTO.getRuleCondCombOp())
         return eventResult
     }
 
@@ -305,11 +338,15 @@ class ProcessorOne implements Processor {
     /**
      * 清理窗口大小之外的数据
      */
-    private void cleanupWindowData(long timestamp, Map<String, RuleConditionDTO> ruleConditionMapByEventCode) throws Exception {
+    private void cleanupWindowData(long timestamp, Map<String, RuleCondDTO> ruleConditionMapByEventCode) throws Exception {
         for (Map.Entry<String, Map<Long, Tuple2<Long, EventKafkaDTO>>> bigMapEntry : bigMapState.entries()) {
             String eventCode = bigMapEntry.getKey()
             Map<Long, Tuple2<Long, EventKafkaDTO>> timestampAndEventValueMap = bigMapEntry.getValue()
-            Long windowSize = ruleConditionMapByEventCode.get(eventCode).getWindowSize()
+            RuleCondDTO ruleCondDTO = ruleConditionMapByEventCode.get(eventCode)
+            if (Objects.isNull(ruleCondDTO)) {
+                continue
+            }
+            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()))
             long windowThresholdTime = timestamp - windowSize
             Iterator<Map.Entry<Long, Tuple2<Long, EventKafkaDTO>>> iterator = timestampAndEventValueMap.entrySet().iterator()
             while (iterator.hasNext()) {
@@ -342,7 +379,7 @@ class ProcessorOne implements Processor {
      * @param conditionOperator 条件操作符，支持 AND 和 OR
      * @return 根据条件操作符计算后的最终结果（true 或 false）
      */
-    boolean evaluateEventResults(Map<String, Boolean> eventCodeAndWarnResult, Integer conditionOperator) {
+    boolean evaluateEventResults(Map<String, Boolean> eventCodeAndWarnResult, String conditionOperator) {
         if (eventCodeAndWarnResult == null || eventCodeAndWarnResult.isEmpty()) {
             return false
         }
@@ -350,7 +387,7 @@ class ProcessorOne implements Processor {
             return false
         }
         // 初始化结果变量，根据条件操作符判断初始值
-        boolean result = conditionOperator == RuleCondCombOpEnum.AND.getCode()
+        boolean result = Objects.equals(conditionOperator, RuleCondCombOpEnum.AND.getCode())
 
         // 遍历事件结果的 Map
         for (Boolean eventResult : eventCodeAndWarnResult.values()) {

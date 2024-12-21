@@ -34,7 +34,7 @@ public class EventKafkaDTO implements Serializable {
     private String keyCode;
 
     /**
-     * key名称
+     * key值
      */
     private String keyValue;
 
@@ -50,11 +50,13 @@ public class EventKafkaDTO implements Serializable {
 
     /**
      * 属性
+     * {@link EventAttributeDTO}
      */
     private Map<String, Object> attribute;
 
     /**
-     * 事件时间（无需业务方传输，仅用于引擎计算处理使用）
+     * 事件时间
+     * （无需业务方传输，仅用于引擎计算处理使用）
      */
     private long timestamp;
 

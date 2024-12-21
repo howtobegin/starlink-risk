@@ -5,6 +5,10 @@ package com.liboshuai.starlink.slr.engine.api.constants;
  */
 public interface GlobalConstants {
     /**
+     * 系统名称
+     */
+    String SYSTEM_NAME = "starlink_risk";
+    /**
      * redis key 分隔符
      */
     String REDIS_KEY_SEPARATOR = ":";

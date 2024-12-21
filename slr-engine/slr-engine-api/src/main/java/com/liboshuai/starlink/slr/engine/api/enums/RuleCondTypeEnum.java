@@ -5,12 +5,12 @@ import lombok.Getter;
 import java.util.Objects;
 
 /**
- * 规则类型枚举
+ * 规则条件类型
  */
 @Getter
-public enum RuleTypeEnum {
-    RANGE("RANGE", "范围规则"),
-    PERIODIC("PERIODIC", "周期规则")
+public enum RuleCondTypeEnum {
+    RANGE("RANGE", "范围"),
+    PERIODIC("CYCLE", "周期")
     ;
 
     /**
@@ -22,7 +22,7 @@ public enum RuleTypeEnum {
      */
     private final String desc;
 
-    RuleTypeEnum(String code, String desc) {
+    RuleCondTypeEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -30,8 +30,8 @@ public enum RuleTypeEnum {
     /**
      * 通过代码查找枚举值
      */
-    public static RuleTypeEnum fromCode(String code) {
-        for (RuleTypeEnum status : RuleTypeEnum.values()) {
+    public static RuleCondTypeEnum fromCode(String code) {
+        for (RuleCondTypeEnum status : RuleCondTypeEnum.values()) {
             if (Objects.equals(status.getCode(), code)) {
                 return status;
             }
@@ -42,8 +42,8 @@ public enum RuleTypeEnum {
     /**
      * 通过描述查找枚举值
      */
-    public static RuleTypeEnum fromDesc(String desc) {
-        for (RuleTypeEnum status : RuleTypeEnum.values()) {
+    public static RuleCondTypeEnum fromDesc(String desc) {
+        for (RuleCondTypeEnum status : RuleCondTypeEnum.values()) {
             if (status.getDesc().equals(desc)) {
                 return status;
             }

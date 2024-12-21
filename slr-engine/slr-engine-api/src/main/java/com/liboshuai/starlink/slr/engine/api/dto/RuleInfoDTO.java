@@ -1,37 +1,33 @@
 package com.liboshuai.starlink.slr.engine.api.dto;
 
+import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * 规则基本信息DTO对象
+ * 规则信息
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Accessors(chain = true)
 public class RuleInfoDTO implements Serializable {
-    private static final long serialVersionUID = 3075195061361364547L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * 渠道
+     * {@link ChannelEnum}
      */
     private String channel;
     /**
      * 规则编号
      */
     private String ruleCode;
-    /**
-     * 模型编号
-     */
-    private String modelCode;
     /**
      * 规则名称
      */
@@ -41,27 +37,35 @@ public class RuleInfoDTO implements Serializable {
      */
     private String ruleDesc;
     /**
-     * 规则条件组合操作符: 0-and；1-or
+     * 规则状态
      */
-    private Integer combinedConditionOperator;
+    private String ruleStatus;
     /**
-     * 预警信息
+     * 预警间隔值
      */
-    private String warnMessage;
+    private Long alertIntervalValue;
     /**
-     * 预警间隔
+     * 预警间隔单位
      */
-    private Long warnInterval;
+    private String alertIntervalUnit;
     /**
-     * 状态：0-停用，1-启用
+     * 预警消息
      */
-    private Integer status;
+    private String alertMessage;
     /**
-     * 规则条件组
+     * 模型编号
      */
-    private List<RuleConditionDTO> ruleConditionGroup;
+    private String modelCode;
     /**
-     * 规则模型groovy代码
+     * 模型信息
      */
-    private String ruleModelGroovyCode;
+    private ModelInfoDTO modelInfoDTO;
+    /**
+     * 条件组合符
+     */
+    private String ruleCondCombOp;
+    /**
+     * 条件组
+     */
+    private List<RuleCondDTO> ruleCondGroup;
 }

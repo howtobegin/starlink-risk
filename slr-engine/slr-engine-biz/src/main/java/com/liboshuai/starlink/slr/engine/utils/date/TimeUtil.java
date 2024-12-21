@@ -1,14 +1,12 @@
 package com.liboshuai.starlink.slr.engine.utils.date;
 
 
-import com.liboshuai.starlink.slr.engine.enums.RuleUnitEnum;
+import com.liboshuai.starlink.slr.engine.api.enums.TimeUnitEnum;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Author liboshuai
- * @Date 2023/10/31 0:45
  * 时间工具类
  */
 public class TimeUtil {
@@ -19,7 +17,7 @@ public class TimeUtil {
      * @param unit 单位
      * @return 毫秒值
      */
-    public static long toMillis(long time, RuleUnitEnum unit) {
+    public static long toMillis(long time, TimeUnitEnum unit) {
         if (Objects.isNull(unit)) {
             throw new IllegalArgumentException("Invalid windowSizeUnit is null！");
         }

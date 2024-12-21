@@ -1,8 +1,6 @@
 package com.liboshuai.starlink;
 
 import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
-import com.liboshuai.starlink.slr.engine.api.dto.RuleConditionDTO;
-import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

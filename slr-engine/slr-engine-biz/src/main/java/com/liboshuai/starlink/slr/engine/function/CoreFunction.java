@@ -201,7 +201,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
      * 构造运算机对象
      */
     private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-        String ruleModelGroovyCode = ruleInfoDTO.getRuleModelGroovyCode();
+        ModelInfoDTO modelInfoDTO = ruleInfoDTO.getModelInfoDTO();
+        if (Objects.isNull(modelInfoDTO)) {
+            throw new BusinessException("运算机模型信息 modelInfoDTO 必须非空");
+        }
+        String ruleModelGroovyCode = modelInfoDTO.getGroovy();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
         }
