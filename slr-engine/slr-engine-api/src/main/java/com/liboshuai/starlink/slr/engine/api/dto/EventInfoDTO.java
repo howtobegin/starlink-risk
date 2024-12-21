@@ -1,12 +1,9 @@
 package com.liboshuai.starlink.slr.engine.api.dto;
 
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,7 +13,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventInfoDTO implements Serializable {
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
+public class EventInfoDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**

@@ -1,12 +1,8 @@
 package com.liboshuai.starlink.slr.engine.api.dto;
 
 import com.liboshuai.starlink.slr.engine.api.enums.RuleCondAttributeTypeEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 /**
  * 事件属性组
@@ -15,7 +11,9 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventAttributeDTO implements Serializable {
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
+public class EventAttributeDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**

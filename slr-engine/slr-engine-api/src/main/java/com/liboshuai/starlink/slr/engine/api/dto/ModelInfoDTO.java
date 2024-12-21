@@ -1,11 +1,7 @@
 package com.liboshuai.starlink.slr.engine.api.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 /**
  * 规则模型信息
@@ -14,7 +10,9 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ModelInfoDTO implements Serializable {
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
+public class ModelInfoDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**
