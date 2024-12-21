@@ -126,29 +126,31 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         if (ruleCdcDTO == null) {
             throw new BusinessException("Mysql Cdc 广播流 ruleCdcDTO 必须非空");
         }
-        // cdc数据更新
+        // cdc 数据变更类型
         String op = ruleCdcDTO.getOp();
+        // 变更之前的数据
+        RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
+        String ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
+        // 变更之后的数据
         RuleJsonDTO ruleCdcDTOAfter = ruleCdcDTO.getAfter();
-        String ruleCode = ruleCdcDTOAfter.getRuleCode();
-        String ruleJson = ruleCdcDTOAfter.getRuleJson();
-        RuleInfoDTO ruleInfoDTO = JsonUtil.parseObject(ruleJson, RuleInfoDTO.class);
-        if (Objects.isNull(ruleInfoDTO)) {
-            throw new BusinessException("Mysql Cdc 广播流 ruleInfoDTO 必须非空");
-        }
+        String ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
+        String ruleJsonAfter = ruleCdcDTOAfter.getRuleJson();
+        RuleInfoDTO ruleInfoDTOAfter = JsonUtil.parseObject(ruleJsonAfter, RuleInfoDTO.class);
+        // 获取广播流数据
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
-            loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
+            loadProcessor(ruleCodeAfter, broadcastState, ruleInfoDTOAfter);
         } else if (Envelope.Operation.READ.code().equals(op)) {
             // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
-            loadProcessor(ruleCode, broadcastState, ruleInfoDTO);
+            loadProcessor(ruleCodeAfter, broadcastState, ruleInfoDTOAfter);
         }else if (Envelope.Operation.UPDATE.code().equals(op)) {
             // update: 因为上线规则时进行insert，下线规则时直接delete了，其他更新操作不会同步到rule_json表中，故忽略
             log.warn("规则运算机不支持在线热更新，请不要直接 update rule_json 表中的数据！");
         } else if (Envelope.Operation.DELETE.code().equals(op)) {
             // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
-            removeProcessor(ruleCode, broadcastState);
+            removeProcessor(ruleCodeBefore, broadcastState);
         }
         log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
         log.warn("当前规则运算机规则编号列表: {}", ruleProcessorPool.keySet());
@@ -235,9 +237,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         // 获取规则表名
         String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_RULE_JSON);
         // 查询规则数据
-        String sql = String.format("select count(*) from %s where deleted = ?", tableName);
+        String sql = String.format("select count(*) from %s", tableName);
         Long ruleOnlineCount = JdbcUtil.queryForObject(
-                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), 0);
+                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), null);
         if (Objects.isNull(ruleOnlineCount)) {
             throw new BusinessException("Mysql Jdbc 查询上线的规则数量为 null！");
         }
@@ -253,8 +255,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
         // 获取规则表名
         String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_BANK);
         // 查询规则数据
-        String sql = String.format("select bank, name from %s where is_deleted = ?", tableName);
-        List<BankDTO> bankDTOList = JdbcUtil.queryForList(sql, new JdbcUtil.BeanPropertyRowMapper<>(BankDTO.class), 0);
+        String sql = String.format("select bank, name from %s", tableName);
+        List<BankDTO> bankDTOList = JdbcUtil.queryForList(sql, new JdbcUtil.BeanPropertyRowMapper<>(BankDTO.class), null);
         if (CollectionUtil.isNullOrEmpty(bankDTOList)) {
             log.warn("Mysql Jdbc 预加载的银行对象集合bankDTOList为空！");
             return new ConcurrentHashMap<>();
