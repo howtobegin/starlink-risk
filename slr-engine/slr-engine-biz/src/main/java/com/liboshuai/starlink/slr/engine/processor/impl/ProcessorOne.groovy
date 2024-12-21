@@ -344,6 +344,7 @@ class ProcessorOne implements Processor {
             Map<Long, Tuple2<Long, EventKafkaDTO>> timestampAndEventValueMap = bigMapEntry.getValue()
             RuleCondDTO ruleCondDTO = ruleConditionMapByEventCode.get(eventCode)
             if (Objects.isNull(ruleCondDTO)) {
+                log.warn("清理窗口大小之外的数据时，存在规则条件中不存在的数据")
                 continue
             }
             long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()))
