@@ -93,8 +93,8 @@ class ProcessorOne implements Processor {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
-        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.ONLINE)
-                && !Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.OFFLINE_PENDING)) {
+        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.ONLINE.getCode())
+                && !Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.OFFLINE_PENDING.getCode())) {
             log.warn("加载到运算机池中的规则状态必须为'已上线'或'下线待审核'！规则编号：{}", ruleInfoDTO.getRuleCode())
             return
         }
@@ -164,20 +164,13 @@ class ProcessorOne implements Processor {
                 if (!smallInitMapState.contains(kafkaEventDTO.getEventCode())) {
                     // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
                     // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
-                    String key = new StringBuilder()
-                            .append(GlobalConstants.SYSTEM_NAME)
-                            .append(GlobalConstants.REDIS_KEY_SEPARATOR)
-                            .append(RedisKeyConstants.DORIS)
-                            .append(GlobalConstants.REDIS_KEY_SEPARATOR)
-                            .append(ruleCondDTO.getRuleCode())
-                            .append(GlobalConstants.REDIS_KEY_SEPARATOR)
-                            .append(ruleCondDTO.getEventCode())
-                    String keyCode = kafkaEventDTO.getKeyCode()
+                    String redisKey = buildRedisKey(ruleCondDTO)
+                    String redisHashKey = buildRedisHashKey(kafkaEventDTO)
                     // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
-                    String initValue = RedisUtil.hget(key, keyCode)
+                    String initValue = RedisUtil.hget(redisKey, redisHashKey)
                     if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
                         throw new BusinessException(
-                                StringUtil.format("从redis获取初始值必须非空, key:{}, hashKey: {}", key, keyCode)
+                                StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
                         )
                     }
                     smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO))
@@ -197,6 +190,33 @@ class ProcessorOne implements Processor {
                 smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
             }
         }
+    }
+
+
+    /**
+     * 构建Redis的哈希键
+     */
+    private String buildRedisHashKey(KafkaEventDTO kafkaEventDTO) {
+        String keyCode = kafkaEventDTO.getKeyCode()
+        String keyValue = kafkaEventDTO.getKeyValue()
+        return new StringBuilder()
+                .append(keyCode)
+                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(keyValue).toString()
+    }
+
+    /**
+     * 构建Redis的key
+     */
+    private String buildRedisKey(RuleCondDTO ruleCondDTO) {
+        return new StringBuilder()
+                .append(GlobalConstants.SYSTEM_NAME)
+                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(RedisKeyConstants.DORIS)
+                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(ruleCondDTO.getRuleCode())
+                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(ruleCondDTO.getEventCode())
     }
 
     /**
@@ -299,7 +319,7 @@ class ProcessorOne implements Processor {
                     getLatestEventKafkaDto(),
                     getProcessorDto()
             )
-            log.info("最终推送的预警信息内容：{}", finalWarnMessage)
+            log.warn("最终推送的预警信息内容：{}", finalWarnMessage)
             out.collect(finalWarnMessage)
         }
         // 调试使用，待删除
