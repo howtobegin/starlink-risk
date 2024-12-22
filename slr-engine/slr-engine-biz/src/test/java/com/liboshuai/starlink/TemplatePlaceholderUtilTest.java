@@ -1,6 +1,7 @@
 package com.liboshuai.starlink;
 
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.ProcessorDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleCondDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil;
@@ -10,40 +11,70 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TemplatePlaceholderUtilTest {
 
     @Test
     public void testReplacePlaceholders() {
-        KafkaPojo kafkaPojo = KafkaPojo.builder()
+        RuleCondDTO ruleCondDTO = RuleCondDTO.builder()
+                .ruleCode("ruleCode1")
+                .eventCode("eventCode1")
+                .threshold(10L)
+                .condType("CYCLE")
+                .windowValue(1L)
+                .windowUnit("MINUTE")
+                .crossHistory(true)
+                .build();
+        RuleCondDTO ruleCondDTO2 = RuleCondDTO.builder()
+                .ruleCode("ruleCode2")
+                .eventCode("eventCode2")
+                .threshold(20L)
+                .condType("CYCLE")
+                .windowValue(2L)
+                .windowUnit("MINUTE")
+                .crossHistory(true)
+                .build();
+        RuleInfoDTO ruleInfoDTO = RuleInfoDTO.builder()
+                .ruleCode("ruleCode1")
+                .ruleName("ruleName1")
+                .ruleDesc("ruleDesc1")
+                .modelCode("modelCode1")
+                .ruleCondCombOp("AND")
+                .alertMessage("[异常高频抽奖]：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！")
+                .alertIntervalUnit("MINUTE")
+                .alertIntervalValue(10L)
+                .ruleStatus("ONLINE")
+                .ruleCondGroup(Arrays.asList(ruleCondDTO, ruleCondDTO2))
+                .build();
+
+        Map<String, String> eventAttribute = new HashMap<>();
+        eventAttribute.put("campaignId", "c000001");
+        eventAttribute.put("campaignName", "活动01");
+        KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
-                .userName("wdy")
-                .userId("000001")
+                .keyCode("keyCode1")
+                .keyValue("keyValue1")
+                .eventCode("eventCode1")
+                .eventValue("eventValue1")
+                .eventAttribute(eventAttribute)
+                .timestamp(System.currentTimeMillis())
                 .build();
-
-        MysqlPojo mysqlPojo = MysqlPojo.builder()
-                .ruleName("游戏高频抽奖")
-                .ruleCode("game_lottery")
-                .rulePojo(RulePojo.builder().ruleType("1").ruleValue("10").build())
+        Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
+        eventCodeAndValueSumMap.put("GAME_LOTTERY", 10L);
+        ProcessorDTO processorDTO = ProcessorDTO.builder()
+                .eventCodeAndValueSumMap(eventCodeAndValueSumMap)
                 .build();
-
-        String messageTemplate = "${KafkaPojo.channel}渠道的${KafkaPojo.userName}(${KafkaPojo.userId})用户触发了" +
-                "${MysqlPojo.ruleName}(${MysqlPojo.ruleCode})规则，其中规则类型为${MysqlPojo.rulePojo.ruleType}" +
-                "、规则值为${MysqlPojo.rulePojo.ruleValue}。请尽快处理!";
-
-        String messageTemplate2 = "[异常高频抽奖]${EventKafkaDTO.attribute.bankName}：${EventKafkaDTO.attribute.campaignName}" +
-                "(${EventKafkaDTO.attribute.campaignId})中游戏用户(${EventKafkaDTO.attribute.userId})" +
-                "最近${RuleInfoDTO.ruleConditionGroup.0.windowSize}内抽奖数量为${xxx}，" +
-                "超过${RuleInfoDTO.ruleConditionGroup.0.eventThreshold}次，请您及时查看原因！";
 
         // 使用工具类替换模板中的占位符
-        String result = TemplatePlaceholderUtil.replacePlaceholders(messageTemplate, kafkaPojo, mysqlPojo);
+        String finalWarnMessage = TemplatePlaceholderUtil.replacePlaceholders(
+                ruleInfoDTO.getAlertMessage(),
+                ruleInfoDTO,
+                kafkaEventDTO,
+                processorDTO
+        );
 
-        System.out.println("Result: " + result);
+        System.out.println("finalWarnMessage: " + finalWarnMessage);
     }
 
     @Test

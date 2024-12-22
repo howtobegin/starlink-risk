@@ -1,0 +1,77 @@
+[
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_LOTTERY",
+    "eventValue": "3",
+    "eventAttribute": {
+      "campaignId": "C000001",
+      "campaignName": "测试活动01",
+      "gameType": "fps"
+    }
+  },
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_RECHARGE",
+    "eventValue": "300",
+    "eventAttribute": {
+      "campaignId": "C000002",
+      "campaignName": "测试活动02",
+      "userAge": "17",
+      "userGender": "man"
+    }
+  },
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_LOTTERY",
+    "eventValue": "3",
+    "eventAttribute": {
+      "campaignId": "C000003",
+      "campaignName": "测试活动03",
+      "gameType": "fps"
+    }
+  },
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_RECHARGE",
+    "eventValue": "300",
+    "eventAttribute": {
+      "campaignId": "C000004",
+      "campaignName": "测试活动04",
+      "userAge": "17",
+      "userGender": "man"
+    }
+  },
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_LOTTERY",
+    "eventValue": "3",
+    "eventAttribute": {
+      "campaignId": "C000005",
+      "campaignName": "测试活动05",
+      "gameType": "fps"
+    }
+  },
+  {
+    "channel": "GAME",
+    "keyCode": "GAME_userId",
+    "keyValue": "U000001",
+    "eventCode": "GAME_RECHARGE",
+    "eventValue": "300",
+    "eventAttribute": {
+      "campaignId": "C000006",
+      "campaignName": "测试活动06",
+      "userAge": "17",
+      "userGender": "man"
+    }
+  }
+]
