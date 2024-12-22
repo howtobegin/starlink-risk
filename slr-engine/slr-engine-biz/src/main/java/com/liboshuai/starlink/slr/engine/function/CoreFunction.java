@@ -87,7 +87,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
         // 将事件放入缓存列表中，并记录存放的时间
-        kafkaEventDTO.setTimestamp(processTime);
+        kafkaEventDTO.setEventTimestamp(processTime);
         recentEventListState.add(kafkaEventDTO);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);

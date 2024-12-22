@@ -58,7 +58,7 @@ public class TemplatePlaceholderUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttribute(eventAttribute)
-                .timestamp(System.currentTimeMillis())
+                .eventTimestamp(System.currentTimeMillis())
                 .build();
         Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
         eventCodeAndValueSumMap.put("GAME_LOTTERY", 10L);
@@ -92,7 +92,7 @@ public class TemplatePlaceholderUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttribute(attributes)
-                .timestamp(System.currentTimeMillis())
+                .eventTimestamp(System.currentTimeMillis())
                 .build();
 
         List<RuleCondDTO> RuleCondDTOS = new ArrayList<>();
