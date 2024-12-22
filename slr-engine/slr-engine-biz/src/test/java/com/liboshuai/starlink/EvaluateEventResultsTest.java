@@ -112,14 +112,20 @@ public class EvaluateEventResultsTest {
     }
 
     @Test
-    public void testInvalidOperator() {
+    public void testSingleTrue() {
         Map<String, Boolean> map = new HashMap<>();
         map.put("event1", true);
-        map.put("event2", false);
 
-        // 假设对于无效的操作符，方法应返回false
-        String invalidOperator = "hh";
-        boolean result = processorOne.evaluateEventResults(map, invalidOperator);
+        boolean result = processorOne.evaluateEventResults(map, null);
+        Assertions.assertTrue(result, "无效的操作符应返回false");
+    }
+
+    @Test
+    public void testSingleFalse() {
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("event1", false);
+
+        boolean result = processorOne.evaluateEventResults(map, null);
         Assertions.assertFalse(result, "无效的操作符应返回false");
     }
 }

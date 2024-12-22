@@ -6,6 +6,8 @@
     "eventCode": "GAME_LOTTERY",
     "eventValue": "3",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000001",
       "campaignName": "测试活动01",
       "gameType": "fps"
@@ -18,6 +20,8 @@
     "eventCode": "GAME_RECHARGE",
     "eventValue": "300",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000002",
       "campaignName": "测试活动02",
       "userAge": "17",
@@ -31,6 +35,8 @@
     "eventCode": "GAME_LOTTERY",
     "eventValue": "3",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000003",
       "campaignName": "测试活动03",
       "gameType": "fps"
@@ -43,6 +49,8 @@
     "eventCode": "GAME_RECHARGE",
     "eventValue": "300",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000004",
       "campaignName": "测试活动04",
       "userAge": "17",
@@ -56,6 +64,8 @@
     "eventCode": "GAME_LOTTERY",
     "eventValue": "3",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000005",
       "campaignName": "测试活动05",
       "gameType": "fps"
@@ -68,6 +78,8 @@
     "eventCode": "GAME_RECHARGE",
     "eventValue": "300",
     "eventAttribute": {
+      "bankNo": "6100",
+      "bankName": "邮储银行",
       "campaignId": "C000006",
       "campaignName": "测试活动06",
       "userAge": "17",

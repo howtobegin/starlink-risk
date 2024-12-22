@@ -492,34 +492,40 @@
 //     * @return 根据条件操作符计算后的最终结果（true 或 false）
 //     */
 //    boolean evaluateEventResults(Map<String, Boolean> eventCodeAndWarnResult, String conditionOperator) {
+//        // 检查输入是否为 null 或为空
 //        if (eventCodeAndWarnResult == null || eventCodeAndWarnResult.isEmpty()) {
-//            return false
+//            return false;
 //        }
-//        if (eventCodeAndWarnResult.values() == null || eventCodeAndWarnResult.values().isEmpty()) {
-//            return false
-//        }
-//        // 初始化结果变量，根据条件操作符判断初始值
-//        boolean result = Objects.equals(conditionOperator, RuleCondCombOpEnum.AND.getCode())
 //
-//        // 遍历事件结果的 Map
-//        for (Boolean eventResult : eventCodeAndWarnResult.values()) {
-//            if (conditionOperator == RuleCondCombOpEnum.AND.getCode()) {
-//                // 对于 AND，只有当所有结果都为 true 时，结果才为 true
-//                result = eventResult
-//                // 提前结束循环，如果结果已经为 false
-//                if (!result) {
-//                    break
-//                }
-//            } else if (conditionOperator == RuleCondCombOpEnum.OR.getCode()) {
-//                // 对于 OR，只要有一个结果为 true，结果就为 true
-//                result = eventResult
-//                // 提前结束循环，如果结果已经为 true
-//                if (result) {
-//                    break
+//        // 如果只有一个元素，直接返回该元素的值
+//        if (eventCodeAndWarnResult.size() == 1) {
+//            return eventCodeAndWarnResult.values().iterator().next();
+//        }
+//
+//        // 确定操作符类型
+//        RuleCondCombOpEnum opEnum = RuleCondCombOpEnum.fromCode(conditionOperator);
+//
+//        // 初始化结果，根据操作符类型
+//        boolean result;
+//        if (opEnum == RuleCondCombOpEnum.AND) {
+//            result = true; // 对于 AND，初始值为 true
+//            for (Boolean eventResult : eventCodeAndWarnResult.values()) {
+//                if (!eventResult) {
+//                    return false; // 任何一个 false 都返回 false
 //                }
 //            }
+//        } else if (opEnum == RuleCondCombOpEnum.OR) {
+//            result = false; // 对于 OR，初始值为 false
+//            for (Boolean eventResult : eventCodeAndWarnResult.values()) {
+//                if (eventResult) {
+//                    return true; // 任何一个 true 都返回 true
+//                }
+//            }
+//        } else {
+//            throw new IllegalArgumentException("Unsupported condition operator: " + conditionOperator);
 //        }
-//        // 返回最终的评估结果
-//        return result
+//
+//        return result;
 //    }
+//
 //}

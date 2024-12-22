@@ -8,6 +8,7 @@ import com.liboshuai.starlink.slr.engine.common.FlinkMysqlConnector;
 import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.function.CoreFunction;
+import com.liboshuai.starlink.slr.engine.function.KafkaEventFilter;
 import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
 import com.liboshuai.starlink.slr.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -42,11 +43,9 @@ public class EngineApplication {
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         KeyedStream<KafkaEventDTO, String> eventKafkaDTOStringKeyedStream = FlinkKafkaConnector.read(env, parameterTool) // 读取数据
-                .map(s -> {
-                    KafkaEventDTO kafkaEventDTO = JsonUtil.parseObject(s, KafkaEventDTO.class);
-                    log.warn("kafkaEventDTO: {}", kafkaEventDTO);
-                    return kafkaEventDTO;
-                }) // 转换string为eventKafkaDTO对象
+                // 转换string为eventKafkaDTO对象
+                .map(s -> JsonUtil.parseObject(s, KafkaEventDTO.class))
+                .filter(new KafkaEventFilter())
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()) // 使用处理时间
                 .uid("register-watermark")
                 .keyBy(eventKafkaDTO ->
