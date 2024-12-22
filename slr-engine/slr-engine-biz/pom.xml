@@ -104,6 +104,15 @@
             <artifactId>flink-connector-jdbc_${scala.binary.version}</artifactId>
         </dependency>
 
+        <!-- Doris Connector -->
+        <dependency>
+            <groupId>org.apache.doris</groupId>
+            <artifactId>flink-connector-doris_${scala.binary.version}</artifactId>
+            <version>1.14_2.12-1.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/flink-doris-connector-1.14_2.12-1.1.1.jar</systemPath>
+        </dependency>
+
         <!-- ========== Flink CDC ========== -->
 
         <!-- 注意：这里不要选择 flink-connector-mysql-cdc 依赖 -->
