@@ -1,6 +1,5 @@
 package com.liboshuai.starlink.slr.engine.api.dto;
 
-import com.liboshuai.starlink.slr.engine.api.enums.RuleCondAttributeTypeEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -13,7 +12,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class EventAttributeDTO extends BaseDTO {
+public class RuleEventAttributeDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -25,12 +24,11 @@ public class EventAttributeDTO extends BaseDTO {
      */
     private String attributeName;
     /**
-     * 属性类型
-     * {@link RuleCondAttributeTypeEnum}
+     * 属性key
      */
-    private String attributeType;
+    private String attributeKey;
     /**
-     * 属性描述
+     * 属性值
      */
-    private String attributeDesc;
+    private String attributeValue;
 }

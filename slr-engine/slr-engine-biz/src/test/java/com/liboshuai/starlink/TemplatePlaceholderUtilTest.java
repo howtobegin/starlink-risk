@@ -1,6 +1,6 @@
 package com.liboshuai.starlink;
 
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleCondDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil;
@@ -48,19 +48,19 @@ public class TemplatePlaceholderUtilTest {
 
     @Test
     public void testReplacePlaceholders2() {
-        Map<String, Object> attributes = new HashMap<>();
+        Map<String, String> attributes = new HashMap<>();
         attributes.put("userId", "userId01");
         attributes.put("bankName", "bankName01");
         attributes.put("campaignId", "campaignId01");
         attributes.put("campaignName", "campaignName01");
 
-        EventKafkaDTO eventKafkaDTO = EventKafkaDTO.builder()
+        KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
                 .keyCode("keyCode1")
                 .keyValue("keyValue1")
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
-                .attribute(attributes)
+                .eventAttribute(attributes)
                 .timestamp(System.currentTimeMillis())
                 .build();
 
@@ -105,7 +105,7 @@ public class TemplatePlaceholderUtilTest {
                 "超过${RuleInfoDTO.ruleConditionGroup.1.eventThreshold}次，请您及时查看原因！";
 
         // 使用工具类替换模板中的占位符
-        String result = TemplatePlaceholderUtil.replacePlaceholders(messageTemplate, eventKafkaDTO, ruleInfoDTO);
+        String result = TemplatePlaceholderUtil.replacePlaceholders(messageTemplate, kafkaEventDTO, ruleInfoDTO);
 
         System.out.println("Result: " + result);
     }

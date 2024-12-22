@@ -38,13 +38,15 @@
             "eventCode": "GAME_LOTTERY",
             "attributeName": "campaignId",
             "attributeType": "String",
-            "attributeDesc": "活动ID"
+            "attributeDesc": "活动ID",
+            "attributeValue": "C000001"
           },
           {
             "eventCode": "GAME_LOTTERY",
             "attributeName": "campaignName",
             "attributeType": "String",
-            "attributeDesc": "活动名称"
+            "attributeDesc": "活动名称",
+            "attributeValue": "测试抽奖活动01"
           }
         ]
       }
@@ -70,13 +72,15 @@
             "eventCode": "GAME_RECHARGE",
             "attributeName": "orderCode",
             "attributeType": "String",
-            "attributeDesc": "订单编号"
+            "attributeDesc": "订单编号",
+            "attributeValue": "O000001"
           },
           {
             "eventCode": "GAME_RECHARGE",
             "attributeName": "orderName",
             "attributeType": "String",
-            "attributeDesc": "订单名称"
+            "attributeDesc": "订单名称",
+            "attributeValue": "测试充值活动01"
           }
         ]
       }

@@ -4,7 +4,7 @@ import com.liboshuai.starlink.slr.connector.dao.kafka.provider.EventProvider;
 import com.liboshuai.starlink.slr.connector.pojo.vo.event.KafkaInfoVO;
 import com.liboshuai.starlink.slr.connector.service.event.EventService;
 import com.liboshuai.starlink.slr.connector.service.event.strategy.EventStrategyHolder;
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.common.Node;
@@ -85,7 +85,7 @@ public class EventServiceImpl implements EventService {
      * 上送事件数据到kafka
      */
     @Override
-    public void uploadKafka(EventKafkaDTO eventKafkaDTO) {
+    public void uploadKafka(KafkaEventDTO kafkaEventDTO) {
 //        String channel = eventUploadDTO.getChannel(); // 渠道
 //        List<EventDetailDTO> eventDetailDTOList = eventUploadDTO.getEventDetailDTOList(); // 上送事件详情集合
 //
@@ -107,9 +107,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public void mockEventToKafka(List<EventKafkaDTO> eventKafkaDTOList) {
-        for (EventKafkaDTO eventKafkaDTO : eventKafkaDTOList) {
-            eventProvider.mockEventToKafka(eventKafkaDTO);
+    public void mockEventToKafka(List<KafkaEventDTO> kafkaEventDTOList) {
+        for (KafkaEventDTO kafkaEventDTO : kafkaEventDTOList) {
+            eventProvider.mockEventToKafka(kafkaEventDTO);
         }
     }
 

@@ -29,6 +29,6 @@ public class EventErrorDTO implements Serializable {
     /**
      * 错误数据
      */
-    private EventKafkaDTO eventKafkaDTO;
+    private KafkaEventDTO kafkaEventDTO;
 
 }

@@ -2,7 +2,7 @@ package com.liboshuai.starlink.slr.connector.controller.event;
 
 import com.liboshuai.starlink.slr.connector.pojo.vo.event.KafkaInfoVO;
 import com.liboshuai.starlink.slr.connector.service.event.EventService;
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.starlink.slr.framework.protection.ratelimiter.core.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,16 +37,16 @@ public class EventController {
     @RateLimiter(count = 10000)
     @PostMapping("/upload-kafka")
     @Operation(summary = "上送事件数据到kafka")
-    public CommonResult<?> uploadKafka(@RequestBody EventKafkaDTO eventKafkaDTO) {
-        eventService.uploadKafka(eventKafkaDTO);
+    public CommonResult<?> uploadKafka(@RequestBody KafkaEventDTO kafkaEventDTO) {
+        eventService.uploadKafka(kafkaEventDTO);
         return success();
     }
 
     @RateLimiter(count = 10000)
     @PostMapping("/mock-event-to-kafka")
     @Operation(summary = "mock事件数据到kafka")
-    public CommonResult<?> mockEventToKafka(@RequestBody List<EventKafkaDTO> eventKafkaDTOList) {
-        eventService.mockEventToKafka(eventKafkaDTOList);
+    public CommonResult<?> mockEventToKafka(@RequestBody List<KafkaEventDTO> kafkaEventDTOList) {
+        eventService.mockEventToKafka(kafkaEventDTOList);
         return success();
     }
 }

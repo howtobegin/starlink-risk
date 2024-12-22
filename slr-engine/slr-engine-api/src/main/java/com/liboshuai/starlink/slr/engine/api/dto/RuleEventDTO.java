@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class EventInfoDTO extends BaseDTO {
+public class RuleEventDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -38,5 +38,5 @@ public class EventInfoDTO extends BaseDTO {
     /**
      * 事件属性组
      */
-    private List<EventAttributeDTO> eventAttributeGroup;
+    private List<RuleEventAttributeDTO> ruleEventAttributeGroup;
 }

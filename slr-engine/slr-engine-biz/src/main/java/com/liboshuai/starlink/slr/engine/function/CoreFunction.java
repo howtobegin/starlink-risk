@@ -34,7 +34,7 @@ import static com.liboshuai.starlink.slr.engine.common.StateDescContainer.*;
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String> {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String> {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -51,7 +51,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     /**
      * 最近15分钟时间事件数据缓存
      */
-    private ListState<EventKafkaDTO> recentEventListState;
+    private ListState<KafkaEventDTO> recentEventListState;
 
     /**
      * 旧规则列表
@@ -87,15 +87,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
     }
 
     @Override
-    public void processElement(EventKafkaDTO eventKafkaDTO,
-                               KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String>.ReadOnlyContext ctx,
+    public void processElement(KafkaEventDTO kafkaEventDTO,
+                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.ReadOnlyContext ctx,
                                Collector<String> out) throws Exception {
         long processTime = ctx.currentProcessingTime();
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
         // 将事件放入缓存列表中，并记录存放的时间
-        eventKafkaDTO.setTimestamp(processTime);
-        recentEventListState.add(eventKafkaDTO);
+        kafkaEventDTO.setTimestamp(processTime);
+        recentEventListState.add(kafkaEventDTO);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
@@ -104,13 +104,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
-                for (EventKafkaDTO historyEventKafkaDTO : recentEventListState.get()) {
-                    processor.processElement(processTime, historyEventKafkaDTO, broadcastState.get(ruleCode), out);
+                for (KafkaEventDTO historyKafkaEventDTO : recentEventListState.get()) {
+                    processor.processElement(processTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(processTime, eventKafkaDTO, broadcastState.get(ruleCode), out);
+                processor.processElement(processTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -121,7 +121,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
 
     @Override
     public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String>.Context ctx,
+                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.Context ctx,
                                         Collector<String> out) throws Exception {
         if (ruleCdcDTO == null) {
             throw new BusinessException("Mysql Cdc 广播流 ruleCdcDTO 必须非空");
@@ -190,7 +190,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, EventKaf
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, EventKafkaDTO, RuleCdcDTO, String>.OnTimerContext ctx,
+                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.OnTimerContext ctx,
                         Collector<String> out) throws Exception {
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);

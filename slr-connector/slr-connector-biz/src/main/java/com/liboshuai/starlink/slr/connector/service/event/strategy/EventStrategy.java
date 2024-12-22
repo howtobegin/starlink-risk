@@ -1,7 +1,7 @@
 package com.liboshuai.starlink.slr.connector.service.event.strategy;
 
 
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ public interface EventStrategy {
     /**
      * 数据的前置处理
      */
-    void processAfter(List<EventKafkaDTO> eventKafkaDTOList);
+    void processAfter(List<KafkaEventDTO> kafkaEventDTOList);
 }

@@ -18,7 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class EventKafkaDTO implements Serializable {
+public class KafkaEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;
 
@@ -50,9 +50,9 @@ public class EventKafkaDTO implements Serializable {
 
     /**
      * 属性
-     * {@link EventAttributeDTO}
+     * {@link RuleEventAttributeDTO}
      */
-    private Map<String, Object> attribute;
+    private Map<String, String> eventAttribute;
 
     /**
      * 事件时间

@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.processor;
 
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
@@ -18,7 +18,7 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(long timestamp, EventKafkaDTO eventKafkaDTO, RuleInfoDTO ruleInfoDTO, Collector<String> out) throws Exception;
+    void processElement(long timestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO, Collector<String> out) throws Exception;
 
     /**
      * 定时器

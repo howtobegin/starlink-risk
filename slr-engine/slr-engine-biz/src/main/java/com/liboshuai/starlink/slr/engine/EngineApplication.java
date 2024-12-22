@@ -2,7 +2,7 @@ package com.liboshuai.starlink.slr.engine;
 
 
 import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.function.CoreFunction;
@@ -41,8 +41,8 @@ public class EngineApplication {
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
-        KeyedStream<EventKafkaDTO, String> eventKafkaDTOStringKeyedStream = KafkaUtil.read(env, parameterTool) // 读取数据
-                .map(s -> JsonUtil.parseObject(s, EventKafkaDTO.class)) // 转换string为eventKafkaDTO对象
+        KeyedStream<KafkaEventDTO, String> eventKafkaDTOStringKeyedStream = KafkaUtil.read(env, parameterTool) // 读取数据
+                .map(s -> JsonUtil.parseObject(s, KafkaEventDTO.class)) // 转换string为eventKafkaDTO对象
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()) // 使用处理时间
                 .uid("register-watermark")
                 .keyBy(eventKafkaDTO ->

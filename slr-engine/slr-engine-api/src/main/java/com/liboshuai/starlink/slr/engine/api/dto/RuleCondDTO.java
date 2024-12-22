@@ -65,6 +65,6 @@ public class RuleCondDTO extends BaseDTO {
     /**
      * 事件信息
      */
-    private EventInfoDTO eventInfoDTO;
+    private RuleEventDTO ruleEventDTO;
 
 }

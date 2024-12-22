@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.connector.dao.kafka.provider;
 
-import com.liboshuai.starlink.slr.engine.api.dto.EventKafkaDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,11 +25,11 @@ public class EventProvider {
     /**
      * 批量上送事件信息到kafka
      */
-    public void batchSend(List<EventKafkaDTO> eventKafkaDTOList) {
-        if (CollectionUtils.isEmpty(eventKafkaDTOList)) {
+    public void batchSend(List<KafkaEventDTO> kafkaEventDTOList) {
+        if (CollectionUtils.isEmpty(kafkaEventDTOList)) {
             return;
         }
-        eventKafkaDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(sourceTopic, eventUploadDTO)
+        kafkaEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(sourceTopic, eventUploadDTO)
                 .addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
 
             @Override
@@ -44,8 +44,8 @@ public class EventProvider {
         }));
     }
 
-    public void mockEventToKafka(EventKafkaDTO eventKafkaDTO) {
-        kafkaTemplate.send(sourceTopic, eventKafkaDTO)
+    public void mockEventToKafka(KafkaEventDTO kafkaEventDTO) {
+        kafkaTemplate.send(sourceTopic, kafkaEventDTO)
                 .addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
 
                     @Override
@@ -55,7 +55,7 @@ public class EventProvider {
 
                     @Override
                     public void onFailure(Throwable ex) {
-                        log.error("生产者发送消息：{} 失败，原因：{}", eventKafkaDTO, ex.getMessage());
+                        log.error("生产者发送消息：{} 失败，原因：{}", kafkaEventDTO, ex.getMessage());
                     }
                 });
     }
