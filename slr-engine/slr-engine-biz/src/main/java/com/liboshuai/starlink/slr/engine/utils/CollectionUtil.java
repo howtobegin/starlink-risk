@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.collection;
+package com.liboshuai.starlink.slr.engine.utils;
 
 import java.util.Collection;
 import java.util.Map;

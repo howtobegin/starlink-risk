@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.data;
+package com.liboshuai.starlink.slr.engine.common;
 
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
@@ -14,7 +14,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * @Author: liboshuai
  * @Date: 2023-10-25 13:11
  **/
-public class MysqlUtil {
+public class FlinkMysqlConnector {
 
     /**
      * MySql cdc 读取数据

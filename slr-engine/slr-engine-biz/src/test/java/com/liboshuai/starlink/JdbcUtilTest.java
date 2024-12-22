@@ -1,6 +1,6 @@
 package com.liboshuai.starlink;
 
-import com.liboshuai.starlink.slr.engine.utils.jdbc.JdbcUtil;
+import com.liboshuai.starlink.slr.engine.utils.JdbcUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

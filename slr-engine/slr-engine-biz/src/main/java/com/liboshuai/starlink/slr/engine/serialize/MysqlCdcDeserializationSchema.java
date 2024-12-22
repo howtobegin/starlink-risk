@@ -3,7 +3,7 @@ package com.liboshuai.starlink.slr.engine.serialize;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
-import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil;
+import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Field;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Schema;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Struct;

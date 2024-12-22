@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.date;
+package com.liboshuai.starlink.slr.engine.utils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

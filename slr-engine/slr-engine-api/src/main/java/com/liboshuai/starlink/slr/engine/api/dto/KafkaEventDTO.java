@@ -50,7 +50,7 @@ public class KafkaEventDTO implements Serializable {
 
     /**
      * 属性
-     * {@link RuleEventAttributeDTO}
+     * {@link RuleEventAttrDTO}
      */
     private Map<String, String> eventAttribute;
 

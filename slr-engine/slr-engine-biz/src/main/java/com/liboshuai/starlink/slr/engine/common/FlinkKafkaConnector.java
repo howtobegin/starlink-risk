@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.data;
+package com.liboshuai.starlink.slr.engine.common;
 
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -20,7 +20,7 @@ import java.util.Properties;
  * description: Flink 读写Kafka工具类
  * date: 2023
  */
-public class KafkaUtil {
+public class FlinkKafkaConnector {
 
     /**
      * author: liboshuai

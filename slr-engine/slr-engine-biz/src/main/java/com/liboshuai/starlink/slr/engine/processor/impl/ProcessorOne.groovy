@@ -10,12 +10,7 @@ import com.liboshuai.starlink.slr.engine.api.enums.TimeUnitEnum
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil
 import com.liboshuai.starlink.slr.engine.exception.BusinessException
 import com.liboshuai.starlink.slr.engine.processor.Processor
-import com.liboshuai.starlink.slr.engine.utils.collection.CollectionUtil
-import com.liboshuai.starlink.slr.engine.utils.data.RedisUtil
-import com.liboshuai.starlink.slr.engine.utils.date.DateUtil
-import com.liboshuai.starlink.slr.engine.utils.date.TimeUtil
-import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil
-import com.liboshuai.starlink.slr.engine.utils.string.StringUtil
+import com.liboshuai.starlink.slr.engine.utils.*
 import org.apache.flink.api.common.functions.RuntimeContext
 import org.apache.flink.api.common.state.MapState
 import org.apache.flink.api.common.state.MapStateDescriptor
@@ -215,13 +210,13 @@ class ProcessorOne implements Processor {
      * @return boolean 如果Kafka事件属性与规则事件属性完全匹配，则返回true；否则返回false
      */
     private boolean matchEventAttribute(RuleEventDTO ruleEventDTO, KafkaEventDTO kafkaEventDTO) {
-        List<RuleEventAttributeDTO> ruleEventAttributeDTOList = ruleEventDTO.getRuleEventAttributeGroup()
+        List<RuleEventAttrDTO> ruleEventAttributeDTOList = ruleEventDTO.getRuleEventAttributeGroup()
         if (CollectionUtil.isEmptyOrContainsNulls(ruleEventAttributeDTOList)) {
             // 规则中不包含事件属性相关的配置，则表明不需要进行事件属性匹配，直接跳过即可
             return true
         }
         // 逐一便利验证事件属性
-        for (RuleEventAttributeDTO ruleEventAttributeDTO in ruleEventAttributeDTOList) {
+        for (RuleEventAttrDTO ruleEventAttributeDTO in ruleEventAttributeDTOList) {
             String ruleAttributeKey = ruleEventAttributeDTO.getAttributeKey()
             Map<String, String> kafkaEventAttributeMap = kafkaEventDTO.getEventAttribute()
             if (CollectionUtil.isEmpty(kafkaEventAttributeMap)) {
@@ -241,7 +236,14 @@ class ProcessorOne implements Processor {
             if (Objects.isNull(ruleEventAttributeValue)) {
                 throw new BusinessException("规则事件属性值必须非空")
             }
-            if (!Objects.equals(ruleEventAttributeValue, kafkaEventAttributeValue)) {
+            // 比较kafka中属性值与规则中属性值
+            boolean isMatch = RuleEventAttrCompUtil.compareValues(
+                    kafkaEventAttributeValue,
+                    ruleEventAttributeValue,
+                    ruleEventAttributeDTO.getAttributeType(),
+                    ruleEventAttributeDTO.getAttributeOp()
+            )
+            if (!isMatch) {
                 // kafka事件属性值与规则事件属性值不相等，则表明不符合匹配
                 return false
             }

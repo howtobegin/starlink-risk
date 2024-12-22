@@ -3,13 +3,13 @@ package com.liboshuai.starlink.slr.engine;
 
 import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.starlink.slr.engine.common.FlinkKafkaConnector;
+import com.liboshuai.starlink.slr.engine.common.FlinkMysqlConnector;
 import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.function.CoreFunction;
-import com.liboshuai.starlink.slr.engine.utils.data.KafkaUtil;
-import com.liboshuai.starlink.slr.engine.utils.data.MysqlUtil;
-import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
-import com.liboshuai.starlink.slr.engine.utils.string.JsonUtil;
+import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
+import com.liboshuai.starlink.slr.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -37,11 +37,11 @@ public class EngineApplication {
         ParameterUtil.envWithConfig(env, parameterTool);
 
         // 获取规则配置数据流
-        DataStream<RuleCdcDTO> ruleSource = MysqlUtil.read(env, parameterTool);
+        DataStream<RuleCdcDTO> ruleSource = FlinkMysqlConnector.read(env, parameterTool);
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
-        KeyedStream<KafkaEventDTO, String> eventKafkaDTOStringKeyedStream = KafkaUtil.read(env, parameterTool) // 读取数据
+        KeyedStream<KafkaEventDTO, String> eventKafkaDTOStringKeyedStream = FlinkKafkaConnector.read(env, parameterTool) // 读取数据
                 .map(s -> JsonUtil.parseObject(s, KafkaEventDTO.class)) // 转换string为eventKafkaDTO对象
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()) // 使用处理时间
                 .uid("register-watermark")
@@ -55,7 +55,7 @@ public class EngineApplication {
                 .process(new CoreFunction())
                 .uid("engine-core-function");
         // 将告警信息写入kafka
-        KafkaUtil.writer(warnMessageStream, parameterTool);
+        FlinkKafkaConnector.writer(warnMessageStream, parameterTool);
         env.execute();
     }
 

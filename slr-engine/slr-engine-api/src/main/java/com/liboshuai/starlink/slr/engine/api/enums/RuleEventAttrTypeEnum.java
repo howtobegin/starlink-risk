@@ -5,10 +5,10 @@ import lombok.Getter;
 import java.util.Objects;
 
 /**
- * 规则条件属性类型
+ * 规则事件属性类型
  */
 @Getter
-public enum RuleCondAttributeTypeEnum {
+public enum RuleEventAttrTypeEnum {
     BYTE("byte", "字节类型"),
     SHORT("short", "短整型"),
     INT("int", "整型"),
@@ -20,25 +20,25 @@ public enum RuleCondAttributeTypeEnum {
     STRING("String", "字符串类型");
 
     /**
-     * 编码
+     * 类型
      */
-    private final String code;
+    private final String type;
     /**
      * 描述
      */
     private final String desc;
 
-    RuleCondAttributeTypeEnum(String code, String desc) {
-        this.code = code;
+    RuleEventAttrTypeEnum(String type, String desc) {
+        this.type = type;
         this.desc = desc;
     }
 
     /**
-     * 通过代码查找枚举值
+     * 通过类型查找枚举值
      */
-    public static RuleCondAttributeTypeEnum fromCode(String code) {
-        for (RuleCondAttributeTypeEnum status : RuleCondAttributeTypeEnum.values()) {
-            if (Objects.equals(status.getCode(), code)) {
+    public static RuleEventAttrTypeEnum fromCode(String code) {
+        for (RuleEventAttrTypeEnum status : RuleEventAttrTypeEnum.values()) {
+            if (Objects.equals(status.getType(), code)) {
                 return status;
             }
         }
@@ -48,8 +48,8 @@ public enum RuleCondAttributeTypeEnum {
     /**
      * 通过描述查找枚举值
      */
-    public static RuleCondAttributeTypeEnum fromDesc(String desc) {
-        for (RuleCondAttributeTypeEnum status : RuleCondAttributeTypeEnum.values()) {
+    public static RuleEventAttrTypeEnum fromDesc(String desc) {
+        for (RuleEventAttrTypeEnum status : RuleEventAttrTypeEnum.values()) {
             if (status.getDesc().equals(desc)) {
                 return status;
             }

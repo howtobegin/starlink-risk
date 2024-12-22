@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.parameter;
+package com.liboshuai.starlink.slr.engine.utils;
 
 import com.liboshuai.starlink.slr.engine.constants.FlinkEnvConstants;
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;

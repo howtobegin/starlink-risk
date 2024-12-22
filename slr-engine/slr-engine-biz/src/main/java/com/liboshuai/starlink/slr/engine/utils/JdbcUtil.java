@@ -1,8 +1,6 @@
-package com.liboshuai.starlink.slr.engine.utils.jdbc;
+package com.liboshuai.starlink.slr.engine.utils;
 
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
-import com.liboshuai.starlink.slr.engine.utils.parameter.ParameterUtil;
-import com.liboshuai.starlink.slr.engine.utils.string.StringUtil;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;

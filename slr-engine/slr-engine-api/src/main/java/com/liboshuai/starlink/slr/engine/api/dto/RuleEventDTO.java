@@ -38,5 +38,5 @@ public class RuleEventDTO extends BaseDTO {
     /**
      * 事件属性组
      */
-    private List<RuleEventAttributeDTO> ruleEventAttributeGroup;
+    private List<RuleEventAttrDTO> ruleEventAttributeGroup;
 }

@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.string;
+package com.liboshuai.starlink.slr.engine.utils;
 
 
 import javax.crypto.Cipher;
@@ -29,7 +29,7 @@ public class CryptoUtil {
 
             return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            throw new RuntimeException("Error while encrypting: " + e.toString());
+            throw new RuntimeException("Error while encrypting: " + e);
         }
     }
 
@@ -41,7 +41,7 @@ public class CryptoUtil {
 
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
         } catch (Exception e) {
-            throw new RuntimeException("Error while decrypting: " + e.toString());
+            throw new RuntimeException("Error while decrypting: " + e);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.utils.string;
+package com.liboshuai.starlink.slr.engine.utils;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
