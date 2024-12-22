@@ -1,6 +1,9 @@
 package com.liboshuai.starlink.slr.engine.function;
 
-import com.liboshuai.starlink.slr.engine.api.dto.*;
+import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.ModelInfoDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.RuleJsonDTO;
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
@@ -16,11 +19,9 @@ import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
-import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -64,12 +65,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private AtomicLong onlineRuleCount;
 
     /**
-     * 银行数据
-     * （key为银行code，value为银行名称）
-     */
-    private Map<String, String> bankMap;
-
-    /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
      */
     @Override
@@ -82,8 +77,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
         // 查询在线规则数量
         onlineRuleCount = queryOnlineRuleCount();
-        // 查询银行数据
-        bankMap = queryBank();
     }
 
     @Override
@@ -245,27 +238,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         log.warn("Mysql Jdbc 查询上线的规则数量: {}", ruleOnlineCount);
         return new AtomicLong(ruleOnlineCount);
-    }
-
-    /**
-     * 查询银行数据
-     */
-    private Map<String, String> queryBank() {
-        Map<String, String> bankMap = new ConcurrentHashMap<>();
-        // 获取规则表名
-        String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_BANK);
-        // 查询规则数据
-        String sql = String.format("select bank, name from %s", tableName);
-        List<BankDTO> bankDTOList = JdbcUtil.queryForList(sql, new JdbcUtil.BeanPropertyRowMapper<>(BankDTO.class), null);
-        if (CollectionUtil.isNullOrEmpty(bankDTOList)) {
-            log.warn("Mysql Jdbc 预加载的银行对象集合bankDTOList为空！");
-            return new ConcurrentHashMap<>();
-        }
-        for (BankDTO bankDTO : bankDTOList) {
-            bankMap.put(bankDTO.getBank(), bankDTO.getName());
-        }
-        log.warn("Mysql Jdbc 预加载的银行对象集合 bankMap: {}", bankMap);
-        return bankMap;
     }
 
     /**
