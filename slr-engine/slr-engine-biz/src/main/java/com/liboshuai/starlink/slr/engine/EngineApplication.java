@@ -45,12 +45,12 @@ public class EngineApplication {
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象，并设置处理时间
-                .map(new KafkaEventMapFunction())
+                .map(new KafkaEventMapFunction()).uid("kafkaEventDTO-map-function")
                 // 过滤掉非法的事件
-                .filter(new KafkaEventFilterFunction());
+                .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
-                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys);
+                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("toDoris-map-function");
         FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
@@ -59,9 +59,9 @@ public class EngineApplication {
                 .keyBy(eventKafkaDTO ->
                         eventKafkaDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + eventKafkaDTO.getKeyValue()
                 )// keyBy分组
-                .connect(broadcastStream) // 连接规则配置流
+                .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction())
-                .uid("engine-core-function");
+                .uid("core-function");
         // 将告警信息写入kafka
         FlinkKafkaConnector.writer(warnMessageStream, parameterTool);
         env.execute();
