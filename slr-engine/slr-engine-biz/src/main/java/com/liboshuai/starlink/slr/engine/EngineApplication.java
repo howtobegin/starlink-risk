@@ -1,7 +1,6 @@
 package com.liboshuai.starlink.slr.engine;
 
 
-import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.common.FlinkDorisConnector;
 import com.liboshuai.starlink.slr.engine.common.FlinkKafkaConnector;
@@ -10,6 +9,7 @@ import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.function.CoreFunction;
 import com.liboshuai.starlink.slr.engine.function.KafkaEventFilterFunction;
+import com.liboshuai.starlink.slr.engine.function.KafkaEventKeyBy;
 import com.liboshuai.starlink.slr.engine.function.KafkaEventMapFunction;
 import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
 import com.liboshuai.starlink.slr.engine.utils.ParameterUtil;
@@ -56,9 +56,7 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())// 使用处理时间
                 .uid("register-watermark")
-                .keyBy(eventKafkaDTO ->
-                        eventKafkaDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + eventKafkaDTO.getKeyValue()
-                )// keyBy分组
+                .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction())
                 .uid("core-function");

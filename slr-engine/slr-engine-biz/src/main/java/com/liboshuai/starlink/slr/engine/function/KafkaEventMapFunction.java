@@ -7,7 +7,10 @@ import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.Objects;
 
-
+/**
+ * 实现MapFunction接口，用于将字符串类型的消息映射为KafkaEventDTO对象
+ * 主要用途是在Kafka消息消费过程中，将接收到的JSON字符串消息转换为KafkaEventDTO对象，并设置当前事件时间
+ */
 public class KafkaEventMapFunction implements MapFunction<String, KafkaEventDTO> {
 
     @Override

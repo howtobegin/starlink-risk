@@ -9,11 +9,17 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 过滤 kafkaEvent 中非法数据
+ * KafkaEventFilterFunction类实现了FilterFunction接口，用于过滤Kafka事件数据
  */
 @Slf4j
 public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
 
+    /**
+     * 过滤方法实现
+     *
+     * @param event Kafka事件数据对象，用于检查是否满足过滤条件
+     * @return 如果事件数据有效则返回true，否则返回false
+     */
     @Override
     public boolean filter(KafkaEventDTO event) {
         log.warn("接收到来自kafka的事件数据：{}", event);
