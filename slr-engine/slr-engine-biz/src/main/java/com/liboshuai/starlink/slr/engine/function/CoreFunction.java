@@ -8,6 +8,7 @@ import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
 import com.liboshuai.starlink.slr.engine.processor.Processor;
+import com.liboshuai.starlink.slr.engine.utils.DateUtil;
 import com.liboshuai.starlink.slr.engine.utils.JdbcUtil;
 import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
 import com.liboshuai.starlink.slr.engine.utils.ParameterUtil;
@@ -83,13 +84,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.ReadOnlyContext ctx,
                                Collector<String> out) throws Exception {
-        long processTime = ctx.currentProcessingTime();
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
         // 将事件放入缓存列表中
         recentEventListState.add(kafkaEventDTO);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
+        // 获取当前事件时间戳
+        long currentEventTimestamp = DateUtil.convertString2Timestamp(kafkaEventDTO.getEventTime());
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
@@ -97,17 +99,17 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 for (KafkaEventDTO historyKafkaEventDTO : recentEventListState.get()) {
-                    processor.processElement(processTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
+                    processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(processTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
+                processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), kafkaEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
-        // long fireTime = Long.parseLong(timestamp) - Long.parseLong(timestamp) % 60000 + 60000; （简化写法）
-        long fireTime = getWindowStartWithOffset(processTime, 0, 60 * 1000) + 60 * 1000;
+        // long fireTime = Long.parseLong(currentEventTimestamp) - Long.parseLong(currentEventTimestamp) % 60000 + 60000; （简化写法）
+        long fireTime = getWindowStartWithOffset(currentEventTimestamp, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
