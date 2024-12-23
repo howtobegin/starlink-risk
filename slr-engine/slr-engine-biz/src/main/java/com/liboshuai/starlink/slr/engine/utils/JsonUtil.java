@@ -5,10 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -220,8 +217,23 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * 将对象序列化为字段名为大写下划线形式的 JSON 字符串
+     *
+     * @param object 要序列化的对象
+     * @return JSON 字符串
+     */
+    @SneakyThrows
+    public static String toJsonStringWithUpperSnakeCaseKeys(Object object) {
+        if (object == null) {
+            return null;
+        }
+        ObjectMapper mapper = objectMapper.copy();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_SNAKE_CASE);
+        return mapper.writeValueAsString(object);
+    }
+
     public static boolean isJson(String text) {
         return JSONUtil.isTypeJSON(text);
     }
-
 }

@@ -10,6 +10,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Flink 写入 Doris 工具类
@@ -42,7 +43,9 @@ public class FlinkDorisConnector {
         properties.setProperty("format", "json");
         properties.setProperty("read_json_by_line", "true");
         DorisExecutionOptions.Builder executionBuilder = DorisExecutionOptions.builder();
-        executionBuilder.setLabelPrefix("label-doris") //streamload label prefix
+        // 生成一个唯一的 label prefix
+        String uniqueLabelPrefix = "starlink-risk-" + UUID.randomUUID();
+        executionBuilder.setLabelPrefix(uniqueLabelPrefix) //streamload label prefix
                 .setDeletable(false)
                 .setStreamLoadProp(properties);
 

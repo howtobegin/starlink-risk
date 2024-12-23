@@ -24,9 +24,9 @@ public class KafkaEventDTO implements Serializable {
 
     /**
      * 事件时间
-     * （无需业务方传输，仅用于引擎计算处理使用）
+     * （无需业务方传输，而是取到达flink的时间，格式为：yyyy-MM-dd HH:mm:ss）
      */
-    private long eventTimestamp;
+    private String eventTime;
     /**
      * key编号
      */

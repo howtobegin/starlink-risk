@@ -5,6 +5,7 @@ import com.liboshuai.starlink.slr.engine.api.dto.ProcessorDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleCondDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.util.TemplatePlaceholderUtil;
+import com.liboshuai.starlink.slr.engine.utils.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -58,7 +59,7 @@ public class TemplatePlaceholderUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttribute(eventAttribute)
-                .eventTimestamp(System.currentTimeMillis())
+                .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
                 .build();
         Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
         eventCodeAndValueSumMap.put("GAME_LOTTERY", 10L);
@@ -92,7 +93,7 @@ public class TemplatePlaceholderUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttribute(attributes)
-                .eventTimestamp(System.currentTimeMillis())
+                .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
                 .build();
 
         List<RuleCondDTO> RuleCondDTOS = new ArrayList<>();

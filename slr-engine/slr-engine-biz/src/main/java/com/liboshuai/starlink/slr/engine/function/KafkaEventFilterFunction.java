@@ -12,7 +12,7 @@ import java.util.Objects;
  * 过滤 kafkaEvent 中非法数据
  */
 @Slf4j
-public class KafkaEventFilter implements FilterFunction<KafkaEventDTO> {
+public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
 
     @Override
     public boolean filter(KafkaEventDTO event) {
