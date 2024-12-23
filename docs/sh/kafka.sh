@@ -1,13 +1,19 @@
-# localhost 更换为对应 kafka IP
+# 创建 slr_event topic，用于接收业务方的事件数据
 kafka-topics.sh --create \
---bootstrap-server localhost:9096,localhost:9097,localhost:9098 \
+--bootstrap-server host.docker.internal:9096,host.docker.internal:9097,host.docker.internal:9098 \
 --replication-factor 3 \
 --partitions 6 \
 --topic slr_event
 
-# localhost 更换为对应 kafka IP
+# 创建 slr_alert topic，用于接收 flink 生成的告警数据
 kafka-topics.sh --create \
---bootstrap-server localhost:9096,localhost:9097,localhost:9098 \
+--bootstrap-server host.docker.internal:9096,host.docker.internal:9097,host.docker.internal:9098 \
 --replication-factor 3 \
 --partitions 6 \
---topic slr_warn
+--topic slr_alert
+
+# 创建 top 列表
+kafka-topics.sh --list --bootstrap-server host.docker.internal:9096,host.docker.internal:9097,host.docker.internal:9098
+
+# 向 slr_event topic 发送单条数据，模拟业务方数据生产
+kafka-console-producer.sh --broker-list host.docker.internal:9096,host.docker.internal:9097,host.docker.internal:9098 --topic slr_event
