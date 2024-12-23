@@ -20,6 +20,11 @@
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- 单元测试 所需依赖 -->
+        <dependency>
+            <groupId>com.liboshuai.starlink</groupId>
+            <artifactId>slr-spring-boot-starter-test</artifactId>
+        </dependency>
         <!-- spring kafka 配置所需依赖 -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
