@@ -22,5 +22,6 @@ PROPERTIES
     "dynamic_partition.time_unit" = "MONTH",
     "dynamic_partition.start" = "-6",
     "dynamic_partition.end" = "1",
-    "dynamic_partition.prefix" = "p"
+    "dynamic_partition.prefix" = "p",
+    "replication_num" = "1"  -- 设置副本数为1，集群模式要设置为3
 );

@@ -1,19 +1,16 @@
 package com.liboshuai.starlink.slr.engine;
 
 
-import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.common.FlinkDorisConnector;
 import com.liboshuai.starlink.slr.engine.common.FlinkKafkaConnector;
 import com.liboshuai.starlink.slr.engine.common.FlinkMysqlConnector;
 import com.liboshuai.starlink.slr.engine.common.StateDescContainer;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
-import com.liboshuai.starlink.slr.engine.function.CoreFunction;
 import com.liboshuai.starlink.slr.engine.function.KafkaEventFilter;
 import com.liboshuai.starlink.slr.engine.utils.JsonUtil;
 import com.liboshuai.starlink.slr.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
@@ -52,18 +49,18 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOSingleOutputStreamOperator
                 .map(JsonUtil::toJsonString);
         FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
-        // 实时动态规则引擎
-        SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOSingleOutputStreamOperator
-                .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())// 使用处理时间
-                .uid("register-watermark")
-                .keyBy(eventKafkaDTO ->
-                        eventKafkaDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + eventKafkaDTO.getKeyValue()
-                )// keyBy分组
-                .connect(broadcastStream) // 连接规则配置流
-                .process(new CoreFunction())
-                .uid("engine-core-function");
-        // 将告警信息写入kafka
-        FlinkKafkaConnector.writer(warnMessageStream, parameterTool);
+//        // 实时动态规则引擎
+//        SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOSingleOutputStreamOperator
+//                .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())// 使用处理时间
+//                .uid("register-watermark")
+//                .keyBy(eventKafkaDTO ->
+//                        eventKafkaDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + eventKafkaDTO.getKeyValue()
+//                )// keyBy分组
+//                .connect(broadcastStream) // 连接规则配置流
+//                .process(new CoreFunction())
+//                .uid("engine-core-function");
+//        // 将告警信息写入kafka
+//        FlinkKafkaConnector.writer(warnMessageStream, parameterTool);
         env.execute();
     }
 

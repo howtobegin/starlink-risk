@@ -1,5 +1,6 @@
 package com.liboshuai.starlink.slr.engine.common;
 
+import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import org.apache.doris.flink.cfg.DorisExecutionOptions;
 import org.apache.doris.flink.cfg.DorisOptions;
 import org.apache.doris.flink.cfg.DorisReadOptions;
@@ -23,21 +24,16 @@ public class FlinkDorisConnector {
      */
     public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {
         // 从参数中获取 Doris 配置
-//        String fenodes = parameterTool.get(ParameterConstants.DORIS_FE_NODES);
-//        String tableIdentifier = parameterTool.get(ParameterConstants.DORIS_TABLE_IDENTIFIER);
-//        String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
-//        String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
-
-        String feNodes = "172.91.0.2:8031,172.91.0.3:8032,172.91.0.4:8033";
-        String user = "root";
-        String password = null;
-        String table = "starlink_risk.slr_event";
+        String feNodes = parameterTool.get(ParameterConstants.DORIS_FE_NODES);
+        String table = parameterTool.get(ParameterConstants.DORIS_TABLE_IDENTIFIER);
+        String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
+        String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
 
         DorisSink.Builder<String> builder = DorisSink.builder();
         DorisOptions.Builder dorisBuilder = DorisOptions.builder();
         dorisBuilder.setFenodes(feNodes)
                 .setTableIdentifier(table)
-                .setUsername(user)
+                .setUsername(username)
                 .setPassword(password);
 
 

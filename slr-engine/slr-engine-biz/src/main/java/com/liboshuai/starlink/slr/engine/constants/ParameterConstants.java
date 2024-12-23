@@ -46,6 +46,15 @@ public interface ParameterConstants {
     String KAFKA_SINK_BROKERS = "kafka.sink.brokers";
     String KAFKA_SINK_TOPIC = "kafka.sink.topic";
 
+    /**
+     * Doris 配置参数名称
+     */
+
+    String DORIS_FE_NODES = "doris.fe.nodes";
+    String DORIS_TABLE_IDENTIFIER = "doris.table.identifier";
+    String DORIS_USERNAME = "doris.username";
+    String DORIS_PASSWORD = "doris.password";
+
 
     /* **********************
      *
