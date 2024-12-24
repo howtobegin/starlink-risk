@@ -2,15 +2,30 @@ spring:
   redis:
     database: 0
     password: Rongshu@2024
-    host: rocky
-    port: 6390
+    timeout: 5000
+    cluster:
+      max-redirects: 3
+      nodes:
+        - rocky:6381
+        - rocky:6382
+        - rocky:6383
+        - rocky:6384
+        - rocky:6385
+        - rocky:6386
+    lettuce:
+      pool:
+        min-idle: 0
+        max-idle: 8
+        max-active: 8
+        max-wait: -1ms
   kafka:
     producer:
       bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
     consumer:
       bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
-      group-id: slr
+      group-id: slr_connector
 
 slr-connector:
   kafka:
-    source_topic: slr_event
+    provider_topic: slr_event
+    consumer_topic: slr_alert
