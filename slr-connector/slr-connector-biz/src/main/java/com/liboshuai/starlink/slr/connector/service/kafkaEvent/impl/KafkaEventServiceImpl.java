@@ -89,7 +89,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         }
 
         // 判断单次上送数据集合元素个数超量
-        int maxSize = 100;
+        int maxSize = 20;
         if (kafkaEventDTOList.size() > maxSize) {
             String fieldName = ReflectUtils.getFieldName(KafkaEventGroupDTO::getKafkaEventDTOList);
             String message = String.format("字段 [%s]: 元素个数必须小于等于 [%d]", fieldName, maxSize);
