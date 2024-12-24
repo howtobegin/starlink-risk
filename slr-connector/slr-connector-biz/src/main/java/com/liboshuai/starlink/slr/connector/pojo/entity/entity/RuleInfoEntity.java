@@ -1,10 +1,10 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.connector.pojo.entity.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
+import com.liboshuai.starlink.slr.framework.mybatis.core.dataobject.BaseEntity;
 import lombok.*;
 import lombok.experimental.Accessors;
-
-import java.util.List;
 
 /**
  * 规则信息
@@ -14,8 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TableName("slr_rule_info")
 @EqualsAndHashCode(callSuper = true)
-public class RuleInfoDTO extends BaseDTO {
+public class RuleInfoEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,15 +58,8 @@ public class RuleInfoDTO extends BaseDTO {
      */
     private String modelCode;
     /**
-     * 模型信息
-     */
-    private RuleModelDTO ruleModelDTO;
-    /**
      * 条件组合符
      */
     private String ruleCondCombOp;
-    /**
-     * 条件组
-     */
-    private List<RuleCondDTO> ruleCondGroup;
+
 }

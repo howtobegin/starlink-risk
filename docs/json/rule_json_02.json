@@ -8,7 +8,7 @@
   "alertIntervalUnit": "MINUTE",
   "alertMessage": "[异常高频充值]${KafkaEventDTO.eventAttribute.bankName}：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！",
   "modelCode": "M1553673459123456001",
-  "modelInfoDTO": {
+  "ruleModelDTO": {
     "modelCode": "M1553673459123456001",
     "modelName": "运算机模型一",
     "modelDesc": "支持周期预警",

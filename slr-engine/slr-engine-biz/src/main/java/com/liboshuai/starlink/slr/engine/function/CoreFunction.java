@@ -1,9 +1,9 @@
 package com.liboshuai.starlink.slr.engine.function;
 
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
-import com.liboshuai.starlink.slr.engine.api.dto.ModelInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.RuleJsonDTO;
+import com.liboshuai.starlink.slr.engine.api.dto.RuleModelDTO;
 import com.liboshuai.starlink.slr.engine.constants.ParameterConstants;
 import com.liboshuai.starlink.slr.engine.dto.RuleCdcDTO;
 import com.liboshuai.starlink.slr.engine.exception.BusinessException;
@@ -201,11 +201,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 构造运算机对象
      */
     private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-        ModelInfoDTO modelInfoDTO = ruleInfoDTO.getModelInfoDTO();
-        if (Objects.isNull(modelInfoDTO)) {
+        RuleModelDTO ruleModelDTO = ruleInfoDTO.getRuleModelDTO();
+        if (Objects.isNull(ruleModelDTO)) {
             throw new BusinessException("运算机模型信息 modelInfoDTO 必须非空");
         }
-        String ruleModelGroovyCode = modelInfoDTO.getGroovy();
+        String ruleModelGroovyCode = ruleModelDTO.getGroovy();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
         }

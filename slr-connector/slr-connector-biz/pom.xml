@@ -30,6 +30,11 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
+        <!-- Mybatis 封装拓展 -->
+        <dependency>
+            <groupId>com.liboshuai.starlink</groupId>
+            <artifactId>slr-spring-boot-starter-mybatis</artifactId>
+        </dependency>
         <!-- 服务保证 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>

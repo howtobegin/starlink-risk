@@ -8,7 +8,7 @@
   "alertIntervalUnit": "MINUTE",
   "alertMessage": "[异常高频抽奖]${BANK_NAME}：${CAMPAIGN_NAME}(${CAMPAIGN_ID})中游戏用户(${USER_ID})最近${WINDOW_SIZE}内抽奖数量为${ACTUAL_VALUE}，超过${THRESHOLD}次，请您及时查看原因！",
   "modelCode": "M1553673459123456005",
-  "modelInfoDTO": {
+  "ruleModelDTO": {
     "modelCode": "M1553673459123456005",
     "modelName": "运算机模型一",
     "modelDesc": "支持周期预警",

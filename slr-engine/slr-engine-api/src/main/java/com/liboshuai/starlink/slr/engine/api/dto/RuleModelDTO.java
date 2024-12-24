@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class ModelInfoDTO extends BaseDTO {
+public class RuleModelDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**
