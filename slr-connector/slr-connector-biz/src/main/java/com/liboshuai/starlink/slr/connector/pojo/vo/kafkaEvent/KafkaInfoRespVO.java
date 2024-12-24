@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class KafkaInfoVO implements Serializable {
+public class KafkaInfoRespVO implements Serializable {
     private static final long serialVersionUID = 1291549034802206760L;
 
     private String bootstrapServers;

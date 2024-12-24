@@ -1,7 +1,7 @@
 package com.liboshuai.starlink.slr.connector.controller.kafkaEvent;
 
-import com.liboshuai.starlink.slr.connector.pojo.dto.kafkaEvent.KafkaEventGroupDTO;
-import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaInfoVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaEventGroupReqVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaInfoRespVO;
 import com.liboshuai.starlink.slr.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.starlink.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.starlink.slr.framework.protection.ratelimiter.core.annotation.RateLimiter;
@@ -23,11 +23,14 @@ public class KafkaEventController {
     @Resource
     private KafkaEventService kafkaEventService;
 
+    /**
+     * 业务平台上送事件数据到 kafka
+     */
     @RateLimiter(count = 10000)
     @PostMapping("/push")
     @Operation(summary = "上送事件数据到kafka")
-    public CommonResult<?> push(@RequestBody KafkaEventGroupDTO kafkaEventGroupDTO) {
-        kafkaEventService.push(kafkaEventGroupDTO);
+    public CommonResult<?> push(@RequestBody KafkaEventGroupReqVO kafkaEventGroupReqVO) {
+        kafkaEventService.push(kafkaEventGroupReqVO);
         return success();
     }
 
@@ -36,8 +39,8 @@ public class KafkaEventController {
      */
     @GetMapping("/getKafkaInfo")
     @Operation(summary = "获取Kafka信息")
-    public CommonResult<KafkaInfoVO> getKafkaInfo() {
-        KafkaInfoVO kafkaInfoVO = kafkaEventService.kafkaInfo();
-        return success(kafkaInfoVO);
+    public CommonResult<KafkaInfoRespVO> getKafkaInfo() {
+        KafkaInfoRespVO kafkaInfoRespVO = kafkaEventService.kafkaInfo();
+        return success(kafkaInfoRespVO);
     }
 }

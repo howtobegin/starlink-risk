@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,16 +10,16 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 上送事件错误数据
+ * 上送事件错误响应数据
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class EventErrorDTO implements Serializable {
+public class KafkaEventErrorRespVO implements Serializable {
 
-    private static final long serialVersionUID = 112687514700269556L;
+    private static final long serialVersionUID = 1;
 
     /**
      * 数据索引
@@ -34,6 +34,6 @@ public class EventErrorDTO implements Serializable {
     /**
      * 错误数据
      */
-    private KafkaEventDTO kafkaEventDTO;
+    private KafkaEventReqVO kafkaEventReqVO;
 
 }

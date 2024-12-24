@@ -2,13 +2,15 @@ package com.liboshuai.starlink.slr.connector.service.kafkaEvent.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.liboshuai.starlink.slr.connector.api.constants.ErrorCodeConstants;
+import com.liboshuai.starlink.slr.connector.convert.KafkaEventConvert;
 import com.liboshuai.starlink.slr.connector.dao.kafka.provider.KafkaEventProvider;
-import com.liboshuai.starlink.slr.connector.pojo.dto.kafkaEvent.KafkaEventGroupDTO;
-import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaInfoVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaEventErrorRespVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaEventGroupReqVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaEventReqVO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaInfoRespVO;
 import com.liboshuai.starlink.slr.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy.KafkaEventStrategy;
 import com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
-import com.liboshuai.starlink.slr.engine.api.dto.EventErrorDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.starlink.slr.framework.common.exception.util.ServiceExceptionUtil;
@@ -41,18 +43,25 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     private String bootstrapServers;
 
     /**
-     * 上送事件数据到kafka
+     * 业务平台上送事件数据到 kafka
      */
     @Override
-    public void push(KafkaEventGroupDTO kafkaEventGroupDTO) {
-        String channel = kafkaEventGroupDTO.getChannel(); // 渠道
-        List<KafkaEventDTO> kafkaEventDTOList = kafkaEventGroupDTO.getKafkaEventDTOList(); // 上送事件详情集合
+    public void push(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
+        log.info("业务平台上送事件数据: {}", kafkaEventGroupReqVO);
+        String channel = kafkaEventGroupReqVO.getChannel(); // 渠道
+        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList(); // 上送事件详情集合
 
         // 初步检验上送事件数据参数
-        validateUploadList(kafkaEventGroupDTO);
+        validateUploadList(kafkaEventGroupReqVO);
 
         // 检查并过滤非法数据
-        checkAndFilter(kafkaEventDTOList);
+        checkAndFilter(kafkaEventReqVOList);
+
+        // req转dto
+        List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
+                .map(KafkaEventConvert.INSTANCE::convertReq2Dto) // 转换为DTO
+                .map(kafkaEventDTO -> kafkaEventDTO.setChannel(channel)) // 设置渠道
+                .collect(Collectors.toList());
 
         // 各渠道特别的数据处理逻辑
         KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
@@ -65,36 +74,36 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     /**
      * 初步检验上送事件数据参数
      */
-    private void validateUploadList(KafkaEventGroupDTO kafkaEventGroupDTO) {
+    private void validateUploadList(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
         // 判断渠道是否合法
-        String channel = kafkaEventGroupDTO.getChannel();
+        String channel = kafkaEventGroupReqVO.getChannel();
         Set<String> validChannels = Arrays.stream(ChannelEnum.values())
                 .map(ChannelEnum::getCode)
                 .collect(Collectors.toSet()); // 获取所有合法渠道的code
         if (!validChannels.contains(channel)) {
             String fieldName = ReflectUtils.getFieldName(KafkaEventDTO::getChannel);
             String message = String.format("字段 [%s]: 无效的渠道 [%s]", fieldName, channel);
-            EventErrorDTO eventErrorDTO = EventErrorDTO.builder().reasons(Collections.singletonList(message)).build();
-            throw ServiceExceptionUtil.exception(eventErrorDTO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+            KafkaEventErrorRespVO kafkaEventErrorRespVO = KafkaEventErrorRespVO.builder().reasons(Collections.singletonList(message)).build();
+            throw ServiceExceptionUtil.exception(kafkaEventErrorRespVO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
-        List<KafkaEventDTO> kafkaEventDTOList = kafkaEventGroupDTO.getKafkaEventDTOList();
+        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
 
         // 判断事件数据集合是否为空
-        if (CollUtil.isEmpty(kafkaEventDTOList)) {
-            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupDTO::getKafkaEventDTOList);
+        if (CollUtil.isEmpty(kafkaEventReqVOList)) {
+            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
             String message = String.format("字段 [%s]: 事件数据集合不能为空", fieldName);
-            EventErrorDTO eventErrorDTO = EventErrorDTO.builder().reasons(Collections.singletonList(message)).build();
-            throw ServiceExceptionUtil.exception(eventErrorDTO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+            KafkaEventErrorRespVO kafkaEventErrorRespVO = KafkaEventErrorRespVO.builder().reasons(Collections.singletonList(message)).build();
+            throw ServiceExceptionUtil.exception(kafkaEventErrorRespVO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
         // 判断单次上送数据集合元素个数超量
-        int maxSize = 20;
-        if (kafkaEventDTOList.size() > maxSize) {
-            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupDTO::getKafkaEventDTOList);
+        int maxSize = 10;
+        if (kafkaEventReqVOList.size() > maxSize) {
+            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
             String message = String.format("字段 [%s]: 元素个数必须小于等于 [%d]", fieldName, maxSize);
-            EventErrorDTO eventErrorDTO = EventErrorDTO.builder().reasons(Collections.singletonList(message)).build();
-            throw ServiceExceptionUtil.exception(eventErrorDTO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+            KafkaEventErrorRespVO kafkaEventErrorRespVO = KafkaEventErrorRespVO.builder().reasons(Collections.singletonList(message)).build();
+            throw ServiceExceptionUtil.exception(kafkaEventErrorRespVO, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
     }
 
@@ -102,31 +111,31 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     /**
      * 检查并过滤非法数据
      */
-    private void checkAndFilter(List<KafkaEventDTO> kafkaEventDTOList) {
+    private void checkAndFilter(List<KafkaEventReqVO> kafkaEventReqVOList) {
 
-        List<EventErrorDTO> eventErrorDTOList = new ArrayList<>();
+        List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList = new ArrayList<>();
 
         int index = 0;
-        Iterator<KafkaEventDTO> iterator = kafkaEventDTOList.iterator();
+        Iterator<KafkaEventReqVO> iterator = kafkaEventReqVOList.iterator();
 
         while (iterator.hasNext()) {
-            KafkaEventDTO eventDetailDTO = iterator.next();
+            KafkaEventReqVO kafkaEventReqVO = iterator.next();
             List<String> reasons = new ArrayList<>();
 
             // 效验各字段值是否非空
-            checkNotEmpty(eventDetailDTO, KafkaEventDTO::getKeyCode, reasons);
-            checkNotEmpty(eventDetailDTO, KafkaEventDTO::getKeyValue, reasons);
-            checkNotEmpty(eventDetailDTO, KafkaEventDTO::getEventCode, reasons);
-            checkNotEmpty(eventDetailDTO, KafkaEventDTO::getEventValue, reasons);
-            checkNotEmpty(eventDetailDTO, KafkaEventDTO::getEventAttribute, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getKeyCode, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getKeyValue, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventCode, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventValue, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventAttribute, reasons);
 
             if (!reasons.isEmpty()) {
-                EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
-                        .kafkaEventDTO(eventDetailDTO)
+                KafkaEventErrorRespVO kafkaEventErrorRespVO = KafkaEventErrorRespVO.builder()
+                        .kafkaEventReqVO(kafkaEventReqVO)
                         .index(index)
                         .reasons(reasons)
                         .build();
-                eventErrorDTOList.add(eventErrorDTO);
+                kafkaEventErrorRespVOList.add(kafkaEventErrorRespVO);
 
                 // 移除字段值为空的对象
                 iterator.remove();
@@ -134,8 +143,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             index++;
         }
 
-        if (!eventErrorDTOList.isEmpty()) {
-            throw ServiceExceptionUtil.exception(eventErrorDTOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
+        if (!kafkaEventErrorRespVOList.isEmpty()) {
+            throw ServiceExceptionUtil.exception(kafkaEventErrorRespVOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
         }
     }
 
@@ -157,9 +166,9 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     /**
      * 检查指定字段值是否为空，添加错误信息
      */
-    private <T> void checkNotEmpty(KafkaEventDTO kafkaEventDTO, SFunction<T> getter, List<String> reasons) {
+    private <T> void checkNotEmpty(KafkaEventReqVO kafkaEventReqVO, SFunction<T> getter, List<String> reasons) {
         String fieldName = ReflectUtils.getFieldName(getter);
-        Object fieldValue = ReflectUtils.getFieldValue(kafkaEventDTO, getter);
+        Object fieldValue = ReflectUtils.getFieldValue(kafkaEventReqVO, getter);
         if (fieldValue == null || (fieldValue instanceof String && !StringUtils.hasText((String) fieldValue))) {
             reasons.add("[" + fieldName + "]必须非空");
         }
@@ -169,7 +178,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
      * 获取Kafka信息，包含是否可连接，并获取broker列表、topic列表、消费组列表等
      */
     @Override
-    public KafkaInfoVO kafkaInfo() {
+    public KafkaInfoRespVO kafkaInfo() {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
@@ -208,10 +217,10 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                 consumerGroupList.add(consumerGroup.groupId());
             }
 
-            return new KafkaInfoVO(bootstrapServers, true, null, brokerList, topicList, consumerGroupList);
+            return new KafkaInfoRespVO(bootstrapServers, true, null, brokerList, topicList, consumerGroupList);
         } catch (InterruptedException | ExecutionException e) {
             log.error("Failed to connect to Kafka cluster", e);
-            return new KafkaInfoVO(bootstrapServers, false, e.getMessage(), null, null, null);
+            return new KafkaInfoRespVO(bootstrapServers, false, e.getMessage(), null, null, null);
         }
     }
 
