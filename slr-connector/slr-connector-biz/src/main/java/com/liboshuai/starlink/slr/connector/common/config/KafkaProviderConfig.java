@@ -2,9 +2,10 @@ package com.liboshuai.starlink.slr.connector.common.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Kafka生产者配置
  */
 @Slf4j
-@SpringBootConfiguration
+@Configuration
 public class KafkaProviderConfig {
 
     @Value("${spring.kafka.producer.bootstrap-servers}")
@@ -56,7 +57,7 @@ public class KafkaProviderConfig {
         //生产者内存缓冲区的大小
         props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, bufferMemory);
         //反序列化，和生产者的序列化方式对应
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return props;
     }

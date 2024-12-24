@@ -1,15 +1,17 @@
 package com.liboshuai.starlink.slr.connector.common.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
@@ -18,13 +20,15 @@ import java.util.Map;
 /**
  * Kafka消费者配置
  */
-@SpringBootConfiguration
+@Configuration
 public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
+    @Value("${spring.kafka.consumer.auto-commit-interval}")
+    private String autoCommitInterval;
     @Value("${spring.kafka.consumer.enable-auto-commit}")
     private boolean enableAutoCommit;
     @Value("${spring.kafka.properties.session.timeout.ms}")
@@ -50,7 +54,7 @@ public class KafkaConsumerConfig {
         //是否自动提交偏移量，默认值是true，为了避免出现重复数据和数据丢失，可以把它设置为false，然后手动提交偏移量
         propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         //自动提交的时间间隔，自动提交开启时生效
-        propsMap.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "2000");
+        propsMap.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, autoCommitInterval);
         //该属性指定了消费者在读取一个没有偏移量的分区或者偏移量无效的情况下该作何处理：
         //earliest：当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，从头开始消费分区的记录
         //latest：当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据（在消费者启动之后生成的记录）
@@ -67,19 +71,20 @@ public class KafkaConsumerConfig {
         propsMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
         //当broker多久没有收到consumer的心跳请求后就触发reBalance，默认值是10s
         propsMap.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sessionTimeout);
-        //序列化（建议使用Json，这种序列化方式可以无需额外配置传输实体类）
-        propsMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        propsMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        // 设置反序列化器为 ErrorHandlingDeserializer，防止药丸信息
+        propsMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        propsMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        // 配置 ErrorHandlingDeserializer 的委托反序列化器为 JsonDeserializer
+        propsMap.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
+        propsMap.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+        // 配置 JsonDeserializer 的 trusted packages
+        propsMap.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return propsMap;
     }
 
     @Bean
     public ConsumerFactory<Object, Object> consumerFactory() {
-        //配置消费者的 Json 反序列化的可信赖包，反序列化实体类需要
-        try (JsonDeserializer<Object> deserializer = new JsonDeserializer<>()) {
-            deserializer.trustedPackages("*");
-            return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new JsonDeserializer<>(), deserializer);
-        }
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
     }
 
     @Bean
@@ -93,8 +98,8 @@ public class KafkaConsumerConfig {
         //自动提交关闭，需要设置手动消息确认
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setPollTimeout(pollTimeout);
-        //设置为批量监听，需要用List接收
-        //factory.setBatchListener(true);
+        //设置为批量监听，需要用List接收（相等于listener.type: batch）
+        factory.setBatchListener(true);
         return factory;
     }
 }
