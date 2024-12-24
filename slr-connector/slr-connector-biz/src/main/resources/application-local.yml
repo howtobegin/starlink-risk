@@ -27,4 +27,5 @@ spring:
 
 slr-connector:
   kafka:
-    source_topic: slr_event
+    provider_topic: slr_event
+    consumer_topic: slr_alert

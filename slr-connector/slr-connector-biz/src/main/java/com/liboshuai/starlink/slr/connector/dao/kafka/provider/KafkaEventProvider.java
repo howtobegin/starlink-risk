@@ -19,8 +19,8 @@ public class KafkaEventProvider {
     @Resource
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${slr-connector.kafka.source_topic}")
-    private String sourceTopic;
+    @Value("${slr-connector.kafka.provider_topic}")
+    private String providerTopic;
 
     /**
      * 批量上送事件信息到kafka
@@ -29,7 +29,7 @@ public class KafkaEventProvider {
         if (CollectionUtils.isEmpty(kafkaEventDTOList)) {
             return;
         }
-        kafkaEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(sourceTopic, eventUploadDTO)
+        kafkaEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(providerTopic, eventUploadDTO)
                 .addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
 
                     @Override

@@ -66,7 +66,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         // 异步推送数据到kafka
         kafkaEventProvider.batchSend(kafkaEventDTOList);
         // 存在非法数据错误原因，则抛出异常
-        if (CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
+        if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
             throw ServiceExceptionUtil.exception(kafkaEventErrorRespVOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
         }
     }
