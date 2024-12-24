@@ -12,7 +12,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,11 +73,9 @@ public class KafkaConsumerConfig {
         // 设置反序列化器为 ErrorHandlingDeserializer，防止药丸信息
         propsMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         propsMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        // 配置 ErrorHandlingDeserializer 的委托反序列化器为 JsonDeserializer
+        // 配置 ErrorHandlingDeserializer 的委托反序列化器为 StringDeserializer
         propsMap.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-        propsMap.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-        // 配置 JsonDeserializer 的 trusted packages
-        propsMap.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        propsMap.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
         return propsMap;
     }
 

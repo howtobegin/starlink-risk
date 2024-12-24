@@ -15,10 +15,11 @@ public class KafkaEventListener {
     @KafkaListener(
             topics = "${slr-connector.kafka.consumer_topic}",
             groupId = "${spring.kafka.consumer.group-id}",
-            containerFactory = "kafkaListenerContainerFactory"
+            containerFactory = "kafkaListenerContainerFactory",
+            errorHandler = "kafkaConsumerExceptionHandler"
     )
-    public void setCommitType(List<ConsumerRecord<String, Object>> consumerRecordList, Acknowledgment ack) {
-        for (ConsumerRecord<String, Object> record : consumerRecordList) {
+    public void onAlert(List<ConsumerRecord<String, String>> consumerRecordList, Acknowledgment ack) {
+        for (ConsumerRecord<String, String> record : consumerRecordList) {
             // 打印消费的详细信息
             log.info("Consumed message - Topic: {}, Partition: {}, Offset: {}, Key: {}, Value: {}",
                     record.topic(),
