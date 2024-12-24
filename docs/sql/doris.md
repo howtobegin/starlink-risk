@@ -27,7 +27,7 @@ PROPERTIES
     "dynamic_partition.start" = "-6",
     "dynamic_partition.end" = "1",
     "dynamic_partition.prefix" = "p",
-    "replication_num" = "1"  -- 设置副本数为1，集群模式要设置为3
+    "replication_num" = "3"  -- 设置副本数为1，集群模式要设置为3
 );
 ```
 
