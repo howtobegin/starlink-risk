@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.connector.pojo.entity.entity;
+package com.liboshuai.starlink.slr.connector.pojo.entity.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleCondTypeEnum;
