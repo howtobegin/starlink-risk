@@ -51,12 +51,6 @@ spring:
     password: Rongshu@2024
     host: rocky
     port: 6390
-  kafka:
-    producer:
-      bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
-    consumer:
-      bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
-      group-id: slr_admin
 
 slr-admin:
   load-test:

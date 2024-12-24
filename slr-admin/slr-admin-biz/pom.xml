@@ -17,11 +17,6 @@
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- spring kafka 配置所需依赖 -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
         <!-- 服务保证 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
