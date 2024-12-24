@@ -20,7 +20,7 @@ public interface EventInfoConvert {
 
     List<EventInfoVO> batchEntity2Vo(List<EventInfoEntity> eventInfoEntityList);
 
-    EventInfoDTO entity2Dto(EventInfoEntity eventInfoEntity);
-
-    List<EventInfoDTO> batchEntity2Dto(List<EventInfoEntity> eventInfoEntityList);
+//    EventInfoDTO entity2Dto(EventInfoEntity eventInfoEntity);
+//
+//    List<EventInfoDTO> batchEntity2Dto(List<EventInfoEntity> eventInfoEntityList);
 }

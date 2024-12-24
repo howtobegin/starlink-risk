@@ -20,7 +20,7 @@ public interface RuleConditionConvert {
 
     List<RuleConditionVO> batchEntity2Vo(List<RuleConditionEntity> ruleConditionEntityList);
 
-    RuleConditionDTO entity2Dto(RuleConditionEntity ruleConditionEntity);
-
-    List<RuleConditionDTO> batchEntity2Dto(List<RuleConditionEntity> ruleConditionEntityList);
+//    RuleConditionDTO entity2Dto(RuleConditionEntity ruleConditionEntity);
+//
+//    List<RuleConditionDTO> batchEntity2Dto(List<RuleConditionEntity> ruleConditionEntityList);
 }
