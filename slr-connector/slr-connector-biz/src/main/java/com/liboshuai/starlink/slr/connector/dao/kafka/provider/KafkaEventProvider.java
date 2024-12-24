@@ -17,7 +17,7 @@ public class KafkaEventProvider {
     @Resource
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${slr-connector.kafka.provider_topic}")
+    @Value("${slr_connector.kafka.provider_topic}")
     private String providerTopic;
 
     /**

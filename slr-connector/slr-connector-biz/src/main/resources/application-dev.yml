@@ -25,7 +25,7 @@ spring:
       bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
       group-id: slr_connector
 
-slr-connector:
+slr_connector:
   kafka:
     provider_topic: slr_event
     consumer_topic: slr_alert

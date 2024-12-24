@@ -13,7 +13,7 @@ import java.util.List;
 public class KafkaEventListener {
 
     @KafkaListener(
-            topics = "${slr-connector.kafka.consumer_topic}",
+            topics = "${slr_connector.kafka.consumer_topic}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory",
             errorHandler = "kafkaConsumerExceptionHandler"

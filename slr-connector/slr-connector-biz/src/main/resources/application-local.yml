@@ -25,7 +25,7 @@ spring:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
       group-id: slr_connector
 
-slr-connector:
+slr_connector:
   kafka:
     provider_topic: slr_event
     consumer_topic: slr_alert
