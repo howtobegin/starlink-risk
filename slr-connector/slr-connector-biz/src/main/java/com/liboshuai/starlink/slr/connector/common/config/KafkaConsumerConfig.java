@@ -76,7 +76,7 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<Object, Object> consumerFactory() {
         //配置消费者的 Json 反序列化的可信赖包，反序列化实体类需要
-        try(JsonDeserializer<Object> deserializer = new JsonDeserializer<>()) {
+        try (JsonDeserializer<Object> deserializer = new JsonDeserializer<>()) {
             deserializer.trustedPackages("*");
             return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new JsonDeserializer<>(), deserializer);
         }

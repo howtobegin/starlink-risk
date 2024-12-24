@@ -1,10 +1,10 @@
-package com.liboshuai.starlink.slr.connector.service.event.strategy;
+package com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy;
 
 import java.lang.annotation.*;
 
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EventStrategyTag {
+public @interface KafkaEventStrategyTag {
     String[] channels();
 }

@@ -1,13 +1,13 @@
-package com.liboshuai.starlink.slr.connector.service.event.impl;
+package com.liboshuai.starlink.slr.connector.service.kafkaEvent.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.liboshuai.starlink.slr.connector.api.constants.ErrorCodeConstants;
-import com.liboshuai.starlink.slr.connector.dao.kafka.provider.EventProvider;
-import com.liboshuai.starlink.slr.connector.pojo.dto.event.KafkaEventGroupDTO;
-import com.liboshuai.starlink.slr.connector.pojo.vo.event.KafkaInfoVO;
-import com.liboshuai.starlink.slr.connector.service.event.EventService;
-import com.liboshuai.starlink.slr.connector.service.event.strategy.EventStrategy;
-import com.liboshuai.starlink.slr.connector.service.event.strategy.EventStrategyHolder;
+import com.liboshuai.starlink.slr.connector.dao.kafka.provider.KafkaEventProvider;
+import com.liboshuai.starlink.slr.connector.pojo.dto.kafkaEvent.KafkaEventGroupDTO;
+import com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent.KafkaInfoVO;
+import com.liboshuai.starlink.slr.connector.service.kafkaEvent.KafkaEventService;
+import com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy.KafkaEventStrategy;
+import com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
 import com.liboshuai.starlink.slr.engine.api.dto.EventErrorDTO;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;
@@ -29,72 +29,22 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class EventServiceImpl implements EventService {
+public class KafkaEventServiceImpl implements KafkaEventService {
 
     @Resource
-    private EventProvider eventProvider;
+    private KafkaEventProvider kafkaEventProvider;
 
     @Resource
-    private EventStrategyHolder eventStrategyHolder;
+    private KafkaEventStrategyHolder kafkaEventStrategyHolder;
 
     @Value("${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;
 
     /**
-     * 获取Kafka信息，包含是否可连接，并获取broker列表、topic列表、消费组列表等
-     */
-    @Override
-    public KafkaInfoVO kafkaInfo() {
-        Properties props = new Properties();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-
-        List<String> brokerList = new ArrayList<>();
-        List<String> topicList = new ArrayList<>();
-        List<String> consumerGroupList = new ArrayList<>();
-
-        try (AdminClient adminClient = AdminClient.create(props)) {
-            // 获取集群信息
-            DescribeClusterResult clusterResult = adminClient.describeCluster();
-            String clusterId = clusterResult.clusterId().get();
-            Collection<Node> nodes = clusterResult.nodes().get();
-            log.info("Connected to Kafka cluster, Cluster ID: {}, Number of nodes: {}", clusterId, nodes.size());
-
-            for (Node node : nodes) {
-                String brokerInfo = String.format("Node ID: %d, Host: %s, Port: %d", node.id(), node.host(), node.port());
-                log.info(brokerInfo);
-                brokerList.add(brokerInfo);
-            }
-
-            // 获取topic列表
-            ListTopicsResult topicsResult = adminClient.listTopics();
-            Collection<TopicListing> topics = topicsResult.listings().get();
-            log.info("Found {} topics:", topics.size());
-            for (TopicListing topic : topics) {
-                log.info("Topic name: {}", topic.name());
-                topicList.add(topic.name());
-            }
-
-            // 获取消费组列表
-            ListConsumerGroupsResult consumerGroupsResult = adminClient.listConsumerGroups();
-            Collection<ConsumerGroupListing> consumerGroups = consumerGroupsResult.all().get();
-            log.info("Found {} consumer groups:", consumerGroups.size());
-            for (ConsumerGroupListing consumerGroup : consumerGroups) {
-                log.info("Consumer group ID: {}", consumerGroup.groupId());
-                consumerGroupList.add(consumerGroup.groupId());
-            }
-
-            return new KafkaInfoVO(bootstrapServers, true, null, brokerList, topicList, consumerGroupList);
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to connect to Kafka cluster", e);
-            return new KafkaInfoVO(bootstrapServers, false, e.getMessage(), null, null, null);
-        }
-    }
-
-    /**
      * 上送事件数据到kafka
      */
     @Override
-    public void pushKafkaEvent(KafkaEventGroupDTO kafkaEventGroupDTO) {
+    public void push(KafkaEventGroupDTO kafkaEventGroupDTO) {
         String channel = kafkaEventGroupDTO.getChannel(); // 渠道
         List<KafkaEventDTO> kafkaEventDTOList = kafkaEventGroupDTO.getKafkaEventDTOList(); // 上送事件详情集合
 
@@ -105,18 +55,11 @@ public class EventServiceImpl implements EventService {
         checkAndFilter(kafkaEventDTOList);
 
         // 各渠道特别的数据处理逻辑
-        EventStrategy eventStrategy = eventStrategyHolder.getByChannel(channel);
-        eventStrategy.processAfter(kafkaEventDTOList);
+        KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
+        kafkaEventStrategy.processAfter(kafkaEventDTOList);
 
         // 异步推送数据到kafka
-        eventProvider.batchSend(kafkaEventDTOList);
-    }
-
-    @Override
-    public void mockEventToKafka(List<KafkaEventDTO> kafkaEventDTOList) {
-        for (KafkaEventDTO kafkaEventDTO : kafkaEventDTOList) {
-            eventProvider.mockEventToKafka(kafkaEventDTO);
-        }
+        kafkaEventProvider.batchSend(kafkaEventDTOList);
     }
 
     /**
@@ -219,6 +162,56 @@ public class EventServiceImpl implements EventService {
         Object fieldValue = ReflectUtils.getFieldValue(kafkaEventDTO, getter);
         if (fieldValue == null || (fieldValue instanceof String && !StringUtils.hasText((String) fieldValue))) {
             reasons.add("[" + fieldName + "]必须非空");
+        }
+    }
+
+    /**
+     * 获取Kafka信息，包含是否可连接，并获取broker列表、topic列表、消费组列表等
+     */
+    @Override
+    public KafkaInfoVO kafkaInfo() {
+        Properties props = new Properties();
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        List<String> brokerList = new ArrayList<>();
+        List<String> topicList = new ArrayList<>();
+        List<String> consumerGroupList = new ArrayList<>();
+
+        try (AdminClient adminClient = AdminClient.create(props)) {
+            // 获取集群信息
+            DescribeClusterResult clusterResult = adminClient.describeCluster();
+            String clusterId = clusterResult.clusterId().get();
+            Collection<Node> nodes = clusterResult.nodes().get();
+            log.info("Connected to Kafka cluster, Cluster ID: {}, Number of nodes: {}", clusterId, nodes.size());
+
+            for (Node node : nodes) {
+                String brokerInfo = String.format("Node ID: %d, Host: %s, Port: %d", node.id(), node.host(), node.port());
+                log.info(brokerInfo);
+                brokerList.add(brokerInfo);
+            }
+
+            // 获取topic列表
+            ListTopicsResult topicsResult = adminClient.listTopics();
+            Collection<TopicListing> topics = topicsResult.listings().get();
+            log.info("Found {} topics:", topics.size());
+            for (TopicListing topic : topics) {
+                log.info("Topic name: {}", topic.name());
+                topicList.add(topic.name());
+            }
+
+            // 获取消费组列表
+            ListConsumerGroupsResult consumerGroupsResult = adminClient.listConsumerGroups();
+            Collection<ConsumerGroupListing> consumerGroups = consumerGroupsResult.all().get();
+            log.info("Found {} consumer groups:", consumerGroups.size());
+            for (ConsumerGroupListing consumerGroup : consumerGroups) {
+                log.info("Consumer group ID: {}", consumerGroup.groupId());
+                consumerGroupList.add(consumerGroup.groupId());
+            }
+
+            return new KafkaInfoVO(bootstrapServers, true, null, brokerList, topicList, consumerGroupList);
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Failed to connect to Kafka cluster", e);
+            return new KafkaInfoVO(bootstrapServers, false, e.getMessage(), null, null, null);
         }
     }
 

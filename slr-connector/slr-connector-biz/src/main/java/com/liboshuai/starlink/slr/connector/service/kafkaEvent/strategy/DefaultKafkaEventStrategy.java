@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.connector.service.event.strategy;
+package com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy;
 
 import com.liboshuai.starlink.slr.connector.common.constants.DefaultConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
@@ -12,8 +12,8 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@EventStrategyTag(channels = {DefaultConstants.DEFAULT_STRATEGY})
-public class DefaultEventStrategy implements EventStrategy {
+@KafkaEventStrategyTag(channels = {DefaultConstants.DEFAULT_STRATEGY})
+public class DefaultKafkaEventStrategy implements KafkaEventStrategy {
     /**
      * 数据的前置处理
      */

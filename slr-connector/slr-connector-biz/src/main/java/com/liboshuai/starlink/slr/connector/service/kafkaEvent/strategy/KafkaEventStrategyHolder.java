@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.connector.service.event.strategy;
+package com.liboshuai.starlink.slr.connector.service.kafkaEvent.strategy;
 
 import com.liboshuai.starlink.slr.connector.common.constants.DefaultConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,26 +14,26 @@ import java.util.Objects;
  * 它根据渠道编号将不同的策略实现映射到一个策略映射表中。
  */
 @Component
-public class EventStrategyHolder {
+public class KafkaEventStrategyHolder {
 
     // 用于存储渠道编号和对应策略实现的映射
-    private final Map<String, EventStrategy> strategyMap = new HashMap<>();
+    private final Map<String, KafkaEventStrategy> strategyMap = new HashMap<>();
 
     /**
      * 构造函数，通过 Spring 自动注入所有实现了 EventStrategy 接口的策略实例。
      *
-     * @param eventStrategyList 包含所有策略实现的列表
+     * @param kafkaEventStrategyList 包含所有策略实现的列表
      */
     @Autowired
-    public EventStrategyHolder(List<EventStrategy> eventStrategyList) {
+    public KafkaEventStrategyHolder(List<KafkaEventStrategy> kafkaEventStrategyList) {
         // 构建策略映射
-        eventStrategyList.forEach(eventStrategy -> {
+        kafkaEventStrategyList.forEach(kafkaEventStrategy -> {
             // 获取策略类上的 EventStrategyTag 注解
-            EventStrategyTag eventStrategyTag = eventStrategy.getClass().getAnnotation(EventStrategyTag.class);
-            if (Objects.nonNull(eventStrategyTag)) {
+            KafkaEventStrategyTag kafkaEventStrategyTag = kafkaEventStrategy.getClass().getAnnotation(KafkaEventStrategyTag.class);
+            if (Objects.nonNull(kafkaEventStrategyTag)) {
                 // 将每个渠道编号与策略实现关联
-                for (String channel : eventStrategyTag.channels()) {
-                    strategyMap.put(channel, eventStrategy);
+                for (String channel : kafkaEventStrategyTag.channels()) {
+                    strategyMap.put(channel, kafkaEventStrategy);
                 }
             }
         });
@@ -46,7 +46,7 @@ public class EventStrategyHolder {
      * @param channel 渠道编号
      * @return 对应的事件策略实现
      */
-    public EventStrategy getByChannel(String channel) {
+    public KafkaEventStrategy getByChannel(String channel) {
         return strategyMap.getOrDefault(channel, strategyMap.get(DefaultConstants.DEFAULT_STRATEGY));
     }
 }

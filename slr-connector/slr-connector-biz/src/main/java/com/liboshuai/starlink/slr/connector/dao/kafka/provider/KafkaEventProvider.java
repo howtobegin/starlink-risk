@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class EventProvider {
+public class KafkaEventProvider {
 
     @Resource
     private KafkaTemplate<String, Object> kafkaTemplate;
@@ -32,16 +32,16 @@ public class EventProvider {
         kafkaEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(sourceTopic, eventUploadDTO)
                 .addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
 
-            @Override
-            public void onSuccess(SendResult<String, Object> result) {
+                    @Override
+                    public void onSuccess(SendResult<String, Object> result) {
 
-            }
+                    }
 
-            @Override
-            public void onFailure(Throwable ex) {
-                log.error("生产者发送消息：{} 失败，原因：{}", eventUploadDTO, ex.getMessage());
-            }
-        }));
+                    @Override
+                    public void onFailure(Throwable ex) {
+                        log.error("生产者发送消息：{} 失败，原因：{}", eventUploadDTO, ex.getMessage());
+                    }
+                }));
     }
 
     public void mockEventToKafka(KafkaEventDTO kafkaEventDTO) {

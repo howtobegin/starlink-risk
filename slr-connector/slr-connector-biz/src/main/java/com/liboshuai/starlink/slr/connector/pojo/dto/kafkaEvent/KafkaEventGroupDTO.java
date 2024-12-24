@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.connector.pojo.dto.event;
+package com.liboshuai.starlink.slr.connector.pojo.dto.kafkaEvent;
 
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.starlink.slr.engine.api.enums.ChannelEnum;

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class EventListener {
+public class KafkaEventListener {
 
 //    @KafkaListener(
 //            topics = "${slr-connector.kafka.source_topic}",

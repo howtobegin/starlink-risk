@@ -1,4 +1,4 @@
-package com.liboshuai.starlink.slr.connector.pojo.vo.event;
+package com.liboshuai.starlink.slr.connector.pojo.vo.kafkaEvent;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
