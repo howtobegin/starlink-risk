@@ -17,11 +17,11 @@ public class RateLimiterRedisDAO {
     /**
      * 限流操作
      *
-     * KEY 格式：slr:rate_limiter:%s // 参数为 方法名等参数
+     * KEY 格式：starlink_risk:rate_limiter:%s // 参数为 方法名等参数
      * VALUE 格式：String
      * 过期时间：不固定
      */
-    private static final String RATE_LIMITER = "slr:rate_limiter:%s";
+    private static final String RATE_LIMITER = "starlink_risk:rate_limiter:%s";
 
     private final RedissonClient redissonClient;
 
