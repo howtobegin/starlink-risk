@@ -1,10 +1,11 @@
 package com.liboshuai.slr.module.connector.service.alertMessage.impl;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageReqDTO;
+import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessageReqVO;
+import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessageRespVO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageMongoDAO;
 import com.liboshuai.slr.module.connector.service.alertMessage.AlertMessageService;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import io.swagger.v3.oas.annotations.servers.Server;
 
 import javax.annotation.Resource;
@@ -16,7 +17,7 @@ public class AlertMessageServiceImpl implements AlertMessageService {
     private AlertMessageMongoDAO alertMessageMongoDAO;
 
     @Override
-    public PageResult<AlertMessageDTO> list(AlertMessageReqDTO alertMessageReqDTO) {
-        return alertMessageMongoDAO.selectPage(alertMessageReqDTO);
+    public PageResult<AlertMessageRespVO> list(AlertMessageReqVO alertMessageReqVO) {
+        return BeanUtils.toBean(alertMessageMongoDAO.selectPage(alertMessageReqVO), AlertMessageRespVO.class);
     }
 }

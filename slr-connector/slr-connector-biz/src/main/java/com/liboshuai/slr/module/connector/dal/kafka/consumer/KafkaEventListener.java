@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -82,7 +83,7 @@ public class KafkaEventListener {
         if (!StringUtils.hasText(dto.getAlertMessage())) {
             missingFields.add("alertMessage");
         }
-        if (!StringUtils.hasText(dto.getAlertTime())) {
+        if (!Objects.isNull(dto.getAlertTime())) {
             missingFields.add("alertTime");
         }
 
