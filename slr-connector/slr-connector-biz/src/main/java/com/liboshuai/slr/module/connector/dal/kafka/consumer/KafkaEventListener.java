@@ -83,7 +83,7 @@ public class KafkaEventListener {
         if (!StringUtils.hasText(dto.getAlertMessage())) {
             missingFields.add("alertMessage");
         }
-        if (!Objects.isNull(dto.getAlertTime())) {
+        if (Objects.isNull(dto.getAlertTime())) {
             missingFields.add("alertTime");
         }
 
