@@ -70,6 +70,7 @@ spring:
     mongodb:
       host: localhost
       port: 27018
+      username: lbs
       password: Rongshu@2024
       database: starlink_risk
       authentication-database: starlink_risk
