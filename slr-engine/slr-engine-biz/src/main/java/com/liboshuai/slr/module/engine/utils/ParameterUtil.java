@@ -176,8 +176,6 @@ public class ParameterUtil {
             StreamExecutionEnvironment env,
             ParameterTool parameterTool
     ) throws IOException, URISyntaxException {
-        // local模式下设置临时目录
-        setupTemporaryDirectory(parameterTool);
         //并行度设置
         env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
         // 启用 checkpoint，并设置时间间隔为 1 分钟
@@ -197,46 +195,6 @@ public class ParameterUtil {
         setupCheckpointStorage(parameterTool, checkpointConfig);
         //设置 StateBacked 为 rocksDB，并开启增量存储
         env.setStateBackend(new EmbeddedRocksDBStateBackend(true));
-    }
-
-    /**
-     * 配置 Flink 的临时目录。
-     * 仅在本地环境下设置临时目录系统属性，并确保临时目录存在。
-     *
-     * @param parameterTool 参数工具，包含配置参数
-     * @throws IOException              如果无法创建临时目录
-     * @throws IllegalArgumentException 如果必要的参数未配置
-     */
-    public static void setupTemporaryDirectory(ParameterTool parameterTool) throws IOException {
-        // 获取 Flink 环境的激活状态，默认值为 "local"
-        String flinkEnvActive = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE, FlinkEnvConstants.LOCAL);
-        // 仅在本地环境进行设置
-        if (!FlinkEnvConstants.LOCAL.equalsIgnoreCase(flinkEnvActive)) {
-            log.warn("当前环境为非本地环境（{}），跳过临时目录设置。", flinkEnvActive);
-            return;
-        }
-        // 获取临时目录路径
-        String tmpDirPath = parameterTool.get(ParameterConstants.FLINK_TMPDIR);
-        if (tmpDirPath == null || tmpDirPath.trim().isEmpty()) {
-            throw new IllegalArgumentException("FLINK_TMPDIR 参数未配置或为空");
-        }
-        // 将临时目录路径转换为 Path 对象
-        Path tmpPath = Paths.get(tmpDirPath);
-        // 确保临时目录存在，如果不存在则创建
-        if (Files.notExists(tmpPath)) {
-            try {
-                Files.createDirectories(tmpPath);
-                log.warn("已成功创建临时目录: {}", tmpPath.toAbsolutePath());
-            } catch (IOException e) {
-                log.error("无法创建临时目录: {}", tmpPath.toAbsolutePath(), e);
-                throw new IOException("无法创建临时目录: " + tmpPath.toAbsolutePath(), e);
-            }
-        } else {
-            log.warn("临时目录已存在: {}", tmpPath.toAbsolutePath());
-        }
-        // 设置临时目录系统属性
-        System.setProperty("java.io.tmpdir", tmpDirPath);
-        log.warn("已设置系统临时目录 'java.io.tmpdir' 为: {}", tmpDirPath);
     }
 
     /**

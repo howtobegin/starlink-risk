@@ -15,8 +15,6 @@ public interface ParameterConstants {
      *
      * *********************/
 
-    // flink 本地模式运行临时目录
-    String FLINK_TMPDIR = "flink.tmpdir";
     //触发checkpoint时间间隔
     String FLINK_CHECKPOINT_INTERVAL = "flink.checkpoint.interval";
     //checkpoint超时
