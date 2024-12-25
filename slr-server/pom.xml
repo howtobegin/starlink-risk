@@ -1,64 +1,32 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.liboshuai.starlink</groupId>
-        <artifactId>slr-admin</artifactId>
-        <version>${revision}</version>
+        <artifactId>starlink-risk</artifactId>
+        <version>1.0</version>
     </parent>
 
-    <artifactId>slr-admin-biz</artifactId>
+    <artifactId>slr-server</artifactId>
     <packaging>jar</packaging>
-    <name>${artifactId}</name>
+
+    <name>slr-server</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
-        <!-- spring web 配置所需依赖 -->
+        <!-- 管理平台 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-web</artifactId>
+            <artifactId>slr-admin-biz</artifactId>
         </dependency>
-        <!-- Redis 封装拓展 -->
+        <!-- 数据链接 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-redis</artifactId>
-        </dependency>
-        <!-- 服务保证 -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-protection</artifactId>
-        </dependency>
-        <!-- Mybatis 封装拓展 -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-mybatis</artifactId>
-        </dependency>
-        <!-- slr-admin-aip 后台管理项目api -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-admin-api</artifactId>
-        </dependency>
-        <!-- slr-engine-aip 后台管理项目api -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-engine-api</artifactId>
-        </dependency>
-        <!-- slr-connection-aip 后台管理项目api -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-connector-api</artifactId>
-        </dependency>
-
-        <!-- spring boot 配置所需依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- 假数据生成工具 -->
-        <dependency>
-            <groupId>com.github.javafaker</groupId>
-            <artifactId>javafaker</artifactId>
+            <artifactId>slr-connector-biz</artifactId>
         </dependency>
     </dependencies>
 
@@ -93,6 +61,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
+                <configuration>
+                    <!-- 指定主main类（防止多个main类问题）-->
+                    <mainClass>com.liboshuai.starlink.slr.server.ServerApplication</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

@@ -30,32 +30,25 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
-        <!-- Mybatis 封装拓展 -->
+        <!-- Redis 封装拓展 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-mybatis</artifactId>
+            <artifactId>slr-spring-boot-starter-redis</artifactId>
         </dependency>
         <!-- 服务保证 -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-spring-boot-starter-protection</artifactId>
         </dependency>
-        <!-- Redis 封装拓展 -->
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-spring-boot-starter-redis</artifactId>
-        </dependency>
         <!-- slr-connector-aip 数据连接器项目api -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-connector-api</artifactId>
-            <version>${revision}</version>
         </dependency>
         <!-- slr-engine-aip 计算引擎项目api -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-engine-api</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <!-- spring boot 配置所需依赖 -->
@@ -65,50 +58,4 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
-
-    <build>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>application-${profilesActive}.yml</exclude>
-                    <exclude>application.yml</exclude>
-                    <exclude>mapper/**/*.xml</exclude>
-                </excludes>
-                <!-- 关闭过滤 -->
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <!-- 引入所有 匹配文件进行过滤 -->
-                <includes>
-                    <include>application-${profilesActive}.yml</include>
-                    <include>application.yml</include>
-                    <include>mapper/**/*.xml</include>
-                </includes>
-                <!-- 启用过滤 即该资源中的变量将会被过滤器中的值替换 -->
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <!-- 打包 -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
-                <configuration>
-                    <!-- 指定主main类（防止多个main类问题）-->
-                    <mainClass>com.liboshuai.starlink.slr.connector.ConnectorApplication</mainClass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal> <!-- 将引入的 jar 打入其中 -->
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -1,7 +1,9 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.admin.pojo.entity.riskRule;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleCondTypeEnum;
 import com.liboshuai.starlink.slr.engine.api.enums.TimeUnitEnum;
+import com.liboshuai.starlink.slr.framework.mybatis.core.dataobject.BaseEntity;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -13,8 +15,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TableName("slr_rule_cond")
 @EqualsAndHashCode(callSuper = true)
-public class RuleCondDTO extends BaseDTO {
+public class RuleCondEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -64,9 +67,5 @@ public class RuleCondDTO extends BaseDTO {
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private String crossHistoryTimeline;
-    /**
-     * 事件信息
-     */
-    private RuleEventDTO ruleEventDTO;
 
 }

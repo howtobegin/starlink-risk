@@ -16,6 +16,7 @@
     <module>slr-admin</module>
     <module>slr-dependencies</module>
     <module>slr-engine</module>
+      <module>slr-server</module>
   </modules>
 
   <profiles>

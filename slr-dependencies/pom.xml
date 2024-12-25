@@ -105,6 +105,53 @@
             </dependency>
 
             <!-- 业务组件 -->
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-admin-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-connector-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-engine-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-admin-biz</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-connector-biz</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-engine-biz</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-server</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <!-- Spring 核心 -->
             <dependency>
@@ -328,12 +375,6 @@
             <!-- 工作流相关结束 -->
 
             <!-- 工具类相关 -->
-            <dependency>
-                <groupId>com.liboshuai.starlink</groupId>
-                <artifactId>slr-common</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>

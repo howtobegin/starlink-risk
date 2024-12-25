@@ -1,7 +1,9 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.admin.pojo.entity.riskRule;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleAuditOpEnum;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleEventAttrTypeEnum;
+import com.liboshuai.starlink.slr.framework.mybatis.core.dataobject.BaseEntity;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -13,8 +15,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TableName("slr_event_attr")
 @EqualsAndHashCode(callSuper = true)
-public class RuleEventAttrDTO extends BaseDTO {
+public class RuleEventAttrEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**

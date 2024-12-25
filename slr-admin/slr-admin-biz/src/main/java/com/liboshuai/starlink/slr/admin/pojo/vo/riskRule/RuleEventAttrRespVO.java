@@ -1,7 +1,9 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.admin.pojo.vo.riskRule;
 
 import com.liboshuai.starlink.slr.engine.api.enums.RuleAuditOpEnum;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleEventAttrTypeEnum;
+import com.liboshuai.starlink.slr.framework.common.pojo.BaseRespVO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -14,38 +16,31 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class RuleEventAttrDTO extends BaseDTO {
+public class RuleEventAttrRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 事件编号
-     */
+
+    @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
-    /**
-     * 属性名称
-     * （例如：订单号）
-     */
+
+    @Schema(description = "属性名称", example = "订单号")
     private String attributeName;
-    /**
-     * 属性key
-     * （例如：orderNo）
-     */
+
+    @Schema(description = "属性key", example = "orderNo")
     private String attributeKey;
+
     /**
-     * 属性类型
-     * （例如：String）
      * {@link RuleEventAttrTypeEnum}
      */
+    @Schema(description = "属性类型", example = "String")
     private String attributeType;
-    /**
-     * 属性值
-     * （例如：C000000001）
-     */
+
+    @Schema(description = "属性值", example = "C175928847299117065")
     private String attributeValue;
+
     /**
-     * 属性比较符
-     * （例如：=）
      * {@link RuleAuditOpEnum}
      */
+    @Schema(description = "属性比较符", example = "C175928847299117065")
     private String attributeOp;
 }

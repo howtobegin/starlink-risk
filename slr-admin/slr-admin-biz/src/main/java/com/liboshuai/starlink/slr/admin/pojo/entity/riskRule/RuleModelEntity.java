@@ -1,6 +1,8 @@
-package com.liboshuai.starlink.slr.engine.api.dto;
+package com.liboshuai.starlink.slr.admin.pojo.entity.riskRule;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.starlink.slr.engine.api.enums.RuleStatusEnum;
+import com.liboshuai.starlink.slr.framework.mybatis.core.dataobject.BaseEntity;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -12,8 +14,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TableName("slr_rule_model")
 @EqualsAndHashCode(callSuper = true)
-public class RuleModelDTO extends BaseDTO {
+public class RuleModelEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -30,11 +33,11 @@ public class RuleModelDTO extends BaseDTO {
     private String modelDesc;
     /**
      * 模型状态
-     * {@link RuleStatusEnum}
      */
     private String modelStatus;
     /**
      * 运算机 groovy 代码
+     * {@link RuleStatusEnum}
      */
     private String groovy;
 }
