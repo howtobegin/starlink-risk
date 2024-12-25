@@ -212,7 +212,7 @@ public class ParameterUtil {
         String flinkEnvActive = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE, FlinkEnvConstants.LOCAL);
         // 仅在本地环境进行设置
         if (!FlinkEnvConstants.LOCAL.equalsIgnoreCase(flinkEnvActive)) {
-            log.info("当前环境为非本地环境（{}），跳过临时目录设置。", flinkEnvActive);
+            log.warn("当前环境为非本地环境（{}），跳过临时目录设置。", flinkEnvActive);
             return;
         }
         // 获取临时目录路径
@@ -226,17 +226,17 @@ public class ParameterUtil {
         if (Files.notExists(tmpPath)) {
             try {
                 Files.createDirectories(tmpPath);
-                log.info("已成功创建临时目录: {}", tmpPath.toAbsolutePath());
+                log.warn("已成功创建临时目录: {}", tmpPath.toAbsolutePath());
             } catch (IOException e) {
                 log.error("无法创建临时目录: {}", tmpPath.toAbsolutePath(), e);
                 throw new IOException("无法创建临时目录: " + tmpPath.toAbsolutePath(), e);
             }
         } else {
-            log.info("临时目录已存在: {}", tmpPath.toAbsolutePath());
+            log.warn("临时目录已存在: {}", tmpPath.toAbsolutePath());
         }
         // 设置临时目录系统属性
         System.setProperty("java.io.tmpdir", tmpDirPath);
-        log.info("已设置系统临时目录 'java.io.tmpdir' 为: {}", tmpDirPath);
+        log.warn("已设置系统临时目录 'java.io.tmpdir' 为: {}", tmpDirPath);
     }
 
     /**

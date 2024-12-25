@@ -6,11 +6,11 @@ import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessag
 import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessageRespVO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageMongoDAO;
 import com.liboshuai.slr.module.connector.service.alertMessage.AlertMessageService;
-import io.swagger.v3.oas.annotations.servers.Server;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-@Server
+@Service
 public class AlertMessageServiceImpl implements AlertMessageService {
 
     @Resource
