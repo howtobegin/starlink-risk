@@ -2,8 +2,8 @@ package com.liboshuai.slr.module.connector.controller.kafkaEvent;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.ratelimiter.core.annotation.RateLimiter;
-import com.liboshuai.slr.module.connector.pojo.vo.kafkaEvent.KafkaEventGroupReqVO;
-import com.liboshuai.slr.module.connector.pojo.vo.kafkaEvent.KafkaInfoRespVO;
+import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
+import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

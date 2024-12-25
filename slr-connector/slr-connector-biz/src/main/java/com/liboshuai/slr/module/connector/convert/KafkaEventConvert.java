@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.connector.convert;
 
-import com.liboshuai.slr.module.connector.pojo.vo.kafkaEvent.KafkaEventReqVO;
+import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

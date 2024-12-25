@@ -1,9 +1,9 @@
 package com.liboshuai.slr.module.admin.service.mock.impl;
 
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
-import com.liboshuai.slr.module.admin.common.component.snowflake.SnowflakeId;
-import com.liboshuai.slr.module.admin.common.util.mock.MockEventUtils;
+import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeId;
 import com.liboshuai.slr.module.admin.service.mock.MockService;
+import com.liboshuai.slr.module.admin.util.mock.MockEventUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;

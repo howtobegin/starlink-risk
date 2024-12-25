@@ -1,18 +1,18 @@
 package com.liboshuai.slr.module.engine;
 
 
-import com.liboshuai.slr.module.engine.common.FlinkDorisConnector;
-import com.liboshuai.slr.module.engine.common.FlinkKafkaConnector;
-import com.liboshuai.slr.module.engine.common.FlinkMysqlConnector;
-import com.liboshuai.slr.module.engine.common.StateDescContainer;
-import com.liboshuai.slr.module.engine.common.utils.JsonUtil;
-import com.liboshuai.slr.module.engine.common.utils.ParameterUtil;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
+import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
+import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
+import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
+import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
 import com.liboshuai.slr.module.engine.function.KafkaEventMapFunction;
+import com.liboshuai.slr.module.engine.utils.JsonUtil;
+import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;

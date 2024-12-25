@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.connector.service.kafkaEvent.strategy;
 
-import com.liboshuai.slr.module.connector.common.constants.DefaultConstants;
+import com.liboshuai.slr.module.connector.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

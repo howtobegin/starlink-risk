@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.engine.function;
 
-import com.liboshuai.slr.module.engine.common.utils.DateUtil;
-import com.liboshuai.slr.module.engine.common.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.utils.DateUtil;
+import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.Objects;

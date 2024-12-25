@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.admin.service.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.admin.pojo.vo.riskRule.RuleInfoReqVO;
-import com.liboshuai.slr.module.admin.pojo.vo.riskRule.RuleInfoRespVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.RuleInfoReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.RuleInfoRespVO;
 
 public interface RuleInfoService {
 

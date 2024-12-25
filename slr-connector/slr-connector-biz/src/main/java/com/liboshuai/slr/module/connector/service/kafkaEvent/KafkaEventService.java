@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.connector.service.kafkaEvent;
 
-import com.liboshuai.slr.module.connector.pojo.vo.kafkaEvent.KafkaEventGroupReqVO;
-import com.liboshuai.slr.module.connector.pojo.vo.kafkaEvent.KafkaInfoRespVO;
+import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
+import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 
 public interface KafkaEventService {
 

@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.connector.service.kafkaEvent.strategy;
 
-import com.liboshuai.slr.module.connector.common.constants.DefaultConstants;
+import com.liboshuai.slr.module.connector.constants.DefaultConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
