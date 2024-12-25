@@ -33,7 +33,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     @Schema(description = "规则编号", example = "R175928847299117063")
     private String ruleCode;
 
-    @Schema(description = "规则名称", example = "R175928847299117063")
+    @Schema(description = "规则名称", example = "游戏高频抽奖")
     private String ruleName;
 
     @Schema(description = "规则描述", example = "游戏低龄高频抽奖规则")
