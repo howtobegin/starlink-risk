@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "slr-admin.snowflake")
+@ConfigurationProperties(prefix = "snowflake")
 public class SnowflakeIdProperties {
 
     private String workerId;

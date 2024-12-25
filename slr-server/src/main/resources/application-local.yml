@@ -73,8 +73,5 @@ slr-connector:
     consumer_topic: slr_alert
 
 slr-admin:
-  snowflake:
-    workerId: 1
-    dataCenterId: 1
   loadTest:
     filePath: C:\Me\Temp\
