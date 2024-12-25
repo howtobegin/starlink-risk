@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -41,6 +42,6 @@ public class AlertMessageDO implements Serializable {
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
-    private String alertTime;
+    private LocalDateTime alertTime;
 
 }

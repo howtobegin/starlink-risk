@@ -22,6 +22,9 @@ import java.util.List;
 public class KafkaEventListener {
 
     @Resource
+    private AlertMessageConvert alertMessageConvert;
+
+    @Resource
     private AlertMessageRepository alertMessageRepository;
 
     @KafkaListener(
@@ -53,8 +56,7 @@ public class KafkaEventListener {
 
         if (!validAlertMessageDTOList.isEmpty()) {
             // 将预警消息批量保存到 MongoDB
-            List<AlertMessageDO> alertMessageDOList = AlertMessageConvert.INSTANCE
-                    .batchConvertDto2Mongo(validAlertMessageDTOList);
+            List<AlertMessageDO> alertMessageDOList = alertMessageConvert.batchConvertDto2Mongo(validAlertMessageDTOList);
             alertMessageRepository.saveAll(alertMessageDOList);
         }
 

@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 public class KafkaEventServiceImpl implements KafkaEventService {
 
     @Resource
+    private KafkaEventConvert kafkaEventConvert;
+
+    @Resource
     private KafkaEventProvider kafkaEventProvider;
 
     @Resource
@@ -57,7 +60,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList = validateAndFilterInvalidData(kafkaEventReqVOList);
         // req转dto
         List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
-                .map(KafkaEventConvert.INSTANCE::convertReq2Dto) // 转换为DTO
+                .map(kafkaEventReqVO -> kafkaEventConvert.convertReq2Dto(kafkaEventReqVO)) // 转换为DTO
                 .map(kafkaEventDTO -> kafkaEventDTO.setChannel(channel)) // 设置渠道
                 .collect(Collectors.toList());
         // 各渠道特别的数据处理逻辑
