@@ -7,7 +7,7 @@ import org.mapstruct.MappingConstants;
 
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = LocalDateTimeMapper.class)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface AlertMessageConvert {
 
     List<AlertMessageDO> batchConvertDto2Mongo(List<AlertMessageDTO> alertMessageDTOList);

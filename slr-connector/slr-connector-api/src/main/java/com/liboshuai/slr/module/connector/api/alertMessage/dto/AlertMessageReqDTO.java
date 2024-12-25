@@ -1,13 +1,9 @@
-package com.liboshuai.slr.module.engine.dto;
+package com.liboshuai.slr.module.connector.api.alertMessage.dto;
 
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.liboshuai.slr.framework.common.pojo.PageParam;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,13 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class AlertMessageDTO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class AlertMessageReqDTO extends PageParam {
 
     private static final long serialVersionUID = 1;
 
     /**
      * 渠道
-     * {@link ChannelEnum}
      */
     private String channel;
     /**
@@ -36,8 +32,11 @@ public class AlertMessageDTO implements Serializable {
      */
     private String alertMessage;
     /**
-     * 预警时间
-     * （格式：yyyy-MM-dd HH:mm:ss）
+     * 预警时间开始
      */
-    private LocalDateTime alertTime;
+    private LocalDateTime alertTimeStart;
+    /**
+     * 预警时间结束
+     */
+    private LocalDateTime alertTimeEnd;
 }

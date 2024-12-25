@@ -323,7 +323,7 @@ class ProcessorOne implements Processor {
                     .channel(ruleInfoDTO.getChannel())
                     .ruleCode(ruleInfoDTO.getRuleCode())
                     .alertMessage(finalWarnMessage)
-                    .alertTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
+                    .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build()
             log.warn("最终推送的预警信息内容：{}", alertMessageDTO)
             out.collect(alertMessageDTO)
