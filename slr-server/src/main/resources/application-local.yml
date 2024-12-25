@@ -65,9 +65,16 @@ spring:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
     consumer:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
-      group-id: slr_connector
+      group-id: starlink_risk
 
-slr_connector:
+slr-connector:
   kafka:
     provider_topic: slr_event
     consumer_topic: slr_alert
+
+slr-admin:
+  snowflake:
+    workerId: 1
+    dataCenterId: 1
+  loadTest:
+    filePath: C:\Me\Temp\

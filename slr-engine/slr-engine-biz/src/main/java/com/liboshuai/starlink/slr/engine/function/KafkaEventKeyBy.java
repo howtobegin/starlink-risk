@@ -1,6 +1,6 @@
 package com.liboshuai.starlink.slr.engine.function;
 
-import com.liboshuai.starlink.slr.engine.api.constants.GlobalConstants;
+import com.liboshuai.starlink.slr.engine.api.constants.EngineConstants;
 import com.liboshuai.starlink.slr.engine.api.dto.KafkaEventDTO;
 import org.apache.flink.api.java.functions.KeySelector;
 
@@ -11,6 +11,6 @@ import org.apache.flink.api.java.functions.KeySelector;
 public class KafkaEventKeyBy implements KeySelector<KafkaEventDTO, String> {
     @Override
     public String getKey(KafkaEventDTO kafkaEventDTO) throws Exception {
-        return kafkaEventDTO.getKeyCode() + GlobalConstants.FLINK_KEY_SEPARATOR + kafkaEventDTO.getKeyValue();
+        return kafkaEventDTO.getKeyCode() + EngineConstants.FLINK_KEY_SEPARATOR + kafkaEventDTO.getKeyValue();
     }
 }

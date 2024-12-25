@@ -24,7 +24,7 @@ public class MockServiceImpl implements MockService {
     /**
      * 生成的文件路径
      */
-    @Value("${slr-admin.load-test.file-path}")
+    @Value("${slr-admin.loadTest.filePath}")
     private String filePath;
 
     /**
@@ -41,7 +41,7 @@ public class MockServiceImpl implements MockService {
      */
     @Override
     @TakeTime
-    @Async("slrAsyncExecutor")
+    @Async("adminAsyncExecutor")
     public void createEventFileSingleMode(long startMillis, long durationMillis, int perSecondCount) {
         // 获取时间戳集合
         Stream<Long> timeStampStream = MockEventUtils.generateTimeStampStream(startMillis, durationMillis, perSecondCount);
@@ -87,7 +87,7 @@ public class MockServiceImpl implements MockService {
      */
     @Override
     @TakeTime
-    @Async("slrAsyncExecutor")
+    @Async("adminAsyncExecutor")
     public void createEventFileBatchMode(long startMillis, long durationMillis, int perSecondCount) {
         // 获取时间戳集合
         List<Long> timeStamps = MockEventUtils.generateTimeStampStream(startMillis, durationMillis, perSecondCount)

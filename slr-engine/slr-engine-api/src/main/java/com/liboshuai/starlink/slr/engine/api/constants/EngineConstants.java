@@ -1,9 +1,13 @@
 package com.liboshuai.starlink.slr.engine.api.constants;
 
 /**
- * 全局常量
+ * 引擎常量
  */
-public interface GlobalConstants {
+public interface EngineConstants {
+    /**
+     * 系统ID标识
+     */
+    String SYSTEM_ID = "slr";
     /**
      * 系统名称
      */

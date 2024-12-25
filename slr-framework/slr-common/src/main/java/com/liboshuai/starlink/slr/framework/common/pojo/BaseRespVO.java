@@ -1,19 +1,13 @@
 package com.liboshuai.starlink.slr.framework.common.pojo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "基础 Response VO")
 public class BaseRespVO implements Serializable {
 
