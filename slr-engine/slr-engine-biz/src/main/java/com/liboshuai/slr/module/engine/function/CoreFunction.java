@@ -32,7 +32,7 @@ import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String> {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO> {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -78,8 +78,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     @Override
     public void processElement(KafkaEventDTO kafkaEventDTO,
-                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.ReadOnlyContext ctx,
-                               Collector<String> out) throws Exception {
+                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
+                               Collector<AlertMessageDTO> out) throws Exception {
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
         // 将事件放入缓存列表中
@@ -95,12 +95,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 for (KafkaEventDTO historyKafkaEventDTO : recentEventListState.get()) {
-                    processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
+                    processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), historyKafkaEventDTO);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), kafkaEventDTO, out);
+                processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), kafkaEventDTO);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -111,8 +111,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     @Override
     public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.Context ctx,
-                                        Collector<String> out) throws Exception {
+                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.Context ctx,
+                                        Collector<AlertMessageDTO> out) throws Exception {
         if (ruleCdcDTO == null) {
             throw new BusinessException("Mysql Cdc 广播流 ruleCdcDTO 必须非空");
         }
@@ -180,8 +180,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, String>.OnTimerContext ctx,
-                        Collector<String> out) throws Exception {
+                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.OnTimerContext ctx,
+                        Collector<AlertMessageDTO> out) throws Exception {
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机

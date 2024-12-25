@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.engine.util;
+package com.liboshuai.slr.module.engine.utils;
 
 import org.apache.commons.text.StringSubstitutor;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * 字符串消息模板替换 工具类
  */
-public class TemplatePlaceholderUtil {
+public class TemplateUtil {
 
     private static final String SEPARATOR = ".";
 

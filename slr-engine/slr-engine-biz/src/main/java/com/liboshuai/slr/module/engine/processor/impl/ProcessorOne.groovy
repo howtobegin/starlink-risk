@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.processor.impl
 
+import com.liboshuai.slr.module.engine.constants.EngineConstants
 import com.liboshuai.slr.module.engine.constants.RedisKeyConstants
 import com.liboshuai.slr.module.engine.dto.*
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum
@@ -8,7 +9,7 @@ import com.liboshuai.slr.module.engine.enums.RuleStatusEnum
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException
 import com.liboshuai.slr.module.engine.processor.Processor
-import com.liboshuai.slr.module.engine.util.TemplatePlaceholderUtil
+import com.liboshuai.slr.module.engine.utils.*
 import org.apache.flink.api.common.functions.RuntimeContext
 import org.apache.flink.api.common.state.MapState
 import org.apache.flink.api.common.state.MapStateDescriptor
@@ -87,7 +88,7 @@ class ProcessorOne implements Processor {
      * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
      */
     @Override
-    void processElement(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO, Collector<String> out) throws Exception {
+    void processElement(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -200,7 +201,7 @@ class ProcessorOne implements Processor {
         String keyValue = kafkaEventDTO.getKeyValue()
         return new StringBuilder()
                 .append(keyCode)
-                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(EngineConstants.REDIS_KEY_SEPARATOR)
                 .append(keyValue).toString()
     }
 
@@ -209,12 +210,12 @@ class ProcessorOne implements Processor {
      */
     private String buildRedisKey(RuleCondDTO ruleCondDTO) {
         return new StringBuilder()
-                .append(GlobalConstants.SYSTEM_NAME)
-                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(EngineConstants.SYSTEM_NAME)
+                .append(EngineConstants.REDIS_KEY_SEPARATOR)
                 .append(RedisKeyConstants.DORIS)
-                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(EngineConstants.REDIS_KEY_SEPARATOR)
                 .append(ruleCondDTO.getRuleCode())
-                .append(GlobalConstants.REDIS_KEY_SEPARATOR)
+                .append(EngineConstants.REDIS_KEY_SEPARATOR)
                 .append(ruleCondDTO.getEventCode())
     }
 
@@ -280,7 +281,7 @@ class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<String> out) throws Exception {
+    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -312,14 +313,20 @@ class ProcessorOne implements Processor {
         if (eventResult && (timestamp - lastWarningTimeState.value() >= alertInterval)) {
             lastWarningTimeState.update(timestamp)
             // 进行预警信息拼接组合
-            String finalWarnMessage = TemplatePlaceholderUtil.replacePlaceholders(
+            String finalWarnMessage = TemplateUtil.replacePlaceholders(
                     ruleInfoDTO.getAlertMessage(),
                     ruleInfoDTO,
                     getLatestEventKafkaDto(),
                     getProcessorDto()
             )
-            log.warn("最终推送的预警信息内容：{}", finalWarnMessage)
-            out.collect(finalWarnMessage)
+            AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
+                    .channel(ruleInfoDTO.getChannel())
+                    .ruleCode(ruleInfoDTO.getRuleCode())
+                    .alertMessage(finalWarnMessage)
+                    .alertTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
+                    .build()
+            log.warn("最终推送的预警信息内容：{}", alertMessageDTO)
+            out.collect(alertMessageDTO)
         }
         // 调试使用，待删除
         logBigMapState(ruleInfoDTO.getRuleCode(), ruleConditionMapByEventCode.keySet(), null, bigMapState)

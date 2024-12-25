@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.processor;
 
+import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
@@ -18,10 +19,10 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(long timestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO, Collector<String> out) throws Exception;
+    void processElement(long timestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO) throws Exception;
 
     /**
      * 定时器
      */
-    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<String> out) throws Exception;
+    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception;
 }

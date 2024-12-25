@@ -4,8 +4,8 @@ import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.ProcessorDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-import com.liboshuai.slr.module.engine.util.TemplatePlaceholderUtil;
 import com.liboshuai.slr.module.engine.utils.DateUtil;
+import com.liboshuai.slr.module.engine.utils.TemplateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class TemplatePlaceholderUtilTest {
+public class TemplateUtilTest {
 
     @Test
     public void testReplacePlaceholders() {
@@ -68,7 +68,7 @@ public class TemplatePlaceholderUtilTest {
                 .build();
 
         // 使用工具类替换模板中的占位符
-        String finalWarnMessage = TemplatePlaceholderUtil.replacePlaceholders(
+        String finalWarnMessage = TemplateUtil.replacePlaceholders(
                 ruleInfoDTO.getAlertMessage(),
                 ruleInfoDTO,
                 kafkaEventDTO,
@@ -137,7 +137,7 @@ public class TemplatePlaceholderUtilTest {
                 "超过${RuleInfoDTO.ruleConditionGroup.1.eventThreshold}次，请您及时查看原因！";
 
         // 使用工具类替换模板中的占位符
-        String result = TemplatePlaceholderUtil.replacePlaceholders(messageTemplate, kafkaEventDTO, ruleInfoDTO);
+        String result = TemplateUtil.replacePlaceholders(messageTemplate, kafkaEventDTO, ruleInfoDTO);
 
         System.out.println("Result: " + result);
     }
