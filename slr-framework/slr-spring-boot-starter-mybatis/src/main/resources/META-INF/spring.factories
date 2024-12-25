@@ -1,2 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-  com.liboshuai.starlink.slr.framework.mybatis.config.IdTypeEnvironmentPostProcessor
+  com.liboshuai.slr.framework.mybatis.config.IdTypeEnvironmentPostProcessor

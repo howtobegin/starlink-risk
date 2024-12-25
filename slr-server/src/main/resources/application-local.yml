@@ -66,6 +66,13 @@ spring:
     consumer:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
       group-id: starlink_risk
+  data:
+    mongodb:
+      host: localhost
+      port: 27018
+      password: Rongshu@2024
+      database: starlink_risk
+      authentication-database: starlink_risk
 
 slr-connector:
   kafka:

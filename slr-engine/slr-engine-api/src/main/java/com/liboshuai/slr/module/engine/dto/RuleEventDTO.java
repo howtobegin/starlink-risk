@@ -1,0 +1,42 @@
+package com.liboshuai.slr.module.engine.dto;
+
+import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+import java.util.List;
+
+/**
+ * 事件信息
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
+public class RuleEventDTO extends BaseDTO {
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 渠道
+     * {@link ChannelEnum}
+     */
+    private String channel;
+    /**
+     * 事件编号
+     */
+    private String eventCode;
+    /**
+     * 事件名称
+     */
+    private String eventName;
+    /**
+     * 事件描述
+     */
+    private String eventDesc;
+    /**
+     * 事件属性组
+     */
+    private List<RuleEventAttrDTO> ruleEventAttributeGroup;
+}

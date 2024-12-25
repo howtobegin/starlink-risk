@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.liboshuai.starlink</groupId>
         <artifactId>starlink-risk</artifactId>
-        <version>1.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>slr-server</artifactId>
@@ -63,7 +63,7 @@
                 <version>${spring.boot.version}</version>
                 <configuration>
                     <!-- 指定主main类（防止多个main类问题）-->
-                    <mainClass>com.liboshuai.starlink.slr.server.ServerApplication</mainClass>
+                    <mainClass>com.liboshuai.slr.server.ServerApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

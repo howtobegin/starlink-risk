@@ -1,0 +1,52 @@
+package com.liboshuai.slr.module.engine.enums;
+
+import lombok.Getter;
+
+import java.util.Objects;
+
+/**
+ * 规则条件组合操作符
+ */
+@Getter
+public enum RuleCondCombOpEnum {
+    AND("AND", "与"),
+    OR("OR", "或");
+
+    /**
+     * 编码
+     */
+    private final String code;
+    /**
+     * 描述
+     */
+    private final String desc;
+
+    RuleCondCombOpEnum(String code, String desc) {
+        this.code = code;
+        this.desc = desc;
+    }
+
+    /**
+     * 通过代码查找枚举值
+     */
+    public static RuleCondCombOpEnum fromCode(String code) {
+        for (RuleCondCombOpEnum status : RuleCondCombOpEnum.values()) {
+            if (Objects.equals(status.getCode(), code)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("未知的code: " + code);
+    }
+
+    /**
+     * 通过描述查找枚举值
+     */
+    public static RuleCondCombOpEnum fromDesc(String desc) {
+        for (RuleCondCombOpEnum status : RuleCondCombOpEnum.values()) {
+            if (status.getDesc().equals(desc)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+}
