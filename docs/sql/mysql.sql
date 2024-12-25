@@ -14,17 +14,11 @@
  Date: 25/12/2024 16:55:36
 */
 
-#
-CREATE
-database `starlink_risk` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
-#
-GRANT ALL PRIVILEGES ON `starlink_risk`.* TO 'lbs'@'%';
-#
-GRANT REPLICATION CLIENT ON *.* TO 'lbs'@'%';
-#
-GRANT REPLICATION SLAVE ON *.* TO 'lbs'@'%';
-#
-FLUSH PRIVILEGES;
+-- CREATE database `starlink_risk` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+-- GRANT ALL PRIVILEGES ON `starlink_risk`.* TO 'lbs'@'%';
+-- GRANT REPLICATION CLIENT ON *.* TO 'lbs'@'%';
+-- GRANT REPLICATION SLAVE ON *.* TO 'lbs'@'%';
+-- FLUSH PRIVILEGES;
 
 SET NAMES utf8mb4;
 SET
