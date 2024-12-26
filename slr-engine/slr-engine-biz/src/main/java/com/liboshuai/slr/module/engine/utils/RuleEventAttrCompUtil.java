@@ -25,7 +25,7 @@ public class RuleEventAttrCompUtil {
             throw new IllegalArgumentException("无效的 ruleEventAttrValue：不能为空！");
         }
         if (Objects.isNull(ruleEventAttrType)) {
-            throw new IllegalArgumentException("无效的 ruleEventAttrValue：不能为空！");
+            throw new IllegalArgumentException("无效的 ruleEventAttrType：不能为空！");
         }
         if (Objects.isNull(ruleEventAttrOp)) {
             throw new IllegalArgumentException("无效的 ruleEventAttrOp：不能为空！");
