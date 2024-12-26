@@ -9,14 +9,11 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.json.databind.NumberSerializer;
-import com.liboshuai.slr.framework.common.util.json.databind.TimestampLocalDateTimeDeserializer;
-import com.liboshuai.slr.framework.common.util.json.databind.TimestampLocalDateTimeSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -38,8 +35,9 @@ public class SlrJacksonAutoConfiguration {
                 .addSerializer(LocalTime.class, LocalTimeSerializer.INSTANCE)
                 .addDeserializer(LocalTime.class, LocalTimeDeserializer.INSTANCE)
                 // 新增 LocalDateTime 序列化、反序列化规则，使用 Long 时间戳
-                .addSerializer(LocalDateTime.class, TimestampLocalDateTimeSerializer.INSTANCE)
-                .addDeserializer(LocalDateTime.class, TimestampLocalDateTimeDeserializer.INSTANCE);
+//                .addSerializer(LocalDateTime.class, TimestampLocalDateTimeSerializer.INSTANCE)
+//                .addDeserializer(LocalDateTime.class, TimestampLocalDateTimeDeserializer.INSTANCE)
+        ;
         // 1.2 注册到 objectMapper
         objectMappers.forEach(objectMapper -> objectMapper.registerModule(simpleModule));
 
