@@ -2,32 +2,40 @@ package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
+import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 风控规则json表
+ * 风控规则目标表
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TableName("slr_rule_json")
+@TableName("slr_rule_key")
 @EqualsAndHashCode(callSuper = true)
-public class RuleJsonDO extends BaseDO {
-
+public class RuleKeyDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 规则编号
-     * {@link RuleInfoDO#getRuleCode()}
+     * 渠道
+     * {@link ChannelEnum}
      */
-    private String ruleCode;
-
+    private String channel;
     /**
-     * 规则json
+     * key编号
+     * （例如：GAME_userId）
      */
-    private String ruleJson;
-
+    private String keyCode;
+    /**
+     * key名称
+     * （例如：用户id）
+     */
+    private String keyName;
+    /**
+     * key描述
+     */
+    private String keyDesc;
 }

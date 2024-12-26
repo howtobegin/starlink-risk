@@ -60,6 +60,7 @@ public class RuleInfoDO extends BaseDO {
     private String alertMessage;
     /**
      * 模型编号
+     * {@link RuleModelDO#getModelCode()}
      */
     private String modelCode;
     /**

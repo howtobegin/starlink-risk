@@ -21,10 +21,12 @@ public class RuleEventAttrValueDO extends BaseDO {
 
     /**
      * 条件编号
+     * {@link RuleCondDO#getCondCode()}
      */
     private String condCode;
     /**
      * 属性编号
+     * {@link RuleEventAttrDO#getAttributeCode()}
      */
     private String attributeCode;
     /**

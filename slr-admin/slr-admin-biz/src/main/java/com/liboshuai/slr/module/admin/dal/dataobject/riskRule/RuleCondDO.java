@@ -24,10 +24,12 @@ public class RuleCondDO extends BaseDO {
 
     /**
      * 规则编号
+     * {@link RuleInfoDO#getRuleCode()}
      */
     private String ruleCode;
     /**
      * 事件编号
+     * {@link RuleEventDO#getEventCode()}
      */
     private String eventCode;
     /**

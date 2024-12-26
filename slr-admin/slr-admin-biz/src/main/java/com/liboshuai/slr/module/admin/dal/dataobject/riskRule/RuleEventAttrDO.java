@@ -21,6 +21,7 @@ public class RuleEventAttrDO extends BaseDO {
 
     /**
      * 事件编号
+     * {@link RuleEventDO#getEventCode()}
      */
     private String eventCode;
     /**

@@ -2,7 +2,6 @@ package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -20,10 +19,11 @@ public class RuleEventDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 渠道
-     * {@link ChannelEnum}
+     * key编号
+     *
+     * {@link RuleKeyDO#getKeyCode()}
      */
-    private String channel;
+    private String keyCode;
     /**
      * 事件编号
      */
