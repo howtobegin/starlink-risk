@@ -7,8 +7,10 @@ import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDateTime;
+
 /**
- * 规则条件组
+ * 风控规则条件
  */
 @Data
 @Builder
@@ -29,6 +31,10 @@ public class RuleCondDO extends BaseDO {
      */
     private String eventCode;
     /**
+     * 条件编号
+     */
+    private String condCode;
+    /**
      * 条件类型
      * {@link RuleCondTypeEnum}
      */
@@ -48,12 +54,12 @@ public class RuleCondDO extends BaseDO {
      * 开始时间
      * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
      */
-    private String beginTime;
+    private LocalDateTime beginTime;
     /**
      * 结束时间
      * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
      */
-    private String endTime;
+    private LocalDateTime endTime;
     /**
      * 阈值
      */
@@ -66,6 +72,6 @@ public class RuleCondDO extends BaseDO {
      * 跨历史时间点
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
-    private String crossHistoryTimeline;
+    private LocalDateTime crossHistoryTimeline;
 
 }

@@ -7,7 +7,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 规则模型信息
+ * 风控规则模型
  */
 @Data
 @Builder
@@ -32,6 +32,6 @@ public class RuleModelRespVO extends BaseRespVO {
     @Schema(description = "模型状态", example = "支持周期条件的规则模型")
     private String modelStatus;
 
-    @Schema(description = "运算机 groovy 代码")
+    @Schema(description = "运算机groovy代码")
     private String groovy;
 }

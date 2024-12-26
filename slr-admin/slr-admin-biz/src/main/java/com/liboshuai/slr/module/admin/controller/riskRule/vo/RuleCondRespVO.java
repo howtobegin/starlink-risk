@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDateTime;
+
 /**
  * 规则条件组
  */
@@ -26,6 +28,9 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
 
+    @Schema(description = "条件编号", example = "C175928847299117063")
+    private String condCode;
+
     /**
      * {@link RuleCondTypeEnum}
      */
@@ -42,10 +47,10 @@ public class RuleCondRespVO extends BaseRespVO {
     private String windowUnit;
 
     @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00")
-    private String beginTime;
+    private LocalDateTime beginTime;
 
     @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00")
-    private String endTime;
+    private LocalDateTime endTime;
 
     @Schema(description = "阈值", example = "20")
     private Long threshold;
@@ -54,7 +59,7 @@ public class RuleCondRespVO extends BaseRespVO {
     private Boolean crossHistory;
 
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01")
-    private String crossHistoryTimeline;
+    private LocalDateTime crossHistoryTimeline;
 
     @Schema(description = "事件信息")
     private RuleEventRespVO ruleEventRespVO;

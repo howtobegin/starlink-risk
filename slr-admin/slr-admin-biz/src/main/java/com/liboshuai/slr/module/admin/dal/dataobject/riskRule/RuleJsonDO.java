@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 规则json字符串DTO对象
+ * 风控规则json表
  */
 @Data
 @Builder

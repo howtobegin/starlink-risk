@@ -7,7 +7,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 事件信息
+ * 风控规则事件表
  */
 @Data
 @Builder

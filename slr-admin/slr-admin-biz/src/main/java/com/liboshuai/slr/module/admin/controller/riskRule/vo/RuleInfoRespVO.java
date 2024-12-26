@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 import java.util.List;
 
 /**
- * 规则信息
+ * 风控规则信息
  */
 @Data
 @Builder

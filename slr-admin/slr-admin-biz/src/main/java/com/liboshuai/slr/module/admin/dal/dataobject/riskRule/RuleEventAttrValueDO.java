@@ -2,42 +2,40 @@ package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
+import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 风控规则模型表
+ * 风控规则事件属性值表
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TableName("slr_rule_model")
+@TableName("slr_rule_event_attr_value")
 @EqualsAndHashCode(callSuper = true)
-public class RuleModelDO extends BaseDO {
+public class RuleEventAttrValueDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 模型编号
+     * 条件编号
      */
-    private String modelCode;
+    private String condCode;
     /**
-     * 模型名称
+     * 属性编号
      */
-    private String modelName;
+    private String attributeCode;
     /**
-     * 模型描述
+     * 属性值
+     * （例如：C000000001）
      */
-    private String modelDesc;
+    private String attributeValue;
     /**
-     * 模型状态
-     * {@link RuleStatusEnum}
+     * 属性比较符
+     * （例如：=）
+     * {@link RuleAuditOpEnum}
      */
-    private String modelStatus;
-    /**
-     * 运算机groovy代码
-     */
-    private String groovy;
+    private String attributeOp;
 }
