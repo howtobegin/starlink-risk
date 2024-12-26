@@ -28,6 +28,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private RuleEventMapper ruleEventMapper;
     @Resource
     private RuleEventAttrMapper ruleEventAttrMapper;
+    @Resource
+    private RuleEventAttrValueMapper ruleEventAttrValueMapper;
 
     @Override
     public PageResult<RuleInfoRespVO> list(RuleInfoReqVO ruleInfoReqVO) {
@@ -66,40 +68,50 @@ public class RuleInfoServiceImpl implements RuleInfoService {
      */
     private void setRuleCondGroup(String ruleCode, RuleInfoRespVO ruleInfoRespVO) {
         List<RuleCondDO> ruleCondDOList = ruleCondMapper.selectListByModelCode(ruleCode);
-        if (!CollectionUtils.isEmpty(ruleCondDOList)) {
-            List<RuleCondRespVO> ruleCondRespVOList = BeanUtils.toBean(ruleCondDOList, RuleCondRespVO.class);
-            List<String> eventCodeList = ruleCondRespVOList.stream().map(RuleCondRespVO::getEventCode).collect(Collectors.toList());
-            List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByEventCodes(eventCodeList);
-            if (!CollectionUtils.isEmpty(ruleEventDOList)) {
-                List<RuleEventRespVO> ruleEventRespVOList = BeanUtils.toBean(ruleEventDOList, RuleEventRespVO.class);
-                List<String> eventCodes = ruleEventRespVOList.stream().map(RuleEventRespVO::getEventCode).collect(Collectors.toList());
-                List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByEventCodes(eventCodes);
-                if (!CollectionUtils.isEmpty(ruleEventAttrDOList)) {
-                    List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
-                    Map<String, List<RuleEventAttrRespVO>> eventCodeAndRuleEventAttrRespVoMap = ruleEventAttrRespVOList.stream()
-                            .collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
-                    // 设置事件属性到事件信息
-                    ruleEventRespVOList = ruleEventRespVOList.stream()
-                            .map(
-                                    ruleEventRespVO ->
-                                            ruleEventRespVO.setRuleEventAttrRespVoList(
-                                                    eventCodeAndRuleEventAttrRespVoMap.get(ruleEventRespVO.getEventCode())
-                                            )
-                            )
-                            .collect(Collectors.toList());
-                }
-                Map<String, List<RuleEventRespVO>> eventCodeAndRuleEventRespVoMap = ruleEventRespVOList.stream()
-                        .collect(Collectors.groupingBy(RuleEventRespVO::getEventCode));
-                // 设置事件信息到条件组
-                ruleCondRespVOList = ruleCondRespVOList.stream()
-                        .map(ruleCondRespVO ->
-                                ruleCondRespVO.setRuleEventRespVO(
-                                        eventCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0)
-                                )
-                        ).collect(Collectors.toList());
-                // 设置条件组到规则信息
-                ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
-            }
+        if (CollectionUtils.isEmpty(ruleCondDOList)) {
+            return;
         }
+        List<RuleCondRespVO> ruleCondRespVOList = BeanUtils.toBean(ruleCondDOList, RuleCondRespVO.class);
+        List<String> eventCodeList = ruleCondRespVOList.stream().map(RuleCondRespVO::getEventCode).collect(Collectors.toList());
+        List<String> condCodeList = ruleCondRespVOList.stream().map(RuleCondRespVO::getCondCode).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(eventCodeList) || CollectionUtils.isEmpty(condCodeList)) {
+            ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
+            return;
+        }
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByEventCodes(eventCodeList);
+        if (CollectionUtils.isEmpty(ruleEventDOList)) {
+            ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
+            return;
+        }
+        List<RuleEventRespVO> ruleEventRespVOList = BeanUtils.toBean(ruleEventDOList, RuleEventRespVO.class);
+        Map<String, List<RuleEventRespVO>> envetCodeAndRuleEventRespVoMap = ruleEventRespVOList.stream()
+                .collect(Collectors.groupingBy(RuleEventRespVO::getEventCode));
+        List<RuleEventAttrValueDO> ruleEventAttrValueDOList = ruleEventAttrValueMapper.selectListByCondCodes(condCodeList);
+        if (CollectionUtils.isEmpty(ruleEventAttrValueDOList)) {
+            ruleCondRespVOList = ruleCondRespVOList.stream().map(ruleCondRespVO -> ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))).collect(Collectors.toList());
+            ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
+            return;
+        }
+        List<RuleEventAttrValueRespVO> ruleEventAttrValueRespVOList = BeanUtils.toBean(ruleEventAttrValueDOList, RuleEventAttrValueRespVO.class);
+        Map<String, List<RuleEventAttrValueRespVO>> codeAndAttrValueRespVoMap = ruleEventAttrValueRespVOList.stream().collect(Collectors.groupingBy(RuleEventAttrValueRespVO::getAttributeCode));
+        List<String> attributeCodeList = ruleEventAttrValueRespVOList.stream().map(RuleEventAttrValueRespVO::getAttributeCode).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(attributeCodeList)) {
+            ruleCondRespVOList = ruleCondRespVOList.stream().map(ruleCondRespVO -> ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))).collect(Collectors.toList());
+            ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
+            return;
+        }
+        List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByAttributeCodes(attributeCodeList);
+        if (CollectionUtils.isEmpty(ruleEventAttrDOList)) {
+            ruleCondRespVOList = ruleCondRespVOList.stream().map(ruleCondRespVO -> ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))).collect(Collectors.toList());
+            ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
+            return;
+        }
+        List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
+        ruleEventAttrRespVOList = ruleEventAttrRespVOList.stream().map(ruleEventAttrRespVO -> ruleEventAttrRespVO.setRuleEventAttrValueRespVO(codeAndAttrValueRespVoMap.get(ruleEventAttrRespVO.getAttributeCode()).get(0))).collect(Collectors.toList());
+        Map<String, List<RuleEventAttrRespVO>> eventCodeAndEventAttrRespVoMap = ruleEventAttrRespVOList.stream().collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
+        ruleEventRespVOList = ruleEventRespVOList.stream().map(ruleEventRespVO -> ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))).collect(Collectors.toList());
+        Map<String, List<RuleEventRespVO>> eventCodeAndEventRespVoMap = ruleEventRespVOList.stream().collect(Collectors.groupingBy(RuleEventRespVO::getEventCode));
+        ruleCondRespVOList = ruleCondRespVOList.stream().map(ruleCondRespVO -> ruleCondRespVO.setRuleEventRespVO(eventCodeAndEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))).collect(Collectors.toList());
+        ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
     }
 }
