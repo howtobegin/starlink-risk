@@ -23,8 +23,8 @@ public class RuleEventRespVO extends BaseRespVO {
     /**
      * {@link ChannelEnum}
      */
-    @Schema(description = "渠道", example = "GAME")
-    private String channel;
+    @Schema(description = "key编号", example = "GAME_userId")
+    private String keyCode;
 
     @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
@@ -36,5 +36,5 @@ public class RuleEventRespVO extends BaseRespVO {
     private String eventDesc;
 
     @Schema(description = "事件属性组")
-    private List<RuleEventAttrRespVO> ruleEventAttributeGroup;
+    private List<RuleEventAttrRespVO> ruleEventAttrRespVoList;
 }

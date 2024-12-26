@@ -18,6 +18,9 @@ public class RuleJsonRespVO extends BaseRespVO {
 
     private static final long serialVersionUID = -6940398101611093673L;
 
+    /**
+     * {@link RuleInfoRespVO#getRuleCode()}
+     */
     @Schema(description = "规则编号", example = "R175928847299117063")
     private String ruleCode;
 

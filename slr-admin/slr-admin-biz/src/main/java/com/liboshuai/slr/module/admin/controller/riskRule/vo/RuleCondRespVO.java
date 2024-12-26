@@ -21,10 +21,15 @@ import java.time.LocalDateTime;
 public class RuleCondRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-
+    /**
+     * {@link RuleInfoRespVO#getRuleCode()}
+     */
     @Schema(description = "规则编号", example = "R175928847299117063")
     private String ruleCode;
 
+    /**
+     * {@link RuleEventRespVO#getEventCode()}
+     */
     @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
 

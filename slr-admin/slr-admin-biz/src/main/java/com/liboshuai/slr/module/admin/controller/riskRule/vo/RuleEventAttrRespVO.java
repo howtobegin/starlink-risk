@@ -18,7 +18,9 @@ import lombok.experimental.Accessors;
 public class RuleEventAttrRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-
+    /**
+     * {@link RuleEventRespVO#getEventCode()}
+     */
     @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
 

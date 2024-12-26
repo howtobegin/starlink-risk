@@ -57,7 +57,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     @Schema(description = "预警消息", example = "触发xxx预警啦！")
     private String alertMessage;
 
-    @Schema(description = "模型编号", example = "M175928847299117066")
+    @Schema(description = "模型编号", example = "M175928847299117063")
     private String modelCode;
 
     @Schema(description = "模型信息")
@@ -70,5 +70,5 @@ public class RuleInfoRespVO extends BaseRespVO {
     private String ruleCondCombOp;
 
     @Schema(description = "条件组")
-    private List<RuleCondRespVO> ruleCondGroup;
+    private List<RuleCondRespVO> ruleCondRespVoList;
 }

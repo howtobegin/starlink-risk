@@ -82,7 +82,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                     ruleEventRespVOList = ruleEventRespVOList.stream()
                             .map(
                                     ruleEventRespVO ->
-                                            ruleEventRespVO.setRuleEventAttributeGroup(
+                                            ruleEventRespVO.setRuleEventAttrRespVoList(
                                                     eventCodeAndRuleEventAttrRespVoMap.get(ruleEventRespVO.getEventCode())
                                             )
                             )
@@ -98,7 +98,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                                 )
                         ).collect(Collectors.toList());
                 // 设置条件组到规则信息
-                ruleInfoRespVO.setRuleCondGroup(ruleCondRespVOList);
+                ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
             }
         }
     }

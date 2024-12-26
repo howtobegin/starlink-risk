@@ -18,10 +18,15 @@ import lombok.experimental.Accessors;
 public class RuleEventAttrValueRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-
+    /**
+     * {@link RuleCondRespVO#getCondCode()}
+     */
     @Schema(description = "条件编号", example = "C175928847299117063")
     private String condCode;
 
+    /**
+     * {@link RuleEventAttrRespVO#getAttributeCode()}
+     */
     @Schema(description = "属性编号", example = "A175928847299117063")
     private String attributeCode;
 
