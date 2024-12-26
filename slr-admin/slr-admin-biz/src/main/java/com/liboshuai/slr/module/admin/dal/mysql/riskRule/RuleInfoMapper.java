@@ -20,4 +20,9 @@ public interface RuleInfoMapper extends BaseMapperX<RuleInfoDO> {
         );
     }
 
+    default RuleInfoDO selectOneByRuleCode(String ruleCode) {
+        return selectOne(new LambdaQueryWrapperX<RuleInfoDO>()
+                .eq(RuleInfoDO::getRuleCode, ruleCode)
+        );
+    }
 }

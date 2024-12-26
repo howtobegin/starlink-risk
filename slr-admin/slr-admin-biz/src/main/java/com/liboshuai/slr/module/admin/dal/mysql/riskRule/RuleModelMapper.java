@@ -10,8 +10,13 @@ import java.util.List;
 @Mapper
 public interface RuleModelMapper extends BaseMapperX<RuleModelDO> {
 
-    default List<RuleModelDO> selectListByModelCode(List<String> modelCodeList) {
+    default List<RuleModelDO> selectListByModelCodes(List<String> modelCodeList) {
         return selectList(new LambdaQueryWrapperX<RuleModelDO>()
                 .in(RuleModelDO::getModelCode, modelCodeList));
+    }
+
+    default RuleModelDO selectOneByModelCode(String modelCode) {
+        return selectOne(new LambdaQueryWrapperX<RuleModelDO>()
+                .eq(RuleModelDO::getModelCode, modelCode));
     }
 }

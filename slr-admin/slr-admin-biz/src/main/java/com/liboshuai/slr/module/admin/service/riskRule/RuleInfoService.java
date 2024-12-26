@@ -7,4 +7,6 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.RuleInfoRespVO;
 public interface RuleInfoService {
 
     PageResult<RuleInfoRespVO> list(RuleInfoReqVO ruleInfoReqVO);
+
+    RuleInfoRespVO detail(String ruleCode);
 }
