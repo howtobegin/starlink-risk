@@ -30,11 +30,11 @@ CREATE TABLE `slr_rule_cond`
     `cond_type`              varchar(64)          DEFAULT NULL COMMENT '条件类型',
     `window_value`           bigint UNSIGNED      DEFAULT NULL COMMENT '窗口值',
     `window_unit`            varchar(64)          DEFAULT NULL COMMENT '窗口单位',
-    `begin_time`             varchar(64)          DEFAULT NULL COMMENT '开始时间',
-    `end_time`               varchar(64)          DEFAULT NULL COMMENT '结束时间',
+    `begin_time`             datetime DEFAULT NULL COMMENT '开始时间',
+    `end_time`               datetime DEFAULT NULL COMMENT '结束时间',
     `threshold`              bigint               DEFAULT NULL COMMENT '阈值',
     `cross_history`          bit(1)               DEFAULT NULL COMMENT '条件类型',
-    `cross_history_timeline` varchar(64)          DEFAULT NULL COMMENT '跨历史时间点',
+    `cross_history_timeline` datetime DEFAULT NULL COMMENT '跨历史时间点',
     `creator`                varchar(64)          DEFAULT NULL COMMENT '创建用户',
     `updater`                varchar(64)          DEFAULT NULL COMMENT '更新用户',
     `create_time`            datetime        NULL DEFAULT NULL COMMENT '创建时间',
@@ -151,4 +151,3 @@ CREATE TABLE `slr_rule_model`
 ) ENGINE = InnoDB
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT = '风控规则模型表';
-
