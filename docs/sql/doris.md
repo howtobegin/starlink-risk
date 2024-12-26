@@ -1,7 +1,15 @@
+# 进入 fe 容器内
+
+```
+docker-compose exec fe bash
+mysql -h ${宿主机IP} -P 9030 -uroot
+SET PASSWORD FOR 'root' = PASSWORD('Rongshu@2024');
+```
+
 # 浏览器打开`http://localhost:8030/` ，选择任意数据库，执行语句
 
 ```
-ALTER SYSTEM ADD BACKEND "${你的宿主机ip}:9050";
+ALTER SYSTEM ADD BACKEND "${宿主机ip}:9050";
 SHOW PROC '/backends';
 
 CREATE DATABASE IF NOT EXISTS `starlink_risk`;
@@ -27,14 +35,6 @@ PROPERTIES
     "dynamic_partition.start" = "-6",
     "dynamic_partition.end" = "1",
     "dynamic_partition.prefix" = "p",
-    "replication_num" = "3"  -- 设置副本数为1，集群模式要设置为3
+    "replication_num" = "1" -- 设置副本数为1，集群模式要设置为3
 );
-```
-
-# 进入 fe 容器内
-
-```
-docker-compose exec fe bash
-mysql -h ${宿主机IP} -P 9030 -uroot
-SET PASSWORD FOR 'root' = PASSWORD('Rongshu@2024');
 ```
