@@ -138,6 +138,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void changeStatus(RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
         String ruleCode = ruleInfoChangeStatusReqVO.getRuleCode();
         String auditOp = ruleInfoChangeStatusReqVO.getAuditOp();
@@ -148,32 +149,40 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         String ruleStatus = ruleInfoDO.getRuleStatus();
         String newRuleStatus = ruleInfoChangeStatusReqVO.getNewRuleStatus();
         if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+            // 进行上线操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.DRAFT.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
+            // 进行上线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING, ruleCode);
             }
-            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) {
+            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
-            } else {
+            } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
                 ruleInfoDO.setRuleStatus(RuleStatusEnum.DRAFT.getCode());
+            } else {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+            // 进行下线操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE.getCode())) {
+            // 进行下线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_PENDING, ruleCode);
             }
-            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) {
+            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
-            } else {
+            } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
                 ruleInfoDO.setRuleStatus(RuleStatusEnum.ONLINE.getCode());
+            } else {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);

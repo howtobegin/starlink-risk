@@ -40,7 +40,6 @@ public class RuleInfoChangeStatusReqVO implements Serializable {
      * 审核操作
      * {@link RuleAuditOpEnum}
      */
-    @NotBlank(message = "审核操作[auditOp]，不能为空")
     @InStringEnum(value = RuleAuditOpEnum.class, message = "审核操作[auditOp]，必须在指定范围 {value}")
     @Schema(description = "审核操作", example = "APPROVE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String auditOp;

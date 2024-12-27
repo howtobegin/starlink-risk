@@ -64,6 +64,7 @@ public class RuleInfoController {
 
     @PostMapping(value = "/changeStatus")
     @Operation(summary = "变更状态")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息变更状态请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoChangeStatusReqVO.class)))
     public CommonResult<Boolean> changeStatus(@RequestBody @Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
         ruleInfoService.changeStatus(ruleInfoChangeStatusReqVO);
         return success(true);
