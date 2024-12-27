@@ -7,6 +7,8 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReq
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +23,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Slf4j
 @Validated
 @RestController
-@Tag(name = "规则信息管理")
+@Tag(name = "风控规则信息")
 @RequestMapping("/ruleInfo")
 public class RuleInfoController {
 
@@ -29,21 +31,22 @@ public class RuleInfoController {
     private RuleInfoService ruleInfoService;
 
     @PostMapping("/list")
-    @Operation(summary = "获取规则信息列表")
+    @Operation(summary = "列表")
     public CommonResult<PageResult<RuleInfoRespVO>> list(@RequestBody @Valid RuleInfoPageReqVO ruleInfoPageReqVO) {
         PageResult<RuleInfoRespVO> ruleInfoPage = ruleInfoService.list(ruleInfoPageReqVO);
         return success(ruleInfoPage);
     }
 
     @GetMapping("/detail")
-    @Operation(summary = "获取规则信息详情")
+    @Operation(summary = "详情")
     public CommonResult<RuleInfoRespVO> detail(@NotBlank String ruleCode) {
         RuleInfoRespVO ruleInfoRespVO = ruleInfoService.detail(ruleCode);
         return success(ruleInfoRespVO);
     }
 
-    @GetMapping("/create")
-    @Operation(summary = "新增规则信息")
+    @PostMapping(value = "/create")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息保存请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
+    @Operation(summary = "新增")
     public CommonResult<String> create(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
         String ruleCode = ruleInfoService.create(ruleInfoSaveReqVO);
         return success(ruleCode);

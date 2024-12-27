@@ -34,30 +34,30 @@ public class RuleInfoSaveReqVO implements Serializable {
      */
     @NotBlank(message = "渠道[channel]，不能为空")
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME")
+    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
-    @Schema(description = "规则编号（无需前端传入）", example = "R175928847299117063")
+    @Schema(description = "规则编号（无需前端传入）", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 
     @Size(max = 20, message = "规则名称[ruleName]，长度不能超过 20 个字符")
     @NotBlank(message = "规则名称[ruleName]，不能为空")
-    @Schema(description = "规则名称", example = "游戏高频抽奖")
+    @Schema(description = "规则名称", example = "游戏高频抽奖", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleName;
 
     @Size(max = 64, message = "规则描述[ruleDesc]，长度不能超过 64 个字符")
     @NotBlank(message = "规则描述[ruleDesc]，不能为空")
-    @Schema(description = "规则描述", example = "游戏低龄高频抽奖规则")
+    @Schema(description = "规则描述", example = "游戏低龄高频抽奖规则", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleDesc;
 
     /**
      * {@link RuleStatusEnum}
      */
-    @Schema(description = "规则状态（无需前端传入）", example = "ONLINE")
+    @Schema(description = "规则状态（无需前端传入）", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleStatus;
 
     @NotNull(message = "预警间隔值[alertIntervalValue]，不能为空")
-    @Schema(description = "预警间隔值", example = "10")
+    @Schema(description = "预警间隔值", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long alertIntervalValue;
 
     /**
@@ -65,23 +65,23 @@ public class RuleInfoSaveReqVO implements Serializable {
      */
     @NotBlank(message = "预警间隔单位[alertIntervalUnit]，不能为空")
     @InStringEnum(value = TimeUnitEnum.class, message = "预警间隔单位[alertIntervalUnit]，必须在指定范围 {value}")
-    @Schema(description = "预警间隔单位", example = "MINUTE")
+    @Schema(description = "预警间隔单位", example = "MINUTE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String alertIntervalUnit;
 
     @NotBlank(message = "预警消息[alertMessage]，不能为空")
-    @Schema(description = "预警消息", example = "触发xxx预警啦！")
+    @Schema(description = "预警消息", example = "触发xxx预警啦！", requiredMode = Schema.RequiredMode.REQUIRED)
     private String alertMessage;
 
     /**
      * {@link RuleKeyDO#getKeyCode()}
      */
     @NotBlank(message = "规则目标[keyCode]，不能为空")
-    @Schema(description = "规则目标", example = "GAME_userId")
+    @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String keyCode;
 
     @NotBlank
     @NotBlank(message = "模型编号[modelCode]，不能为空")
-    @Schema(description = "模型编号", example = "M175928847299117063")
+    @Schema(description = "模型编号", example = "M175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
     private String modelCode;
 
     /**
@@ -89,10 +89,10 @@ public class RuleInfoSaveReqVO implements Serializable {
      */
     @NotBlank(message = "条件组合符[ruleCondCombOp]，不能为空")
     @InStringEnum(value = RuleCondCombOpEnum.class, message = "条件组合符[ruleCondCombOp]，必须在指定范围 {value}")
-    @Schema(description = "条件组合符", example = "AND")
+    @Schema(description = "条件组合符", example = "AND", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleCondCombOp;
 
     @NotNull(message = "条件组[ruleCondSaveReqVOList]，不能为空")
-    @Schema(description = "条件组")
+    @Schema(description = "条件组", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<RuleCondSaveReqVO> ruleCondSaveReqVOList;
 }

@@ -20,20 +20,20 @@ import java.io.Serializable;
 public class RuleEventAttrValueSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "条件编号（无需前端传入）", example = "A175928847299117063")
+    @Schema(description = "条件编号（无需前端传入）", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
     @NotEmpty(message = "属性编号[attributeCode]，不能为空")
-    @Schema(description = "属性编号", example = "A175928847299117063")
+    @Schema(description = "属性编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
     private String attributeCode;
 
     @NotEmpty(message = "属性值[attributeValue]，不能为空")
-    @Schema(description = "属性值", example = "C175928847299117065")
+    @Schema(description = "属性值", example = "C175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
     private String attributeValue;
     /**
      * {@link RuleAuditOpEnum}
      */
     @NotEmpty(message = "属性比较符[attributeOp]，不能为空")
-    @Schema(description = "属性比较符", example = "C175928847299117065")
+    @Schema(description = "属性比较符", example = "C175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
     private String attributeOp;
 }
