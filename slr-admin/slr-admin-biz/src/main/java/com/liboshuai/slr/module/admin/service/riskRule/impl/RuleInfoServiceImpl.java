@@ -10,6 +10,7 @@ import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -136,20 +137,45 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
     }
 
-    // TODO: 待完善
     @Override
     public void changeStatus(RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
         String ruleCode = ruleInfoChangeStatusReqVO.getRuleCode();
-        // 上线
+        String auditOp = ruleInfoChangeStatusReqVO.getAuditOp();
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
         if (Objects.isNull(ruleInfoDO)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS);
         }
         String ruleStatus = ruleInfoDO.getRuleStatus();
-        if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING);
+        String newRuleStatus = ruleInfoChangeStatusReqVO.getNewRuleStatus();
+        if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+            if (!Objects.equals(ruleStatus, RuleStatusEnum.DRAFT.getCode())) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
+            }
+            ruleInfoDO.setRuleStatus(newRuleStatus);
+        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
+            if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING, ruleCode);
+            }
+            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) {
+                ruleInfoDO.setRuleStatus(newRuleStatus);
+            } else {
+                ruleInfoDO.setRuleStatus(RuleStatusEnum.DRAFT.getCode());
+            }
+        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+            if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE.getCode())) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
+            }
+            ruleInfoDO.setRuleStatus(newRuleStatus);
+        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE.getCode())) {
+            if (!Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_PENDING, ruleCode);
+            }
+            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) {
+                ruleInfoDO.setRuleStatus(newRuleStatus);
+            } else {
+                ruleInfoDO.setRuleStatus(RuleStatusEnum.ONLINE.getCode());
+            }
         }
-        ruleInfoDO.setRuleStatus(RuleStatusEnum.ONLINE.getCode());
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
     }
 
