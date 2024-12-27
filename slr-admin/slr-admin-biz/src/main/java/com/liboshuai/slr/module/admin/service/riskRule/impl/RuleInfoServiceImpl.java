@@ -4,16 +4,14 @@ import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleCondSaveReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrValueSaveReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.*;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +27,7 @@ import java.util.stream.Collectors;
 import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.COND_CODE_PREFIX;
 import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.RULE_CODE_PREFIX;
 
+@Slf4j
 @Service
 public class RuleInfoServiceImpl implements RuleInfoService {
     @Resource
@@ -115,7 +114,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String update(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+    public void update(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
         String ruleCode = ruleInfoSaveReqVO.getRuleCode();
         // 参数效验
         validateParameter(ruleCode);
@@ -135,7 +134,23 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(ruleEventAttrValueSaveReqVOList, RuleEventAttrValueDO.class);
         ruleEventAttrValueMapper.deleteByCondCodes(condCodeList);
         ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
-        return ruleCode;
+    }
+
+    // TODO: 待完善
+    @Override
+    public void changeStatus(RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
+        String ruleCode = ruleInfoChangeStatusReqVO.getRuleCode();
+        // 上线
+        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
+        if (Objects.isNull(ruleInfoDO)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS);
+        }
+        String ruleStatus = ruleInfoDO.getRuleStatus();
+        if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING);
+        }
+        ruleInfoDO.setRuleStatus(RuleStatusEnum.ONLINE.getCode());
+        ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
     }
 
     /**

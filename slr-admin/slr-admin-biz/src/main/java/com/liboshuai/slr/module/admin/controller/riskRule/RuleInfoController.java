@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoChangeStatusReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
@@ -56,8 +57,15 @@ public class RuleInfoController {
     @PostMapping(value = "/update")
     @Operation(summary = "更新")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息更新请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
-    public CommonResult<String> update(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
-        String ruleCode = ruleInfoService.update(ruleInfoSaveReqVO);
-        return success(ruleCode);
+    public CommonResult<Boolean> update(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+        ruleInfoService.update(ruleInfoSaveReqVO);
+        return success(true);
+    }
+
+    @PostMapping(value = "/changeStatus")
+    @Operation(summary = "变更状态")
+    public CommonResult<Boolean> changeStatus(@RequestBody @Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
+        ruleInfoService.changeStatus(ruleInfoChangeStatusReqVO);
+        return success(true);
     }
 }
