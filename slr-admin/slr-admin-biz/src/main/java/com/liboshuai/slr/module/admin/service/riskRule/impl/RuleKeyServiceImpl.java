@@ -107,12 +107,12 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     @Transactional(rollbackFor = Exception.class)
     public void update(RuleKeySaveReqVO ruleKeySaveReqVO) {
         // 更新 规则目标信息
-        validateRuleKeySaveReqVO(ruleKeySaveReqVO); // 效验
+        validateUniqueRuleKey(ruleKeySaveReqVO.getId(), ruleKeySaveReqVO.getKeyCode()); // 效验 ruleKey 唯一
         RuleKeyDO oldRuleKeyDO = ruleKeyMapper.selectById(ruleKeySaveReqVO.getId());
         ruleKeyMapper.updateById(BeanUtils.toBean(ruleKeySaveReqVO, RuleKeyDO.class));
         // 更新 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
-        validateRuleEventSaveReqVO(ruleEventSaveReqVOList); // 效验
+        batchValidateUniqueEventCode(ruleEventSaveReqVOList); // 批量效验 eventCode 唯一
         List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleKeyDO.getKeyCode());
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
         ruleEventMapper.deleteByKeyCode(oldRuleKeyDO.getKeyCode());
@@ -130,7 +130,37 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         ruleEventAttrMapper.insertBatch(ruleEventAttrDOList);
     }
 
-    private void validateRuleEventSaveReqVO(List<RuleEventSaveReqVO> ruleEventSaveReqVOList) {
+    @Override
+    public boolean checkUniqueKeyCode(Long keyId, String keyCode) {
+        List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
+        if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
+            for (RuleKeyDO keyDO : ruleKeyDOList) {
+                if (Objects.equals(keyDO.getKeyCode(), keyCode)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkUniqueEventCode(Long eventId, String eventCode) {
+        RuleEventDO ruleEventDO = ruleEventMapper.selectById(eventId);
+        if (Objects.isNull(ruleEventDO)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_ID_NOT_EXISTS, eventId);
+        }
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByNeId(eventId);
+        if (!CollectionUtils.isEmpty(ruleEventDOList)) {
+            List<String> ruleEventCodeList = ruleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
+            return !ruleEventCodeList.contains(eventCode);
+        }
+        return true;
+    }
+
+    /**
+     * 批量效验 eventCode 唯一
+     */
+    private void batchValidateUniqueEventCode(List<RuleEventSaveReqVO> ruleEventSaveReqVOList) {
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
@@ -154,15 +184,13 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     }
 
     /**
-     * 效验
+     * 效验 ruleKey 唯一
      */
-    private void validateRuleKeySaveReqVO(RuleKeySaveReqVO ruleKeySaveReqVO) {
-        Long id = ruleKeySaveReqVO.getId();
-        if (Objects.isNull(id)) {
+    private void validateUniqueRuleKey(Long keyId, String keyCode) {
+        if (Objects.isNull(keyId)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_NULL);
         }
-        String keyCode = ruleKeySaveReqVO.getKeyCode();
-        List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(id);
+        List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
         if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
             for (RuleKeyDO keyDO : ruleKeyDOList) {
                 if (Objects.equals(keyDO.getKeyCode(), keyCode)) {

@@ -23,4 +23,6 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_KEY_ID_NOT_NULL = new ErrorCode(20011, "规则key[id]不能为空");
     ErrorCode RULE_EVENT_NOT_NULL = new ErrorCode(20012, "规则事件不能为空");
     ErrorCode RULE_EVENT_ID_NOT_NULL = new ErrorCode(20013, "规则事件[id]不能为空");
+    ErrorCode RULE_KEY_ID_NOT_EXISTS = new ErrorCode(20014, "id为[{}]规则目标不存在");
+    ErrorCode RULE_EVENT_ID_NOT_EXISTS = new ErrorCode(20015, "id为[{}]规则事件不存在");
 }

@@ -5,13 +5,21 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeyPageReqV
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeySaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 public interface RuleKeyService {
 
-    PageResult<RuleKeyRespVO> list(RuleKeyPageReqVO ruleKeyPageReqVO);
+    PageResult<RuleKeyRespVO> list(@Valid RuleKeyPageReqVO ruleKeyPageReqVO);
 
-    RuleKeyRespVO detail(String keyCode);
+    RuleKeyRespVO detail(@NotBlank String keyCode);
 
-    void create(RuleKeySaveReqVO ruleKeySaveReqVO);
+    void create(@Valid RuleKeySaveReqVO ruleKeySaveReqVO);
 
-    void update(RuleKeySaveReqVO ruleKeySaveReqVO);
+    void update(@Valid RuleKeySaveReqVO ruleKeySaveReqVO);
+
+    boolean checkUniqueKeyCode(@NotNull Long keyId, @NotBlank String keyCode);
+
+    boolean checkUniqueEventCode(@NotNull Long eventId, @NotBlank String eventCode);
 }
