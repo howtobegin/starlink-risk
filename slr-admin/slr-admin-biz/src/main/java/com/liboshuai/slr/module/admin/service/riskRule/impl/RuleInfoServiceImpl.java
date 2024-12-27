@@ -154,6 +154,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
+            // TODO: 将规则数据存入 rule_json 表
+
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
             // 进行上线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
@@ -172,6 +174,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
+            // TODO: 将规则数据从 rule_json 表删除
+
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
