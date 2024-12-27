@@ -151,7 +151,9 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         }
         List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByNeId(eventId);
         if (!CollectionUtils.isEmpty(ruleEventDOList)) {
-            List<String> ruleEventCodeList = ruleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
+            List<String> ruleEventCodeList = ruleEventDOList.stream()
+                    .map(RuleEventDO::getEventCode)
+                    .collect(Collectors.toList());
             return !ruleEventCodeList.contains(eventCode);
         }
         return true;
@@ -164,7 +166,8 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
-        List<String> ruleEventCodeList = ruleEventSaveReqVOList.stream().map(RuleEventSaveReqVO::getEventCode).collect(Collectors.toList());
+        List<String> ruleEventCodeList = ruleEventSaveReqVOList.stream().map(RuleEventSaveReqVO::getEventCode)
+                .collect(Collectors.toList());
         List<Long> ruleEventIdList = new ArrayList<>();
         for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
             Long id = ruleEventSaveReqVO.getId();
@@ -222,9 +225,13 @@ public class RuleKeyServiceImpl implements RuleKeyService {
             return;
         }
         List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
-        Map<String, List<RuleEventAttrRespVO>> eventCodeAndEventAttrRespVoMap = ruleEventAttrRespVOList.stream().collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
+        Map<String, List<RuleEventAttrRespVO>> eventCodeAndEventAttrRespVoMap = ruleEventAttrRespVOList.stream()
+                .collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
         // 设置 事件属性组
-        ruleEventRespVOS = ruleEventRespVOS.stream().peek(ruleEventRespVO -> ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))).collect(Collectors.toList());
+        ruleEventRespVOS.forEach(
+                ruleEventRespVO ->
+                        ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))
+        );
         // 设置 规则事件组
         ruleKeyRespVO.setRuleEventRespVOList(ruleEventRespVOS);
     }
