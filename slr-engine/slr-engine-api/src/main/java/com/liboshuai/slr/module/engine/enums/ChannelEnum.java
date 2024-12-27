@@ -1,19 +1,23 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * 渠道枚举
  */
 @Getter
-public enum ChannelEnum {
+public enum ChannelEnum implements StringArrayValuable {
 
     GAME("GAME", "游戏"),
     HJF("HJF", "花积分"),
     MALL("MALL", "商场")
     ;
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(ChannelEnum::getCode).toArray(String[]::new);
 
     /**
      * 编码
@@ -51,5 +55,10 @@ public enum ChannelEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

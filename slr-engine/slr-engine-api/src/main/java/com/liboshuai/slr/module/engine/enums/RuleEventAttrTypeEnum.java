@@ -1,14 +1,16 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * 规则事件属性类型
  */
 @Getter
-public enum RuleEventAttrTypeEnum {
+public enum RuleEventAttrTypeEnum implements StringArrayValuable {
     BYTE("byte", "字节类型"),
     SHORT("short", "短整型"),
     INT("int", "整型"),
@@ -18,6 +20,8 @@ public enum RuleEventAttrTypeEnum {
     BOOLEAN("boolean", "布尔型"),
     CHAR("char", "字符型"),
     STRING("String", "字符串类型");
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(RuleEventAttrTypeEnum::getType).toArray(String[]::new);
 
     /**
      * 类型
@@ -55,5 +59,10 @@ public enum RuleEventAttrTypeEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

@@ -1,12 +1,15 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
+
+import java.util.Arrays;
 
 /**
  * 时间单位枚举
  */
 @Getter
-public enum TimeUnitEnum {
+public enum TimeUnitEnum implements StringArrayValuable {
 
     MILLISECOND("MILLISECOND", "毫秒"),
     SECOND("SECOND", "秒"),
@@ -16,6 +19,8 @@ public enum TimeUnitEnum {
     WEEK("WEEK", "周"),
     MONTH("MONTH", "月"),
     YEAR("YEAR", "年");
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(TimeUnitEnum::getEnUnit).toArray(String[]::new);
 
     private final String enUnit;
     private final String cnUnit;
@@ -79,5 +84,10 @@ public enum TimeUnitEnum {
             }
         }
         return null;
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

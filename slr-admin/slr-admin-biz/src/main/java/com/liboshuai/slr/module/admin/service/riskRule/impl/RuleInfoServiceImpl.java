@@ -2,7 +2,9 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.*;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.*;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
@@ -34,8 +36,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private RuleKeyMapper ruleKeyMapper;
 
     @Override
-    public PageResult<RuleInfoRespVO> list(RuleInfoReqVO ruleInfoReqVO) {
-        PageResult<RuleInfoDO> ruleInfoEntityPageResult = ruleInfoMapper.selectPage(ruleInfoReqVO);
+    public PageResult<RuleInfoRespVO> list(RuleInfoPageReqVO ruleInfoPageReqVO) {
+        PageResult<RuleInfoDO> ruleInfoEntityPageResult = ruleInfoMapper.selectPage(ruleInfoPageReqVO);
         return BeanUtils.toBean(ruleInfoEntityPageResult, RuleInfoRespVO.class);
     }
 
@@ -53,6 +55,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 设置条件组
         setRuleCondGroup(ruleCode, ruleInfoRespVO);
         return ruleInfoRespVO;
+    }
+
+    @Override
+    public String create(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+        return "";
     }
 
     /**

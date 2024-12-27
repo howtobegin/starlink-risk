@@ -1,17 +1,21 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * 规则条件类型
  */
 @Getter
-public enum RuleCondTypeEnum {
+public enum RuleCondTypeEnum implements StringArrayValuable {
     RANGE("RANGE", "范围"),
     PERIODIC("CYCLE", "周期")
     ;
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(RuleCondTypeEnum::getCode).toArray(String[]::new);
 
     /**
      * 编码
@@ -49,5 +53,10 @@ public enum RuleCondTypeEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

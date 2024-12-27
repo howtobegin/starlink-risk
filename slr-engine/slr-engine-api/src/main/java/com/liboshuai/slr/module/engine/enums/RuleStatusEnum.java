@@ -1,16 +1,20 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @Getter
-public enum RuleStatusEnum {
+public enum RuleStatusEnum implements StringArrayValuable {
     DRAFT("DRAFT", "草稿"),
     ONLINE_PENDING("ONLINE_PENDING", "上线待审核"),
     ONLINE("ONLINE", "已上线"),
     OFFLINE_PENDING("OFFLINE_PENDING", "下线待审核"),
     OFFLINE("OFFLINE", "已下线");
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(RuleStatusEnum::getCode).toArray(String[]::new);
 
     /**
      * 编码
@@ -48,5 +52,10 @@ public enum RuleStatusEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

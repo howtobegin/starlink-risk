@@ -1,16 +1,20 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * 规则条件组合操作符
  */
 @Getter
-public enum RuleCondCombOpEnum {
+public enum RuleCondCombOpEnum implements StringArrayValuable {
     AND("AND", "与"),
     OR("OR", "或");
+
+    public static final String[] ARRAYS = Arrays.stream(values()).map(RuleCondCombOpEnum::getCode).toArray(String[]::new);
 
     /**
      * 编码
@@ -48,5 +52,10 @@ public enum RuleCondCombOpEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

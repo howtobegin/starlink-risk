@@ -27,7 +27,7 @@ public class InStringEnumValidator implements ConstraintValidator<InStringEnum, 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         // 为空时，默认不校验，即认为通过
-        if (StringUtils.hasText(value)) {
+        if (!StringUtils.hasText(value)) {
             return true;
         }
         // 校验通过

@@ -1,14 +1,17 @@
 package com.liboshuai.slr.module.engine.enums;
 
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @Getter
-public enum RuleAuditOpEnum {
+public enum RuleAuditOpEnum implements StringArrayValuable {
     APPROVE("APPROVE", "通过"),
     REJECT("REJECT", "拒绝");
 
+    public static final String[] ARRAYS = Arrays.stream(values()).map(RuleAuditOpEnum::getCode).toArray(String[]::new);
     /**
      * 编码
      */
@@ -45,5 +48,10 @@ public enum RuleAuditOpEnum {
             }
         }
         throw new IllegalArgumentException("未知的desc: " + desc);
+    }
+
+    @Override
+    public String[] array() {
+        return ARRAYS;
     }
 }

@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.admin.controller.riskRule.vo;
+package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
 import com.liboshuai.slr.framework.common.pojo.PageParam;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
@@ -7,16 +7,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-/**
- * 规则信息
- */
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class RuleInfoReqVO extends PageParam {
+public class RuleInfoPageReqVO extends PageParam {
 
     private static final long serialVersionUID = 1L;
 

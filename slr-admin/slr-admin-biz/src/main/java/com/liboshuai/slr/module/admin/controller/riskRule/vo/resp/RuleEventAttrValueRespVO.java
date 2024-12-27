@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.admin.controller.riskRule.vo;
+package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
 
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
