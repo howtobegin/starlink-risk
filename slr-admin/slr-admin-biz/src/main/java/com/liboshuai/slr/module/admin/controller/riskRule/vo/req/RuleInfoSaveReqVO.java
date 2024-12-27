@@ -38,7 +38,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
-    @Schema(description = "规则编号（无需前端传入）", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 
     @Size(max = 20, message = "规则名称[ruleName]，长度不能超过 20 个字符")
@@ -54,7 +54,8 @@ public class RuleInfoSaveReqVO implements Serializable {
     /**
      * {@link RuleStatusEnum}
      */
-    @Schema(description = "规则状态（无需前端传入）", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @InStringEnum(value = RuleStatusEnum.class, message = "规则状态[ruleStatus]，必须在指定范围 {value}")
+    @Schema(description = "规则状态", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleStatus;
 
     @NotNull(message = "预警间隔值[alertIntervalValue]，不能为空")

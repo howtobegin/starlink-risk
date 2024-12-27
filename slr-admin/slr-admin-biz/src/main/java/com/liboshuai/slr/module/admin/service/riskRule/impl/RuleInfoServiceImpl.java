@@ -1,7 +1,9 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
+import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleCondSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrValueSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
@@ -109,6 +111,43 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 RuleEventAttrValueDO.class);
         ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
         return ruleCode;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String update(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+        String ruleCode = ruleInfoSaveReqVO.getRuleCode();
+        // 参数效验
+        validateParameter(ruleCode);
+        // 更新 规则信息
+        RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class);
+        ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
+        // 更新 条件信息
+        List<RuleCondSaveReqVO> ruleCondSaveReqVOList = ruleInfoSaveReqVO.getRuleCondSaveReqVOList();
+        List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
+        ruleCondMapper.deleteByRuleCode(ruleCode);
+        ruleCondMapper.insertBatch(ruleCondDOList);
+        // 更新 事件属性值信息
+        List<String> condCodeList = ruleCondSaveReqVOList.stream().map(RuleCondSaveReqVO::getCondCode).collect(Collectors.toList());
+        List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList = ruleCondSaveReqVOList.stream()
+                .flatMap(ruleCondSaveReqVO -> ruleCondSaveReqVO.getRuleEventAttrValueSaveReqVOList().stream())
+                .collect(Collectors.toList());
+        List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(ruleEventAttrValueSaveReqVOList, RuleEventAttrValueDO.class);
+        ruleEventAttrValueMapper.deleteByCondCodes(condCodeList);
+        ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
+        return ruleCode;
+    }
+
+    /**
+     * 参数效验
+     */
+    private void validateParameter(String ruleCode) {
+        if (!StringUtils.hasText(ruleCode)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CODE_NOT_BLANK);
+        }
+        if (Objects.isNull(ruleInfoMapper.selectOneByRuleCode(ruleCode))) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS);
+        }
     }
 
     /**

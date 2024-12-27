@@ -13,4 +13,9 @@ public interface RuleEventAttrValueMapper extends BaseMapperX<RuleEventAttrValue
         return selectList(new LambdaQueryWrapperX<RuleEventAttrValueDO>()
                 .in(RuleEventAttrValueDO::getCondCode, condCodeList));
     }
+
+    default void deleteByCondCodes(List<String> condCodeList) {
+        delete(new LambdaQueryWrapperX<RuleEventAttrValueDO>()
+                .in(RuleEventAttrValueDO::getCondCode, condCodeList));
+    }
 }

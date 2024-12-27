@@ -15,4 +15,9 @@ public interface RuleCondMapper extends BaseMapperX<RuleCondDO> {
         return selectList(new LambdaQueryWrapperX<RuleCondDO>()
                 .eq(RuleCondDO::getRuleCode, ruleCode));
     }
+
+    default void deleteByRuleCode(String ruleCode) {
+        delete(new LambdaQueryWrapperX<RuleCondDO>()
+                .eq(RuleCondDO::getRuleCode, ruleCode));
+    }
 }

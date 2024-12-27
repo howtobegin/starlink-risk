@@ -52,4 +52,12 @@ public class RuleInfoController {
         String ruleCode = ruleInfoService.create(ruleInfoSaveReqVO);
         return success(ruleCode);
     }
+
+    @PostMapping(value = "/update")
+    @Operation(summary = "更新")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息更新请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
+    public CommonResult<String> update(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+        String ruleCode = ruleInfoService.update(ruleInfoSaveReqVO);
+        return success(ruleCode);
+    }
 }

@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.dal.mysql.riskRule;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.mybatis.core.mapper.BaseMapperX;
 import com.liboshuai.slr.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -24,5 +25,9 @@ public interface RuleInfoMapper extends BaseMapperX<RuleInfoDO> {
         return selectOne(new LambdaQueryWrapperX<RuleInfoDO>()
                 .eq(RuleInfoDO::getRuleCode, ruleCode)
         );
+    }
+
+    default void updateByRuleCode(RuleInfoDO ruleInfoDO, String ruleCode) {
+        update(ruleInfoDO, new LambdaUpdateWrapper<RuleInfoDO>().eq(RuleInfoDO::getRuleCode, ruleCode));
     }
 }

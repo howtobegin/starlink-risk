@@ -28,14 +28,14 @@ import java.util.List;
 public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "规则编号（无需前端传入）", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "规则编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 
     @NotBlank(message = "事件编号[eventCode]，不能为空")
     @Schema(description = "事件编号", example = "GAME_LOTTERY", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
-    @Schema(description = "条件编号（无需前端传入）", example = "C175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "条件编号", example = "C175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
     /**

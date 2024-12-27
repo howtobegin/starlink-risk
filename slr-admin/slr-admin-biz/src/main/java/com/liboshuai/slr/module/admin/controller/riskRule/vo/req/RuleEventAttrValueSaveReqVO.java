@@ -20,7 +20,7 @@ import java.io.Serializable;
 public class RuleEventAttrValueSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "条件编号（无需前端传入）", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "条件编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
     @NotEmpty(message = "属性编号[attributeCode]，不能为空")
