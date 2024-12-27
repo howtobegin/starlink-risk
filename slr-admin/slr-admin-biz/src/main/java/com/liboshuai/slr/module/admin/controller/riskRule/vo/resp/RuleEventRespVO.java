@@ -1,7 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
 
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -20,9 +19,6 @@ import java.util.List;
 public class RuleEventRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * {@link ChannelEnum}
-     */
     @Schema(description = "key编号", example = "GAME_userId")
     private String keyCode;
 

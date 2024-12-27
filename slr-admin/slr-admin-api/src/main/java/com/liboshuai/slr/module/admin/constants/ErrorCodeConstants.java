@@ -18,4 +18,9 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_INFO_STATUS_NOT_OFFLINE_PENDING = new ErrorCode(20006, "规则[{}]状态不为[下线待审核]，无法进行下线审核操作");
     ErrorCode RULE_INFO_AUDIT_OP_NOT_SUPPORT = new ErrorCode(20007, "规则[{}]进行审核操作时，审核操作符[auditOp]不能为空");
     ErrorCode RULE_INFO_NEW_STATUS_NOT_SUPPORT = new ErrorCode(20008, "规则[{}]新状态值错误");
+    ErrorCode RULE_KEY_CODE_EXISTS = new ErrorCode(20009, "规则key编号[{}]已经存在了");
+    ErrorCode RULE_EVENT_CODE_EXISTS = new ErrorCode(20010, "规则事件编号[{}]已经存在了");
+    ErrorCode RULE_KEY_ID_NOT_NULL = new ErrorCode(20011, "规则key[id]不能为空");
+    ErrorCode RULE_EVENT_NOT_NULL = new ErrorCode(20012, "规则事件不能为空");
+    ErrorCode RULE_EVENT_ID_NOT_NULL = new ErrorCode(20013, "规则事件[id]不能为空");
 }
