@@ -2,10 +2,8 @@ package com.liboshuai.slr.module.admin.controller.riskRule.vo;
 
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
@@ -16,26 +14,22 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
 public class RuleKeyRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 渠道
      * {@link ChannelEnum}
      */
+    @Schema(description = "渠道", example = "GAME")
     private String channel;
-    /**
-     * key编号
-     * （例如：GAME_userId）
-     */
+
+    @Schema(description = "key编号", example = "GAME_userId")
     private String keyCode;
-    /**
-     * key名称
-     * （例如：用户id）
-     */
+
+    @Schema(description = "key名称", example = "用户id")
     private String keyName;
-    /**
-     * key描述
-     */
+
+    @Schema(description = "key描述", example = "游戏平台的用户ID")
     private String keyDesc;
 }

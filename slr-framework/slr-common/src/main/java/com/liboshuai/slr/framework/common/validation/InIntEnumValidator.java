@@ -9,12 +9,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InEnumValidator implements ConstraintValidator<InEnum, Integer> {
+public class InIntEnumValidator implements ConstraintValidator<InIntEnum, Integer> {
 
     private List<Integer> values;
 
     @Override
-    public void initialize(InEnum annotation) {
+    public void initialize(InIntEnum annotation) {
         IntArrayValuable[] values = annotation.value().getEnumConstants();
         if (values.length == 0) {
             this.values = Collections.emptyList();

@@ -194,6 +194,7 @@ CREATE TABLE `slr_rule_info`
     `alert_interval_value` bigint UNSIGNED NULL DEFAULT NULL COMMENT '预警间隔值',
     `alert_interval_unit`  varchar(64)          DEFAULT NULL COMMENT '预警间隔单位',
     `alert_message`        text COMMENT '预警消息',
+    `key_code` varchar(64) DEFAULT NULL COMMENT '目标编号',
     `model_code`           varchar(64)          DEFAULT NULL COMMENT '模型编号',
     `rule_cond_comb_op`    varchar(64)          DEFAULT NULL COMMENT '条件组合符',
     `creator`              varchar(64)          DEFAULT NULL COMMENT '创建用户',
@@ -214,11 +215,11 @@ INSERT INTO `slr_rule_info`
 VALUES (1, 'GAME', 'R1553673459123456000', '游戏低龄高频抽奖充值预警',
         '游戏平台对于低龄男性用户高频抽奖的同时进行大量充值的行为预警', 'ONLINE', 3, 'MINUTE',
         '[异常低龄高频充值及抽奖]${KafkaEventDTO.eventAttribute.bankName}：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_lottery}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！',
-        'M1553673459123456001', 'AND', 'boshuai.li', NULL, '2024-12-26 22:27:52', NULL);
+        'GAME_userId', 'M1553673459123456001', 'AND', 'boshuai.li', NULL, '2024-12-26 22:27:52', NULL);
 INSERT INTO `slr_rule_info`
 VALUES (2, 'MALL', 'R1553673459123456002', '商城库存超卖', '商城库存超卖预警监控', 'ONLINE', 10, 'MINUTE',
         '[库存超卖]${KafkaEventDTO.eventAttribute.bankName}：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！',
-        'M1553673459123456001', NULL, 'boshuai.li', NULL, '2024-12-26 22:28:50', NULL);
+        'MALL_orderNo', 'M1553673459123456001', NULL, 'boshuai.li', NULL, '2024-12-26 22:28:50', NULL);
 
 -- ----------------------------
 -- Table structure for slr_rule_json
@@ -306,4 +307,3 @@ VALUES (1, 'M1553673459123456001', '运算机模型一', '支持周期预警', '
         'boshuai.li', NULL, '2024-12-26 22:26:42', NULL);
 
 SET FOREIGN_KEY_CHECKS = 1;
-

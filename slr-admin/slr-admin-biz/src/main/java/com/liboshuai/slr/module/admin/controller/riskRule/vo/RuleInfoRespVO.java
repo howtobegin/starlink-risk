@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo;
 
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
+import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleKeyDO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
@@ -56,6 +57,15 @@ public class RuleInfoRespVO extends BaseRespVO {
 
     @Schema(description = "预警消息", example = "触发xxx预警啦！")
     private String alertMessage;
+
+    /**
+     * {@link RuleKeyDO#getKeyCode()}
+     */
+    @Schema(description = "规则目标", example = "GAME_userId")
+    private String keyCode;
+
+    @Schema(description = "规则目标信息")
+    private RuleKeyRespVO ruleKeyRespVO;
 
     @Schema(description = "模型编号", example = "M175928847299117063")
     private String modelCode;

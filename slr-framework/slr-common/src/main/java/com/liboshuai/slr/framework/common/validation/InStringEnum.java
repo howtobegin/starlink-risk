@@ -1,6 +1,6 @@
 package com.liboshuai.slr.framework.common.validation;
 
-import com.liboshuai.slr.framework.common.core.IntArrayValuable;
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -17,14 +17,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(
-        validatedBy = {InEnumValidator.class, InEnumCollectionValidator.class}
+        validatedBy = {InStringEnumValidator.class, InStringEnumCollectionValidator.class}
 )
-public @interface InEnum {
+public @interface InStringEnum {
 
     /**
      * @return 实现 EnumValuable 接口的
      */
-    Class<? extends IntArrayValuable> value();
+    Class<? extends StringArrayValuable> value();
 
     String message() default "必须在指定范围 {value}";
 

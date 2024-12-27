@@ -1,34 +1,31 @@
 package com.liboshuai.slr.framework.common.validation;
 
 import cn.hutool.core.collection.CollUtil;
-import com.liboshuai.slr.framework.common.core.IntArrayValuable;
+import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class InEnumCollectionValidator implements ConstraintValidator<InEnum, Collection<Integer>> {
+public class InStringEnumCollectionValidator implements ConstraintValidator<InStringEnum, Collection<String>> {
 
-    private List<Integer> values;
+    private List<String> values;
 
     @Override
-    public void initialize(InEnum annotation) {
-        IntArrayValuable[] values = annotation.value().getEnumConstants();
-        if (values.length == 0) {
+    public void initialize(InStringEnum annotation) {
+        StringArrayValuable[] enums = annotation.value().getEnumConstants();
+        if (enums.length == 0) {
             this.values = Collections.emptyList();
         } else {
-            this.values = Arrays.stream(values[0].array()).boxed().collect(Collectors.toList());
+            this.values = Arrays.stream(enums[0].array()).collect(Collectors.toList());
         }
     }
 
     @Override
-    public boolean isValid(Collection<Integer> list, ConstraintValidatorContext context) {
+    public boolean isValid(Collection<String> list, ConstraintValidatorContext context) {
         // 校验通过
-        if (CollUtil.containsAll(values, list)) {
+        if (new HashSet<>(values).containsAll(list)) {
             return true;
         }
         // 校验不通过，自定义提示语句（因为，注解上的 value 是枚举类，无法获得枚举类的实际值）
@@ -39,4 +36,3 @@ public class InEnumCollectionValidator implements ConstraintValidator<InEnum, Co
     }
 
 }
-

@@ -12,10 +12,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotBlank;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
 @Slf4j
+@Validated
 @RestController
 @Tag(name = "规则信息管理")
 @RequestMapping("/ruleInfo")
@@ -33,7 +35,7 @@ public class RuleInfoController {
 
     @GetMapping("/detail")
     @Operation(summary = "获取规则信息详情")
-    public CommonResult<RuleInfoRespVO> detail(String ruleCode) {
+    public CommonResult<RuleInfoRespVO> detail(@NotBlank String ruleCode) {
         RuleInfoRespVO ruleInfoRespVO = ruleInfoService.detail(ruleCode);
         return success(ruleInfoRespVO);
     }

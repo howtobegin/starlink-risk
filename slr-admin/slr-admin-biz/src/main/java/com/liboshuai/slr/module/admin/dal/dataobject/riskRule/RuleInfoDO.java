@@ -59,14 +59,19 @@ public class RuleInfoDO extends BaseDO {
      */
     private String alertMessage;
     /**
-     * 条件组合符
-     * {@link RuleCondCombOpEnum}
+     * 规则目标
+     * {@link RuleKeyDO#getKeyCode()}
      */
-    private String ruleCondCombOp;
+    private String keyCode;
     /**
      * 模型编号
      * {@link RuleModelDO#getModelCode()}
      */
     private String modelCode;
+    /**
+     * 条件组合符
+     * {@link RuleCondCombOpEnum}
+     */
+    private String ruleCondCombOp;
 
 }

@@ -30,6 +30,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private RuleEventAttrMapper ruleEventAttrMapper;
     @Resource
     private RuleEventAttrValueMapper ruleEventAttrValueMapper;
+    @Resource
+    private RuleKeyMapper ruleKeyMapper;
 
     @Override
     public PageResult<RuleInfoRespVO> list(RuleInfoReqVO ruleInfoReqVO) {
@@ -44,11 +46,29 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             return new RuleInfoRespVO();
         }
         RuleInfoRespVO ruleInfoRespVO = BeanUtils.toBean(ruleInfoDO, RuleInfoRespVO.class);
+        // 设置目标信息
+        setRuleKey(ruleInfoRespVO);
         // 设置模型信息
         setRuleModel(ruleInfoRespVO);
         // 设置条件组
         setRuleCondGroup(ruleCode, ruleInfoRespVO);
         return ruleInfoRespVO;
+    }
+
+    /**
+     * 设置目标信息
+     */
+    private void setRuleKey(RuleInfoRespVO ruleInfoRespVO) {
+        String keyCode = ruleInfoRespVO.getKeyCode();
+        if (!StringUtils.hasText(keyCode)) {
+            return;
+        }
+        RuleKeyDO ruleKeyDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
+        if (Objects.isNull(ruleKeyDO)) {
+            return;
+        }
+        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleKeyDO, RuleKeyRespVO.class);
+        ruleInfoRespVO.setRuleKeyRespVO(ruleKeyRespVO);
     }
 
     /**
