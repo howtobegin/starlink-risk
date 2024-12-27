@@ -150,7 +150,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         String newRuleStatus = ruleInfoChangeStatusReqVO.getNewRuleStatus();
         if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
             // 进行上线操作
-            if (!Objects.equals(ruleStatus, RuleStatusEnum.DRAFT.getCode())) {
+            if (!Objects.equals(ruleStatus, RuleStatusEnum.DRAFT.getCode()) && !Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
@@ -184,6 +184,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             } else {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
+        } else {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NEW_STATUS_NOT_SUPPORT, ruleCode);
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
     }
