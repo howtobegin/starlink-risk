@@ -60,11 +60,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         RuleInfoRespVO ruleInfoRespVO = BeanUtils.toBean(ruleInfoDO, RuleInfoRespVO.class);
         // 设置目标信息
-        setRuleKey(ruleInfoRespVO);
+        detailSetRuleKey(ruleInfoRespVO);
         // 设置模型信息
-        setRuleModel(ruleInfoRespVO);
+        detailSetRuleModel(ruleInfoRespVO);
         // 设置条件组
-        setRuleCondGroup(ruleCode, ruleInfoRespVO);
+        detailSetRuleCondGroup(ruleCode, ruleInfoRespVO);
         return ruleInfoRespVO;
     }
 
@@ -114,7 +114,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 设置目标信息
      */
-    private void setRuleKey(RuleInfoRespVO ruleInfoRespVO) {
+    private void detailSetRuleKey(RuleInfoRespVO ruleInfoRespVO) {
         String keyCode = ruleInfoRespVO.getKeyCode();
         if (!StringUtils.hasText(keyCode)) {
             return;
@@ -130,7 +130,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 设置模型信息
      */
-    private void setRuleModel(RuleInfoRespVO ruleInfoRespVO) {
+    private void detailSetRuleModel(RuleInfoRespVO ruleInfoRespVO) {
         String modelCode = ruleInfoRespVO.getModelCode();
         if (StringUtils.hasText(modelCode)) {
             RuleModelDO ruleModelDO = ruleModelMapper.selectOneByModelCode(modelCode);
@@ -142,7 +142,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 设置条件组
      */
-    private void setRuleCondGroup(String ruleCode, RuleInfoRespVO ruleInfoRespVO) {
+    private void detailSetRuleCondGroup(String ruleCode, RuleInfoRespVO ruleInfoRespVO) {
         List<RuleCondDO> ruleCondDOList = ruleCondMapper.selectListByModelCode(ruleCode);
         if (CollectionUtils.isEmpty(ruleCondDOList)) {
             return;
