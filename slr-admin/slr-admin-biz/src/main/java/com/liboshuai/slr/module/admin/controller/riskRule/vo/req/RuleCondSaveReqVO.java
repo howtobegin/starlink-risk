@@ -17,6 +17,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Data
@@ -26,6 +27,16 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    @Schema(description = "规则编号（无需前端传入）", example = "A175928847299117063")
+    private String ruleCode;
+
+    @NotBlank(message = "事件编号[eventCode]，不能为空")
+    @Schema(description = "事件编号", example = "GAME_LOTTERY")
+    private String eventCode;
+
+    @Schema(description = "条件编号（无需前端传入）", example = "C175928847299117063")
+    private String condCode;
 
     /**
      * {@link RuleCondTypeEnum}
@@ -68,8 +79,8 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01")
     private LocalDateTime crossHistoryTimeline;
 
-    @NotNull(message = "事件信息[ruleEventSaveReqVO]，不能为空")
-    @Schema(description = "事件信息")
-    private RuleEventSaveReqVO ruleEventSaveReqVO;
+    @NotNull(message = "事件属性组[ruleEventAttrSaveReqVOList]，不能为空")
+    @Schema(description = "事件属性组")
+    private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList;
 
 }

@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.admin.service.mock.impl;
 
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeId;
+import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.mock.MockService;
 import com.liboshuai.slr.module.admin.util.mock.MockEventUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class MockServiceImpl implements MockService {
 
     @Resource
-    private SnowflakeId snowflakeId;
+    private SnowflakeIdGenerator snowflakeIdGenerator;
 
     /**
      * 生成的文件路径

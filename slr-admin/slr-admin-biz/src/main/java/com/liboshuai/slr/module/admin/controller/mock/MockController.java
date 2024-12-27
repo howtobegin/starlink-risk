@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.admin.controller.mock;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeId;
+import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdProperties;
 import com.liboshuai.slr.module.admin.service.mock.MockService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +22,7 @@ public class MockController {
     @Resource
     private MockService mockService;
     @Resource
-    private SnowflakeId snowflakeId;
+    private SnowflakeIdGenerator snowflakeIdGenerator;
     @Resource
     private SnowflakeIdProperties snowflakeIdProperties;
 
@@ -43,7 +43,7 @@ public class MockController {
     @GetMapping("/testSnowflake")
     @Operation(summary = "测试雪花算法")
     public CommonResult<Long> testSnowflake() {
-        long id = snowflakeId.nextId();
+        long id = snowflakeIdGenerator.nextId();
         log.info("snowflakeIdProperties: {}", snowflakeIdProperties);
         return CommonResult.success(id);
     }

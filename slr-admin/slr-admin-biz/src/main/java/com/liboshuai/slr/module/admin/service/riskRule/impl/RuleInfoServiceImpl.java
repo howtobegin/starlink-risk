@@ -2,21 +2,30 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleCondSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrValueSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.*;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
+import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.COND_CODE_PREFIX;
+import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.RULE_CODE_PREFIX;
 
 @Service
 public class RuleInfoServiceImpl implements RuleInfoService {
@@ -34,6 +43,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private RuleEventAttrValueMapper ruleEventAttrValueMapper;
     @Resource
     private RuleKeyMapper ruleKeyMapper;
+    @Resource
+    private SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
     public PageResult<RuleInfoRespVO> list(RuleInfoPageReqVO ruleInfoPageReqVO) {
@@ -58,8 +69,46 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String create(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
-        return "";
+
+        // 处理 规则信息
+        String ruleCode = RULE_CODE_PREFIX + snowflakeIdGenerator.nextIdStr(); // 生成 规则编号
+        ruleInfoSaveReqVO.setRuleCode(ruleCode);
+        ruleInfoSaveReqVO.setRuleStatus(RuleStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
+        RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class); // 对象转换
+        ruleInfoMapper.insert(ruleInfoDO); // 保存 规则信息
+
+        // 处理 条件信息 与 事件属性值信息
+        List<RuleCondSaveReqVO> ruleCondSaveReqVOList = ruleInfoSaveReqVO.getRuleCondSaveReqVOList();
+        List<RuleCondSaveReqVO> newRuleCondSaveReqVOList = new ArrayList<>();
+        List<RuleEventAttrValueSaveReqVO> newRuleEventAttrValueSaveReqVOList = new ArrayList<>();
+        for (RuleCondSaveReqVO ruleCondSaveReqVO : ruleCondSaveReqVOList) {
+            // 条件信息设置 规则编号
+            ruleCondSaveReqVO.setRuleCode(ruleCode);
+            // 条件信息生成 条件编号
+            String condCode = COND_CODE_PREFIX + snowflakeIdGenerator.nextIdStr();
+            ruleCondSaveReqVO.setCondCode(condCode);
+            newRuleCondSaveReqVOList.add(ruleCondSaveReqVO);
+
+            // 事件属性值信息设置 条件编号
+            List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList =
+                    ruleCondSaveReqVO.getRuleEventAttrValueSaveReqVOList();
+            ruleEventAttrValueSaveReqVOList = ruleEventAttrValueSaveReqVOList.stream()
+                    .peek(ruleEventAttrValueSaveReqVO ->
+                            ruleEventAttrValueSaveReqVO.setCondCode(condCode))
+                    .collect(Collectors.toList());
+            newRuleEventAttrValueSaveReqVOList.addAll(ruleEventAttrValueSaveReqVOList);
+        }
+        // 保存 条件信息
+        List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(newRuleCondSaveReqVOList, RuleCondDO.class);
+        ruleCondMapper.insertBatch(ruleCondDOList);
+
+        // 保存 事件属性值信息
+        List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(newRuleEventAttrValueSaveReqVOList,
+                RuleEventAttrValueDO.class);
+        ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
+        return ruleCode;
     }
 
     /**

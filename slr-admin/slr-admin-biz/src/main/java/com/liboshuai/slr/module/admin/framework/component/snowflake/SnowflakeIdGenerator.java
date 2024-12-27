@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
  * 根据hutool封装的雪花算法ID生成器
  */
 @Component
-public class SnowflakeId {
+public class SnowflakeIdGenerator {
 
 
     private final cn.hutool.core.lang.Snowflake snowflake;
 
     @Autowired
-    public SnowflakeId(SnowflakeIdProperties properties) {
+    public SnowflakeIdGenerator(SnowflakeIdProperties properties) {
         long workerIdLong = Long.parseLong(properties.getWorkerId());
         long datacenterIdLong = Long.parseLong(properties.getDatacenterId());
         snowflake = IdUtil.getSnowflake(workerIdLong, datacenterIdLong);
