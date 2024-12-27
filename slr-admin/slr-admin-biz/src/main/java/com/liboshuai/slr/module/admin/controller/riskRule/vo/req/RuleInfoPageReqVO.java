@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "管理后台 - 风控规则信息 Request VO")
+@Schema(description = "管理后台 - 分页风控规则信息 Request VO")
 public class RuleInfoPageReqVO extends PageParam {
 
     private static final long serialVersionUID = 1L;

@@ -25,6 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@Schema(description = "管理后台 - 新增风控规则信息 Request VO")
 public class RuleInfoSaveReqVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
