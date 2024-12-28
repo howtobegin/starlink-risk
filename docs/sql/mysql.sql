@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 25/12/2024 16:55:36
+ Date: 28/12/2024 15:54:56
 */
 
 -- CREATE database `starlink_risk` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
@@ -30,27 +30,23 @@ DROP TABLE IF EXISTS `slr_rule_cond`;
 CREATE TABLE `slr_rule_cond`
 (
     `id`                     bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `rule_code`              varchar(64)          DEFAULT NULL COMMENT '规则编号',
-    `event_code`             varchar(64)          DEFAULT NULL COMMENT '事件编号',
-    `cond_code`              varchar(64)          DEFAULT NULL COMMENT '条件编号',
-    `cond_type`              varchar(64)          DEFAULT NULL COMMENT '条件类型',
+    `rule_code`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则编号',
+    `event_code`             varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件编号',
+    `cond_code`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '条件编号',
+    `cond_type`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '条件类型',
     `window_value`           bigint UNSIGNED NULL DEFAULT NULL COMMENT '窗口值',
-    `window_unit`            varchar(64)          DEFAULT NULL COMMENT '窗口单位',
-    `begin_time`             datetime             DEFAULT NULL COMMENT '开始时间',
-    `end_time`               datetime             DEFAULT NULL COMMENT '结束时间',
-    `threshold`              bigint          NULL DEFAULT NULL COMMENT '阈值',
-    `cross_history`          bit(1)          NULL DEFAULT NULL COMMENT '条件类型',
-    `cross_history_timeline` datetime             DEFAULT NULL COMMENT '跨历史时间点',
-    `creator`                varchar(64)          DEFAULT NULL COMMENT '创建用户',
-    `updater`                varchar(64)          DEFAULT NULL COMMENT '更新用户',
-    `create_time`            datetime             DEFAULT NULL COMMENT '创建时间',
-    `update_time`            datetime             DEFAULT NULL COMMENT '创建时间',
+    `window_unit`            varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '窗口单位',
+    `begin_time`             datetime NULL DEFAULT NULL COMMENT '开始时间',
+    `end_time`               datetime NULL DEFAULT NULL COMMENT '结束时间',
+    `threshold`              bigint NULL DEFAULT NULL COMMENT '阈值',
+    `cross_history`          bit(1) NULL DEFAULT NULL COMMENT '条件类型',
+    `cross_history_timeline` datetime NULL DEFAULT NULL COMMENT '跨历史时间点',
+    `creator`                varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`                varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`            datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`            datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 4
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则条件'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则条件' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_cond
@@ -64,6 +60,12 @@ VALUES (2, 'R1553673459123456000', 'GAME_recharge', 'C1553673459123456001', 'CYC
 INSERT INTO `slr_rule_cond`
 VALUES (3, 'R1553673459123456002', 'MALL_overselling', 'C1553673459123456002', 'CYCLE', 1, 'MONTH', NULL, NULL, 20000,
         b'0', NULL, 'boshuai.li', NULL, '2024-12-26 22:32:59', NULL);
+INSERT INTO `slr_rule_cond`
+VALUES (6, 'R1872541133230444544', 'HJF_orderCount', 'C1872541135478591488', 'RANGE', 1, 'WEEK', NULL, NULL, 200, b'0',
+        NULL, '1', '1', '2024-12-27 17:03:15', '2024-12-27 17:03:15');
+INSERT INTO `slr_rule_cond`
+VALUES (7, 'R1872541133230444544', 'HJF_orderAmount', 'C1872541135482785792', 'RANGE', 1, 'WEEK', NULL, NULL, 20000,
+        b'0', NULL, '1', '1', '2024-12-27 17:03:15', '2024-12-27 17:03:15');
 
 -- ----------------------------
 -- Table structure for slr_rule_event
@@ -72,20 +74,16 @@ DROP TABLE IF EXISTS `slr_rule_event`;
 CREATE TABLE `slr_rule_event`
 (
     `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `key_code`    varchar(64) DEFAULT NULL COMMENT 'key编号',
-    `event_code`  varchar(64) DEFAULT NULL COMMENT '事件编号',
-    `event_name`  varchar(64) DEFAULT NULL COMMENT '事件名称',
-    `event_desc`  varchar(64) DEFAULT NULL COMMENT '事件描述',
-    `creator`     varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`     varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime    DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime    DEFAULT NULL COMMENT '创建时间',
+    `key_code`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT 'key编号',
+    `event_code`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件编号',
+    `event_name`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件名称',
+    `event_desc`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件描述',
+    `creator`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 4
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则事件表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则事件表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_event
@@ -99,6 +97,12 @@ VALUES (2, 'GAME_userId', 'GAME_recharge', '游戏充值', '游戏平台的充�
 INSERT INTO `slr_rule_event`
 VALUES (3, 'MALL_orderNo', 'MALL_overselling', '商城出库', '商城平台的库存出库', 'boshuai.li', NULL,
         '2024-12-26 22:18:17', NULL);
+INSERT INTO `slr_rule_event`
+VALUES (4, 'HJF_userId', 'HJF_orderCount', '花积分下单次数', '花积分平台的下单次数', 'boshuai.li', NULL,
+        '2024-12-27 14:49:11', NULL);
+INSERT INTO `slr_rule_event`
+VALUES (5, 'HJF_userId', 'HJF_orderAmount', '花积分下单金额', '花积分平台的下单金额', 'boshuai.li', NULL,
+        '2024-12-27 14:52:25', NULL);
 
 -- ----------------------------
 -- Table structure for slr_rule_event_attr
@@ -107,21 +111,17 @@ DROP TABLE IF EXISTS `slr_rule_event_attr`;
 CREATE TABLE `slr_rule_event_attr`
 (
     `id`             bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `event_code`     varchar(64) DEFAULT NULL COMMENT '事件编号',
-    `attribute_code` varchar(64) DEFAULT NULL COMMENT '属性编号',
-    `attribute_name` varchar(64) DEFAULT NULL COMMENT '属性名称',
-    `attribute_key`  varchar(64) DEFAULT NULL COMMENT '属性key',
-    `attribute_type` varchar(64) DEFAULT NULL COMMENT '属性类型',
-    `creator`        varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`        varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `event_code`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件编号',
+    `attribute_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性编号',
+    `attribute_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性名称',
+    `attribute_key`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性key',
+    `attribute_type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性类型',
+    `creator`        varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`        varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`    datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`    datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 7
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_event_attr
@@ -144,6 +144,18 @@ VALUES (5, 'GAME_lottery', 'A1553673459123456004', '用户性别', 'userGender',
 INSERT INTO `slr_rule_event_attr`
 VALUES (6, 'MALL_overselling', 'A1553673459123456005', '订单类型', 'orderType', 'String', 'boshuai.li', NULL,
         '2024-12-26 22:42:22', NULL);
+INSERT INTO `slr_rule_event_attr`
+VALUES (7, 'HJF_orderCount', 'A1553673459123456006', '用户年龄', 'userAge', 'long', 'boshuai.li', NULL,
+        '2024-12-27 15:00:49', NULL);
+INSERT INTO `slr_rule_event_attr`
+VALUES (8, 'HJF_orderCount', 'A1553673459123456007', '订单类型', 'orderType', 'String', 'boshuai.li', NULL,
+        '2024-12-27 15:03:09', NULL);
+INSERT INTO `slr_rule_event_attr`
+VALUES (9, 'HJF_orderAmount', 'A1553673459123456008', '用户年龄', 'userAge', 'long', 'boshuai.li', NULL,
+        '2024-12-27 15:04:20', NULL);
+INSERT INTO `slr_rule_event_attr`
+VALUES (10, 'HJF_orderAmount', 'A1553673459123456009', '订单类型', 'orderType', 'String', 'boshuai.li', NULL,
+        '2024-12-27 15:04:24', NULL);
 
 -- ----------------------------
 -- Table structure for slr_rule_event_attr_value
@@ -152,20 +164,16 @@ DROP TABLE IF EXISTS `slr_rule_event_attr_value`;
 CREATE TABLE `slr_rule_event_attr_value`
 (
     `id`              bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `cond_code`       varchar(64) DEFAULT NULL COMMENT '条件编号',
-    `attribute_code`  varchar(64) DEFAULT NULL COMMENT '属性编号',
-    `attribute_value` varchar(64) DEFAULT NULL COMMENT '属性值',
-    `attribute_op`    varchar(64) DEFAULT NULL COMMENT '属性比较符',
-    `creator`         varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`         varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `cond_code`       varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '条件编号',
+    `attribute_code`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性编号',
+    `attribute_value` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性值',
+    `attribute_op`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性比较符',
+    `creator`         varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`         varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`     datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`     datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 4
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性值表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性值表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_event_attr_value
@@ -178,6 +186,18 @@ VALUES (2, 'C1553673459123456001', 'A1553673459123456003', '18', '<', 'boshuai.l
 INSERT INTO `slr_rule_event_attr_value`
 VALUES (3, 'C1553673459123456001', 'A1553673459123456004', 'man', '==', 'boshuai.li', NULL, '2024-12-26 22:47:16',
         NULL);
+INSERT INTO `slr_rule_event_attr_value`
+VALUES (8, 'C1872541135478591488', 'A1553673459123456006', '20', '>=', '1', '1', '2024-12-27 17:03:15',
+        '2024-12-27 17:03:15');
+INSERT INTO `slr_rule_event_attr_value`
+VALUES (9, 'C1872541135478591488', 'A1553673459123456007', 'PC', '==', '1', '1', '2024-12-27 17:03:15',
+        '2024-12-27 17:03:15');
+INSERT INTO `slr_rule_event_attr_value`
+VALUES (10, 'C1872541135482785792', 'A1553673459123456008', '20', '>=', '1', '1', '2024-12-27 17:03:15',
+        '2024-12-27 17:03:15');
+INSERT INTO `slr_rule_event_attr_value`
+VALUES (11, 'C1872541135482785792', 'A1553673459123456009', 'PC', '==', '1', '1', '2024-12-27 17:03:15',
+        '2024-12-27 17:03:15');
 
 -- ----------------------------
 -- Table structure for slr_rule_info
@@ -186,27 +206,23 @@ DROP TABLE IF EXISTS `slr_rule_info`;
 CREATE TABLE `slr_rule_info`
 (
     `id`                   bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `channel`              varchar(64)          DEFAULT NULL COMMENT '渠道',
-    `rule_code`            varchar(64)          DEFAULT NULL COMMENT '规则编号',
-    `rule_name`            varchar(64)          DEFAULT NULL COMMENT '规则名称',
-    `rule_desc`            varchar(64)          DEFAULT NULL COMMENT '规则描述',
-    `rule_status`          varchar(64)          DEFAULT NULL COMMENT '规则状态',
+    `channel`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '渠道',
+    `rule_code`            varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则编号',
+    `rule_name`            varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则名称',
+    `rule_desc`            varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则描述',
+    `rule_status`          varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则状态',
     `alert_interval_value` bigint UNSIGNED NULL DEFAULT NULL COMMENT '预警间隔值',
-    `alert_interval_unit`  varchar(64)          DEFAULT NULL COMMENT '预警间隔单位',
-    `alert_message`        text COMMENT '预警消息',
-    `key_code` varchar(64) DEFAULT NULL COMMENT '目标编号',
-    `model_code`           varchar(64)          DEFAULT NULL COMMENT '模型编号',
-    `rule_cond_comb_op`    varchar(64)          DEFAULT NULL COMMENT '条件组合符',
-    `creator`              varchar(64)          DEFAULT NULL COMMENT '创建用户',
-    `updater`              varchar(64)          DEFAULT NULL COMMENT '更新用户',
-    `create_time`          datetime             DEFAULT NULL COMMENT '创建时间',
-    `update_time`          datetime             DEFAULT NULL COMMENT '创建时间',
+    `alert_interval_unit`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '预警间隔单位',
+    `alert_message`        text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL COMMENT '预警消息',
+    `key_code`             varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '目标编号',
+    `model_code`           varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '模型编号',
+    `rule_cond_comb_op`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '条件组合符',
+    `creator`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`              varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`          datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`          datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 3
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则信息表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_info
@@ -220,6 +236,10 @@ INSERT INTO `slr_rule_info`
 VALUES (2, 'MALL', 'R1553673459123456002', '商城库存超卖', '商城库存超卖预警监控', 'ONLINE', 10, 'MINUTE',
         '[库存超卖]${KafkaEventDTO.eventAttribute.bankName}：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！',
         'MALL_orderNo', 'M1553673459123456001', NULL, 'boshuai.li', NULL, '2024-12-26 22:28:50', NULL);
+INSERT INTO `slr_rule_info`
+VALUES (3, 'HJF', 'R1872541133230444544', '花积分用户刷单', '新的花积分用户刷单预警规则', 'DRAFT', 30, 'MINUTE',
+        '[刷单预警]！', 'HJF_userId', 'M1553673459123456001', 'AND', '1', '1', '2024-12-27 15:12:51',
+        '2024-12-27 17:03:15');
 
 -- ----------------------------
 -- Table structure for slr_rule_json
@@ -228,17 +248,14 @@ DROP TABLE IF EXISTS `slr_rule_json`;
 CREATE TABLE `slr_rule_json`
 (
     `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `rule_code`   varchar(64) DEFAULT NULL COMMENT '规则编号',
-    `rule_json`   text COMMENT '规则json',
-    `creator`     varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`     varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime    DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime    DEFAULT NULL COMMENT '创建时间',
+    `rule_code`   varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '规则编号',
+    `rule_json`   text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL COMMENT '规则json',
+    `creator`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则json表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则json表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_json
@@ -251,20 +268,16 @@ DROP TABLE IF EXISTS `slr_rule_key`;
 CREATE TABLE `slr_rule_key`
 (
     `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `channel`     varchar(64) DEFAULT NULL COMMENT '渠道',
-    `key_code`    varchar(64) DEFAULT NULL COMMENT 'key编号',
-    `key_name`    varchar(64) DEFAULT NULL COMMENT 'key名称',
-    `key_desc`    varchar(64) DEFAULT NULL COMMENT 'key描述',
-    `creator`     varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`     varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime    DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime    DEFAULT NULL COMMENT '创建时间',
+    `channel`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '渠道',
+    `key_code`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT 'key编号',
+    `key_name`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT 'key名称',
+    `key_desc`    varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT 'key描述',
+    `creator`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`     varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 3
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则目标表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则目标表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_key
@@ -274,6 +287,8 @@ VALUES (1, 'GAME', 'GAME_userId', '游戏用户id', '游戏平台的用户ID', '
 INSERT INTO `slr_rule_key`
 VALUES (2, 'MALL', 'MALL_orderNo', '商城订单号', '商城平台出库的订单号', 'boshuai.li', NULL, '2024-12-26 22:12:22',
         NULL);
+INSERT INTO `slr_rule_key`
+VALUES (3, 'HJF', 'HJF_userId', '花积分用户id', '花积分平台的用户ID', 'boshuai.li', NULL, '2024-12-27 14:45:06', NULL);
 
 -- ----------------------------
 -- Table structure for slr_rule_model
@@ -282,21 +297,17 @@ DROP TABLE IF EXISTS `slr_rule_model`;
 CREATE TABLE `slr_rule_model`
 (
     `id`           bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `model_code`   varchar(64) DEFAULT NULL COMMENT '模型编号',
-    `model_name`   varchar(64) DEFAULT NULL COMMENT '模型名称',
-    `model_desc`   varchar(64) DEFAULT NULL COMMENT '模型描述',
-    `model_status` varchar(64) DEFAULT NULL COMMENT '模型状态',
-    `groovy`       text COMMENT '运算机groovy代码',
-    `creator`      varchar(64) DEFAULT NULL COMMENT '创建用户',
-    `updater`      varchar(64) DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `model_code`   varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '模型编号',
+    `model_name`   varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '模型名称',
+    `model_desc`   varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '模型描述',
+    `model_status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '模型状态',
+    `groovy`       text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL COMMENT '运算机groovy代码',
+    `creator`      varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`      varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`  datetime NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`  datetime NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 2
-  CHARACTER SET = utf8mb4
-  COLLATE = utf8mb4_bin COMMENT = '风控规则模型表'
-  ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '风控规则模型表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of slr_rule_model
