@@ -194,7 +194,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         List<RuleEventDO> ruleEventDOS = ruleEventMapper.selectListByNotInIds(ruleEventIdList);
         if (!CollectionUtils.isEmpty(ruleEventDOS)) {
             List<String> eventCodeList = ruleEventDOS.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
-            eventCodeList.removeAll(ruleEventCodeList);
+            eventCodeList.retainAll(ruleEventCodeList);
             if (!CollectionUtils.isEmpty(eventCodeList)) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_CODE_EXISTS, JsonUtils.toJsonString(eventCodeList));
             }
@@ -242,12 +242,12 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
         Map<String, List<RuleEventAttrRespVO>> eventCodeAndEventAttrRespVoMap = ruleEventAttrRespVOList.stream()
                 .collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
-        // 设置 事件属性组
+        // 给 事件 设置 属性
         ruleEventRespVOS.forEach(
                 ruleEventRespVO ->
                         ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))
         );
-        // 设置 规则事件组
+        // 给 目标 设置 事件
         ruleKeyRespVO.setRuleEventRespVOList(ruleEventRespVOS);
     }
 

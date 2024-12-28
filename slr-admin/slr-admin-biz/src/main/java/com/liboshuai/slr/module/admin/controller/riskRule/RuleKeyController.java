@@ -67,6 +67,8 @@ public class RuleKeyController {
 
     @PostMapping(value = "/checkUniqueKeyCode")
     @Operation(summary = "检查目标编号是否唯一")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标编号唯一请求", required = true,
+            content = @Content(schema = @Schema(implementation = CheckUniqueKeyCodeReqVO.class)))
     public CommonResult<Boolean> checkUniqueKeyCode(@RequestBody @Valid CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
         boolean checkResult = ruleKeyService.checkUniqueKeyCode(checkUniqueKeyCodeReqVO);
         return success(checkResult);
@@ -74,6 +76,8 @@ public class RuleKeyController {
 
     @PostMapping(value = "/checkUniqueEventCode")
     @Operation(summary = "检查事件编号是否唯一")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则事件编号唯一请求", required = true,
+            content = @Content(schema = @Schema(implementation = CheckUniqueEventCodeReqVO.class)))
     public CommonResult<Boolean> checkUniqueEventCode(@RequestBody @Valid CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
         boolean checkResult = ruleKeyService.checkUniqueEventCode(checkUniqueEventCodeReqVO);
         return success(checkResult);
