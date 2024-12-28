@@ -25,4 +25,6 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_EVENT_ID_NOT_NULL = new ErrorCode(20013, "规则事件[id]不能为空");
     ErrorCode RULE_KEY_ID_NOT_EXISTS = new ErrorCode(20014, "id为[{}]规则目标不存在");
     ErrorCode RULE_EVENT_ID_NOT_EXISTS = new ErrorCode(20015, "id为[{}]规则事件不存在");
+    ErrorCode RULE_JSON_COUNT_SELECT_ERROR = new ErrorCode(20016, "查询规则编号[{}]的json数据数量失败");
+    ErrorCode RULE_JSON_EXISTS = new ErrorCode(20017, "规则编号[{}]的json数据已经存在");
 }

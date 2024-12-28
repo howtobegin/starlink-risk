@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
@@ -10,6 +11,7 @@ import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +47,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private RuleEventAttrValueMapper ruleEventAttrValueMapper;
     @Resource
     private RuleKeyMapper ruleKeyMapper;
+    @Resource
+    private RuleJsonMapper ruleJsonMapper;
     @Resource
     private SnowflakeIdGenerator snowflakeIdGenerator;
 
@@ -155,7 +159,16 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
             // TODO: 将规则数据存入 rule_json 表
-
+            RuleInfoDTO ruleInfoDTO = getRuleInfoDtoByRuleCode(ruleCode);
+            Long count = ruleJsonMapper.selectCount(RuleJsonDO::getRuleCode, ruleCode);
+            if (Objects.isNull(count)) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_COUNT_SELECT_ERROR, ruleCode);
+            }
+            if (count > 0) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_EXISTS, ruleCode);
+            }
+            RuleJsonDO ruleJsonDO = RuleJsonDO.builder().ruleCode(ruleCode).ruleJson(JSON.toJSONString(ruleInfoDTO)).build();
+            ruleJsonMapper.insert(ruleJsonDO);
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
             // 进行上线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
@@ -192,6 +205,13 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NEW_STATUS_NOT_SUPPORT, ruleCode);
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
+    }
+
+    /**
+     * TODO: 根据规则编号获取规则信息DTO
+     */
+    private RuleInfoDTO getRuleInfoDtoByRuleCode(String ruleCode) {
+        return null;
     }
 
     /**
