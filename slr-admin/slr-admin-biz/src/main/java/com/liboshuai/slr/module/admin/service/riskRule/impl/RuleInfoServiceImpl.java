@@ -158,17 +158,6 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
-            // 将规则数据存入 rule_json 表
-            RuleInfoDTO ruleInfoDTO = getRuleInfoDtoByRuleCode(ruleCode);
-            Long count = ruleJsonMapper.selectCount(RuleJsonDO::getRuleCode, ruleCode);
-            if (Objects.isNull(count)) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_COUNT_SELECT_ERROR, ruleCode);
-            }
-            if (count > 0) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_EXISTS, ruleCode);
-            }
-            RuleJsonDO ruleJsonDO = RuleJsonDO.builder().ruleCode(ruleCode).ruleJson(JSON.toJSONString(ruleInfoDTO)).build();
-            ruleJsonMapper.insert(ruleJsonDO);
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
             // 进行上线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
@@ -181,14 +170,15 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             } else {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
+            // 将规则数据存入 rule_json 表
+            saveToRuleJson(ruleCode);
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
             // 进行下线操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
-            // 将规则数据从 rule_json 表删除
-            ruleJsonMapper.delete(RuleJsonDO::getRuleCode, ruleCode);
+
         } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
             if (!Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
@@ -201,10 +191,28 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             } else {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
+            // 将规则数据从 rule_json 表删除
+            ruleJsonMapper.delete(RuleJsonDO::getRuleCode, ruleCode);
         } else {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NEW_STATUS_NOT_SUPPORT, ruleCode);
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
+    }
+
+    /**
+     * 将规则数据存入 rule_json 表
+     */
+    private void saveToRuleJson(String ruleCode) {
+        Long count = ruleJsonMapper.selectCount(RuleJsonDO::getRuleCode, ruleCode);
+        if (Objects.isNull(count)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_COUNT_SELECT_ERROR, ruleCode);
+        }
+        if (count > 0) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_EXISTS, ruleCode);
+        }
+        RuleInfoDTO ruleInfoDTO = getRuleInfoDtoByRuleCode(ruleCode);
+        RuleJsonDO ruleJsonDO = RuleJsonDO.builder().ruleCode(ruleCode).ruleJson(JSON.toJSONString(ruleInfoDTO)).build();
+        ruleJsonMapper.insert(ruleJsonDO);
     }
 
     /**
@@ -246,8 +254,12 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             Map<String, List<RuleEventAttrValueDTO>> attrCodeAndAttrValueDtoMap = ruleEventAttrValueDTOList.stream()
                     .collect(Collectors.groupingBy(RuleEventAttrValueDTO::getAttributeCode));
             ruleEventAttrDTOList.forEach(
-                    ruleEventAttrDTO ->
-                            ruleEventAttrDTO.setRuleEventAttrValueDTO(attrCodeAndAttrValueDtoMap.get(ruleEventAttrDTO.getAttributeCode()).get(0))
+                    ruleEventAttrDTO -> {
+                        List<RuleEventAttrValueDTO> ruleEventAttrValueDTOS = attrCodeAndAttrValueDtoMap.get(ruleEventAttrDTO.getAttributeCode());
+                        if (!CollectionUtils.isEmpty(ruleEventAttrValueDTOS)) {
+                            ruleEventAttrDTO.setRuleEventAttrValueDTO(ruleEventAttrValueDTOS.get(0));
+                        }
+                    }
             );
         }
         // 给 事件 设置 属性
@@ -261,8 +273,12 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         Map<String, List<RuleEventDTO>> eventCodeAndEventDtoMap = ruleEventDTOList.stream()
                 .collect(Collectors.groupingBy(RuleEventDTO::getEventCode));
         ruleCondDTOList.forEach(
-                ruleCondDTO ->
-                        ruleCondDTO.setRuleEventDTO(eventCodeAndEventDtoMap.get(ruleCondDTO.getEventCode()).get(0))
+                ruleCondDTO -> {
+                    List<RuleEventDTO> ruleEventDTOS = eventCodeAndEventDtoMap.get(ruleCondDTO.getEventCode());
+                    if (!CollectionUtils.isEmpty(ruleEventDTOS)) {
+                        ruleCondDTO.setRuleEventDTO(ruleEventDTOS.get(0));
+                    }
+                }
         );
         // 给 规则 设置 条件
         ruleInfoDTO.setRuleCondDTOList(ruleCondDTOList);
@@ -334,11 +350,12 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 .collect(Collectors.groupingBy(RuleEventRespVO::getEventCode));
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = ruleEventAttrValueMapper.selectListByCondCodes(condCodeList);
         if (CollectionUtils.isEmpty(ruleEventAttrValueDOList)) {
-            ruleCondRespVOList = ruleCondRespVOList.stream().map(
-                            ruleCondRespVO ->
-                                    ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))
-                    )
-                    .collect(Collectors.toList());
+            ruleCondRespVOList.forEach(ruleCondRespVO -> {
+                List<RuleEventRespVO> ruleEventRespVOS = envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode());
+                if (!CollectionUtils.isEmpty(ruleEventRespVOS)) {
+                    ruleCondRespVO.setRuleEventRespVO(ruleEventRespVOS.get(0));
+                }
+            });
             ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
             return;
         }
@@ -347,42 +364,47 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 .collect(Collectors.groupingBy(RuleEventAttrValueRespVO::getAttributeCode));
         List<String> attributeCodeList = ruleEventAttrValueRespVOList.stream().map(RuleEventAttrValueRespVO::getAttributeCode).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(attributeCodeList)) {
-            ruleCondRespVOList = ruleCondRespVOList.stream().map(
-                    ruleCondRespVO ->
-                            ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))
-            ).collect(Collectors.toList());
+            ruleCondRespVOList.forEach(ruleCondRespVO -> {
+                List<RuleEventRespVO> ruleEventRespVOS = envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode());
+                if (!CollectionUtils.isEmpty(ruleEventRespVOS)) {
+                    ruleCondRespVO.setRuleEventRespVO(ruleEventRespVOS.get(0));
+                }
+            });
             ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
             return;
         }
         List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByAttributeCodes(attributeCodeList);
         if (CollectionUtils.isEmpty(ruleEventAttrDOList)) {
-            ruleCondRespVOList = ruleCondRespVOList.stream().map(
-                    ruleCondRespVO ->
-                            ruleCondRespVO.setRuleEventRespVO(envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))
-            ).collect(Collectors.toList());
+            ruleCondRespVOList.forEach(ruleCondRespVO -> {
+                List<RuleEventRespVO> ruleEventRespVOS = envetCodeAndRuleEventRespVoMap.get(ruleCondRespVO.getEventCode());
+                if (!CollectionUtils.isEmpty(ruleEventRespVOS)) {
+                    ruleCondRespVO.setRuleEventRespVO(ruleEventRespVOS.get(0));
+                }
+            });
             ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
             return;
         }
         // 给 属性 设置 属性值
         List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
-        ruleEventAttrRespVOList = ruleEventAttrRespVOList.stream().map(
-                ruleEventAttrRespVO ->
-                        ruleEventAttrRespVO.setRuleEventAttrValueRespVO(codeAndAttrValueRespVoMap.get(ruleEventAttrRespVO.getAttributeCode()).get(0))
-        ).collect(Collectors.toList());
+        ruleEventAttrRespVOList.forEach(ruleEventAttrRespVO -> {
+            List<RuleEventAttrValueRespVO> ruleEventAttrValueRespVOS = codeAndAttrValueRespVoMap.get(ruleEventAttrRespVO.getAttributeCode());
+            if (!CollectionUtils.isEmpty(ruleEventAttrValueRespVOS)) {
+                ruleEventAttrRespVO.setRuleEventAttrValueRespVO(ruleEventAttrValueRespVOS.get(0));
+            }
+        });
         // 给 事件 设置 属性
         Map<String, List<RuleEventAttrRespVO>> eventCodeAndEventAttrRespVoMap = ruleEventAttrRespVOList.stream()
                 .collect(Collectors.groupingBy(RuleEventAttrRespVO::getEventCode));
-        ruleEventRespVOList = ruleEventRespVOList.stream().map(
-                ruleEventRespVO ->
-                        ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))
-        ).collect(Collectors.toList());
+        ruleEventRespVOList.forEach(ruleEventRespVO -> ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode())));
         // 给 条件 设置 事件
         Map<String, List<RuleEventRespVO>> eventCodeAndEventRespVoMap = ruleEventRespVOList.stream()
                 .collect(Collectors.groupingBy(RuleEventRespVO::getEventCode));
-        ruleCondRespVOList = ruleCondRespVOList.stream().map(
-                ruleCondRespVO ->
-                        ruleCondRespVO.setRuleEventRespVO(eventCodeAndEventRespVoMap.get(ruleCondRespVO.getEventCode()).get(0))
-        ).collect(Collectors.toList());
+        ruleCondRespVOList.forEach(ruleCondRespVO -> {
+            List<RuleEventRespVO> ruleEventRespVOS = eventCodeAndEventRespVoMap.get(ruleCondRespVO.getEventCode());
+            if (!CollectionUtils.isEmpty(ruleEventRespVOS)) {
+                ruleCondRespVO.setRuleEventRespVO(ruleEventRespVOS.get(0));
+            }
+        });
         // 给 规则 设置 条件
         ruleInfoRespVO.setRuleCondRespVoList(ruleCondRespVOList);
     }
