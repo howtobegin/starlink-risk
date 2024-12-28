@@ -240,6 +240,11 @@ class ProcessorOne implements Processor {
         }
         // 逐一便利验证事件属性
         for (RuleEventAttrDTO ruleEventAttributeDTO in ruleEventAttributeDTOList) {
+            RuleEventAttrValueDTO ruleEventAttributeValue = ruleEventAttributeDTO.getRuleEventAttrValueDTO()
+            if (Objects.isNull(ruleEventAttributeValue)) {
+                // 规则中不包含事件属性值相关的配置，则表明不需要进行事件属性值匹配，直接跳过即可
+                continue
+            }
             String ruleAttributeKey = ruleEventAttributeDTO.getAttributeKey()
             Map<String, String> kafkaEventAttributeMap = kafkaEventDTO.getEventAttribute()
             if (CollectionUtil.isEmpty(kafkaEventAttributeMap)) {
@@ -258,10 +263,6 @@ class ProcessorOne implements Processor {
             if (Objects.isNull(kafkaEventAttributeValue)) {
                 // kafka事件中对于规则中事件属性值为空，则表明不符合匹配
                 return false
-            }
-            RuleEventAttrValueDTO ruleEventAttributeValue = ruleEventAttributeDTO.getRuleEventAttrValueDTO()
-            if (Objects.isNull(ruleEventAttributeValue)) {
-                throw new BusinessException("规则事件属性值必须非空")
             }
             // 比较kafka中属性值与规则中属性值
             boolean isMatch = RuleEventAttrCompUtil.compareValues(ruleEventAttributeDTO, kafkaEventDTO)
