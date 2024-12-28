@@ -102,6 +102,10 @@ class ProcessorOne implements Processor {
         if (!Objects.equals(eventKafkaDTOChannel, ruleInfoChannel)) {
             return
         }
+        // 规则keyCode与kafkaEventDTO的keyCode不匹配，则直接跳过
+        if (!Objects.equals(ruleInfoDTO.getKeyCode(), kafkaEventDTO.getKeyCode())) {
+            return
+        }
         // 获取规则条件
         List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondDTOList()
         if (condGroupList == null || condGroupList.isEmpty()) {
