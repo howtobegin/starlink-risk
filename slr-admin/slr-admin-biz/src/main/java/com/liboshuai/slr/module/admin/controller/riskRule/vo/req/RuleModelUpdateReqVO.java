@@ -1,11 +1,14 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
-import com.liboshuai.slr.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * 风控规则模型
@@ -15,8 +18,7 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class RuleModelUpdateReqVO extends PageParam {
+public class RuleModelUpdateReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "模型编号[modelCode]，不能为空")
