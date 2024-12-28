@@ -4,10 +4,7 @@ import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
-import com.liboshuai.slr.module.engine.utils.DateUtil;
-import com.liboshuai.slr.module.engine.utils.JdbcUtil;
-import com.liboshuai.slr.module.engine.utils.JsonUtil;
-import com.liboshuai.slr.module.engine.utils.ParameterUtil;
+import com.liboshuai.slr.module.engine.utils.*;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +62,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
      */
     @Override
-    public void open(Configuration parameters) throws Exception {
+    public void open(Configuration parameters) {
         ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_LIST_STATE_DESC
@@ -105,7 +102,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         // 注册定时器（窗口大小1分钟）
         // long fireTime = Long.parseLong(currentEventTimestamp) - Long.parseLong(currentEventTimestamp) % 60000 + 60000; （简化写法）
-        long fireTime = getWindowStartWithOffset(currentEventTimestamp, 0, 60 * 1000) + 60 * 1000;
+        long fireTime = WindowUtil.getWindowStartWithOffset(currentEventTimestamp, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
@@ -211,9 +208,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         return processor;
     }
 
-    /**
-     * mock运算机对象
-     */
+    // mock运算机对象
 //    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
 //        Processor processor = new ProcessorOne();
 //        processor.init(runtimeContext, ruleInfoDTO);
@@ -229,7 +224,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 查询规则数据
         String sql = String.format("select count(*) from %s", tableName);
         Long ruleOnlineCount = JdbcUtil.queryForObject(
-                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), null);
+                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), (Object) null);
         if (Objects.isNull(ruleOnlineCount)) {
             throw new BusinessException("Mysql Jdbc 查询上线的规则数量为 null！");
         }
@@ -256,18 +251,5 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private long getCurrentOnlineRuleCount() {
         Set<String> ruleCodeCount = ruleProcessorPool.keySet();
         return ruleCodeCount.size();
-    }
-
-    /**
-     * 获取窗口开始时间
-     */
-    private long getWindowStartWithOffset(long timestamp, long offset, long windowSize) {
-        final long remainder = (timestamp - offset) % windowSize;
-        // handle both positive and negative cases
-        if (remainder < 0) {
-            return timestamp - (remainder + windowSize);
-        } else {
-            return timestamp - remainder;
-        }
     }
 }
