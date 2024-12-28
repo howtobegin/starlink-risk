@@ -40,7 +40,7 @@ public abstract class BaseDO implements Serializable, TransPojo {
     /**
      * 最后更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建者，目前使用 SysUser 的 id 编号
