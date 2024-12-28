@@ -1,13 +1,14 @@
 package com.liboshuai.slr.module.admin.service.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueEventCodeReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueKeyCodeReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeyPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeySaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 public interface RuleKeyService {
 
@@ -19,7 +20,7 @@ public interface RuleKeyService {
 
     void update(@Valid RuleKeySaveReqVO ruleKeySaveReqVO);
 
-    boolean checkUniqueKeyCode(@NotNull Long keyId, @NotBlank String keyCode);
+    boolean checkUniqueKeyCode(@Valid CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO);
 
-    boolean checkUniqueEventCode(@NotNull Long eventId, @NotBlank String eventCode);
+    boolean checkUniqueEventCode(@Valid CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO);
 }

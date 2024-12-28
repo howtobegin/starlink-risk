@@ -2,6 +2,8 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueEventCodeReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueKeyCodeReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeyPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeySaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
@@ -32,7 +33,8 @@ public class RuleKeyController {
 
     @PostMapping("/list")
     @Operation(summary = "列表")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true, content = @Content(schema = @Schema(implementation = RuleKeyPageReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleKeyPageReqVO.class)))
     public CommonResult<PageResult<RuleKeyRespVO>> list(@RequestBody @Valid RuleKeyPageReqVO ruleKeyPageReqVO) {
         PageResult<RuleKeyRespVO> ruleKeyRespVOPageResult = ruleKeyService.list(ruleKeyPageReqVO);
         return success(ruleKeyRespVOPageResult);
@@ -47,7 +49,8 @@ public class RuleKeyController {
 
     @PostMapping(value = "/create")
     @Operation(summary = "新增")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true, content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
     public CommonResult<Boolean> create(@RequestBody @Valid RuleKeySaveReqVO ruleKeySaveReqVO) {
         ruleKeyService.create(ruleKeySaveReqVO);
         return success(true);
@@ -55,7 +58,8 @@ public class RuleKeyController {
 
     @PostMapping(value = "/update")
     @Operation(summary = "更新")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true, content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
     public CommonResult<Boolean> update(@RequestBody @Valid RuleKeySaveReqVO ruleKeySaveReqVO) {
         ruleKeyService.update(ruleKeySaveReqVO);
         return success(true);
@@ -63,15 +67,15 @@ public class RuleKeyController {
 
     @PostMapping(value = "/checkUniqueKeyCode")
     @Operation(summary = "检查目标编号是否唯一")
-    public CommonResult<Boolean> checkUniqueKeyCode(@NotNull Long keyId, @NotBlank String keyCode) {
-        boolean checkResult = ruleKeyService.checkUniqueKeyCode(keyId, keyCode);
+    public CommonResult<Boolean> checkUniqueKeyCode(@RequestBody @Valid CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
+        boolean checkResult = ruleKeyService.checkUniqueKeyCode(checkUniqueKeyCodeReqVO);
         return success(checkResult);
     }
 
     @PostMapping(value = "/checkUniqueEventCode")
     @Operation(summary = "检查事件编号是否唯一")
-    public CommonResult<Boolean> checkUniqueEventCode(@NotNull Long eventId, @NotBlank String eventCode) {
-        boolean checkResult = ruleKeyService.checkUniqueEventCode(eventId, eventCode);
+    public CommonResult<Boolean> checkUniqueEventCode(@RequestBody @Valid CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
+        boolean checkResult = ruleKeyService.checkUniqueEventCode(checkUniqueEventCodeReqVO);
         return success(checkResult);
     }
 }

@@ -5,10 +5,7 @@ import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveRespVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventSaveReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeyPageReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeySaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
@@ -131,8 +128,19 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     }
 
     @Override
-    public boolean checkUniqueKeyCode(Long keyId, String keyCode) {
-        List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
+    public boolean checkUniqueKeyCode(CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
+        Long keyId = checkUniqueKeyCodeReqVO.getKeyId();
+        String keyCode = checkUniqueKeyCodeReqVO.getKeyCode();
+        List<RuleKeyDO> ruleKeyDOList;
+        if (Objects.isNull(keyId)) {
+            ruleKeyDOList = ruleKeyMapper.selectList();
+        } else {
+            RuleKeyDO ruleKeyDO = ruleKeyMapper.selectById(keyId);
+            if (Objects.isNull(ruleKeyDO)) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_EXISTS, keyId);
+            }
+            ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
+        }
         if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
             for (RuleKeyDO keyDO : ruleKeyDOList) {
                 if (Objects.equals(keyDO.getKeyCode(), keyCode)) {
@@ -144,12 +152,19 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     }
 
     @Override
-    public boolean checkUniqueEventCode(Long eventId, String eventCode) {
-        RuleEventDO ruleEventDO = ruleEventMapper.selectById(eventId);
-        if (Objects.isNull(ruleEventDO)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_ID_NOT_EXISTS, eventId);
+    public boolean checkUniqueEventCode(CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
+        Long eventId = checkUniqueEventCodeReqVO.getEventId();
+        String eventCode = checkUniqueEventCodeReqVO.getEventCode();
+        List<RuleEventDO> ruleEventDOList;
+        if (Objects.isNull(eventId)) {
+            ruleEventDOList = ruleEventMapper.selectList();
+        } else {
+            RuleEventDO ruleEventDO = ruleEventMapper.selectById(eventId);
+            if (Objects.isNull(ruleEventDO)) {
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_ID_NOT_EXISTS, eventId);
+            }
+            ruleEventDOList = ruleEventMapper.selectListByNeId(eventId);
         }
-        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByNeId(eventId);
         if (!CollectionUtils.isEmpty(ruleEventDOList)) {
             List<String> ruleEventCodeList = ruleEventDOList.stream()
                     .map(RuleEventDO::getEventCode)
