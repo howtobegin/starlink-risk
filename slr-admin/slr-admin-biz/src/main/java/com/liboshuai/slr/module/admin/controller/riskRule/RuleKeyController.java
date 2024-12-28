@@ -25,7 +25,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Slf4j
 @Validated
 @RestController
-@Tag(name = "规则目标管理")
+@Tag(name = "风控规则目标")
 @RequestMapping("/ruleKey")
 public class RuleKeyController {
     @Resource

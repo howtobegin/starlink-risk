@@ -24,7 +24,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Slf4j
 @Validated
 @RestController
-@Tag(name = "规则模型管理")
+@Tag(name = "风控规则模型")
 @RequestMapping("/ruleModel")
 public class RuleModelController {
 

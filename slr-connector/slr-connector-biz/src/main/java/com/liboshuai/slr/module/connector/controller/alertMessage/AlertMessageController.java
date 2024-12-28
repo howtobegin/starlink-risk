@@ -20,7 +20,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
 @Slf4j
 @RestController
-@Tag(name = "预警信息")
+@Tag(name = "风控预警消息")
 @RequestMapping("/alertMessage")
 public class AlertMessageController {
 
