@@ -18,4 +18,9 @@ public interface SnowflakeIdPrefixConstants {
      * 属性编号 前缀
      */
     String ATTR_CODE_PREFIX = "A";
+
+    /**
+     * 模型编号 前缀
+     */
+    String MODEL_CODE_PREFIX = "M";
 }

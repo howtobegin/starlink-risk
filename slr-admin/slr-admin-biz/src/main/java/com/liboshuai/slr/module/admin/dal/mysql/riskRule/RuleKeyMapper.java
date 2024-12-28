@@ -19,7 +19,7 @@ public interface RuleKeyMapper extends BaseMapperX<RuleKeyDO> {
                 .eqIfPresent(RuleKeyDO::getKeyCode, ruleKeyPageReqVO.getKeyCode())
                 .likeIfPresent(RuleKeyDO::getKeyName, ruleKeyPageReqVO.getKeyName())
                 .likeIfPresent(RuleKeyDO::getKeyDesc, ruleKeyPageReqVO.getKeyDesc())
-                .orderByDesc(RuleKeyDO::getKeyCode)
+                .orderByDesc(RuleKeyDO::getId)
         );
     }
 

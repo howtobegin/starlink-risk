@@ -2,7 +2,6 @@ package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -31,11 +30,6 @@ public class RuleModelDO extends BaseDO {
      * 模型描述
      */
     private String modelDesc;
-    /**
-     * 模型状态
-     * {@link RuleStatusEnum}
-     */
-    private String modelStatus;
     /**
      * 运算机groovy代码
      */

@@ -33,4 +33,5 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_EVENT_ATTR_NOT_EXISTS = new ErrorCode(20021, "规则事件编号[{}]的规则事件属性不存在");
     ErrorCode RULE_EVENT_ATTR_VALUE_NOT_EXISTS = new ErrorCode(20022, "规则事件编号[{}]的规则事件属性值不存在");
     ErrorCode RULE_CONDITION_CODE_IS_NULL = new ErrorCode(20023, "规则条件中条件编号不能为空");
+    ErrorCode RULE_MODEL_NOT_EXISTS = new ErrorCode(20024, "规则模型编号[{}]不存在");
 }

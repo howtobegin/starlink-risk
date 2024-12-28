@@ -33,7 +33,7 @@ public class RuleKeyController {
 
     @PostMapping("/list")
     @Operation(summary = "列表")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true,
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标列表请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleKeyPageReqVO.class)))
     public CommonResult<PageResult<RuleKeyRespVO>> list(@RequestBody @Valid RuleKeyPageReqVO ruleKeyPageReqVO) {
         PageResult<RuleKeyRespVO> ruleKeyRespVOPageResult = ruleKeyService.list(ruleKeyPageReqVO);
