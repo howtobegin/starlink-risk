@@ -6,17 +6,22 @@ import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGro
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
 @Slf4j
+@Validated
 @RestController
-@Tag(name = "风控事件推送")
+@Tag(name = "风控事件数据")
 @RequestMapping("/kafkaEvent")
 public class KafkaEventController {
 
@@ -28,8 +33,10 @@ public class KafkaEventController {
      */
     @RateLimiter(count = 10000)
     @PostMapping("/push")
-    @Operation(summary = "上送事件数据到kafka")
-    public CommonResult<?> push(@RequestBody KafkaEventGroupReqVO kafkaEventGroupReqVO) {
+    @Operation(summary = "推送")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "事件数据推送请求", required = true,
+            content = @Content(schema = @Schema(implementation = KafkaEventGroupReqVO.class)))
+    public CommonResult<?> push(@RequestBody @Valid KafkaEventGroupReqVO kafkaEventGroupReqVO) {
         kafkaEventService.push(kafkaEventGroupReqVO);
         return success();
     }

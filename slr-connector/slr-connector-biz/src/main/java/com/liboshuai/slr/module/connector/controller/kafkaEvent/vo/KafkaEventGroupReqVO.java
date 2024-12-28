@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.connector.controller.kafkaEvent.vo;
 
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,13 +21,9 @@ import java.util.List;
 public class KafkaEventGroupReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 渠道
-     * {@link ChannelEnum}
-     */
+    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
-    /**
-     * kafka事件组（元素个数限制为10个）
-     */
+
+    @Schema(description = "事件组", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<KafkaEventReqVO> kafkaEventReqVOList;
 }

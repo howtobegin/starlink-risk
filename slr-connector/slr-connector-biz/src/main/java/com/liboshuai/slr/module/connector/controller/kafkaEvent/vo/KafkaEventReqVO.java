@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.connector.controller.kafkaEvent.vo;
 
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,26 +23,22 @@ public class KafkaEventReqVO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    /**
-     * key编号
-     */
+    @Schema(description = "key编号", requiredMode = Schema.RequiredMode.REQUIRED)
     private String keyCode;
-    /**
-     * key值
-     */
+
+    @Schema(description = "key值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String keyValue;
-    /**
-     * 事件编号
-     */
+
+    @Schema(description = "事件编号", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
-    /**
-     * 事件值
-     */
+
+    @Schema(description = "事件值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventValue;
+
     /**
-     * 属性
      * {@link RuleEventAttrDTO}
      */
+    @Schema(description = "属性", requiredMode = Schema.RequiredMode.REQUIRED)
     private Map<String, String> eventAttribute;
 
 }
