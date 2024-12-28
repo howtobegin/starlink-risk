@@ -14,9 +14,9 @@ import java.util.Objects;
 public class KafkaEventMapFunction implements MapFunction<String, KafkaEventDTO> {
 
     @Override
-    public KafkaEventDTO map(String s) throws Exception {
+    public KafkaEventDTO map(String jsonValue) throws Exception {
         // 将json字符串转换为KafkaEventDTO对象
-        KafkaEventDTO kafkaEventDTO = JsonUtil.parseObject(s, KafkaEventDTO.class);
+        KafkaEventDTO kafkaEventDTO = JsonUtil.parseObject(jsonValue, KafkaEventDTO.class);
         if (Objects.nonNull(kafkaEventDTO)) {
             // 设置事件时间
             kafkaEventDTO.setEventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()));

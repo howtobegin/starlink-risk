@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.engine.utils;
 
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrDTO;
+import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,9 @@ public class RuleEventAttrCompUtil {
     public static boolean compareValues(RuleEventAttrDTO ruleEventAttributeDTO, KafkaEventDTO kafkaEventDTO) {
         String ruleEventAttrKey = ruleEventAttributeDTO.getAttributeKey();
         String ruleEventAttrType = ruleEventAttributeDTO.getAttributeType();
-        String ruleEventAttrOp = ruleEventAttributeDTO.getAttributeOp();
-        String ruleEventAttrValue = ruleEventAttributeDTO.getAttributeValue();
+        RuleEventAttrValueDTO ruleEventAttrValueDTO = ruleEventAttributeDTO.getRuleEventAttrValueDTO();
+        String ruleEventAttrOp = ruleEventAttrValueDTO.getAttributeOp();
+        String ruleEventAttrValue = ruleEventAttrValueDTO.getAttributeValue();
 
         Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttribute();
         String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrKey);

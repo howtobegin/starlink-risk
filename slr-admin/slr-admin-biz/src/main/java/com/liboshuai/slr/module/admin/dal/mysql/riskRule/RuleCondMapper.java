@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface RuleCondMapper extends BaseMapperX<RuleCondDO> {
 
-    default List<RuleCondDO> selectListByModelCode(String ruleCode) {
+    default List<RuleCondDO> selectListByRuleCode(String ruleCode) {
         return selectList(new LambdaQueryWrapperX<RuleCondDO>()
                 .eq(RuleCondDO::getRuleCode, ruleCode));
     }

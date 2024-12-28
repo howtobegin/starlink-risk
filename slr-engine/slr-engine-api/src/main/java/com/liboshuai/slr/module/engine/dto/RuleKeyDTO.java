@@ -1,13 +1,12 @@
 package com.liboshuai.slr.module.engine.dto;
 
 import com.liboshuai.slr.framework.common.pojo.BaseDTO;
+import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.List;
-
 /**
- * 事件信息
+ * 风控规则目标表
  */
 @Data
 @Builder
@@ -15,8 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class RuleEventDTO extends BaseDTO {
+public class RuleKeyDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 渠道
+     * {@link ChannelEnum}
+     */
+    private String channel;
 
     /**
      * key编号
@@ -24,22 +29,12 @@ public class RuleEventDTO extends BaseDTO {
     private String keyCode;
 
     /**
-     * 事件编号
+     * key名称
      */
-    private String eventCode;
+    private String keyName;
 
     /**
-     * 事件名称
+     * key描述
      */
-    private String eventName;
-
-    /**
-     * 事件描述
-     */
-    private String eventDesc;
-
-    /**
-     * 事件属性组
-     */
-    private List<RuleEventAttrDTO> ruleEventAttrDTOList;
+    private String keyDesc;
 }

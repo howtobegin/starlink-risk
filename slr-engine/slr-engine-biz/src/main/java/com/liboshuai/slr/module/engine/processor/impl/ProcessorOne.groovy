@@ -21,7 +21,6 @@ import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
 /**
  * 运算机one
  */
@@ -103,8 +102,12 @@ class ProcessorOne implements Processor {
         if (!Objects.equals(eventKafkaDTOChannel, ruleInfoChannel)) {
             return
         }
+        // 规则keyCode与kafkaEventDTO的keyCode不匹配，则直接跳过
+        if (!Objects.equals(ruleInfoDTO.getKeyCode(), kafkaEventDTO.getKeyCode())) {
+            return
+        }
         // 获取规则条件
-        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup()
+        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondDTOList()
         if (condGroupList == null || condGroupList.isEmpty()) {
             throw new BusinessException("运算机 condGroupList 必须非空")
         }
@@ -230,7 +233,7 @@ class ProcessorOne implements Processor {
      * @return boolean 如果Kafka事件属性与规则事件属性完全匹配，则返回true；否则返回false
      */
     private boolean matchEventAttribute(RuleEventDTO ruleEventDTO, KafkaEventDTO kafkaEventDTO) {
-        List<RuleEventAttrDTO> ruleEventAttributeDTOList = ruleEventDTO.getRuleEventAttributeGroup()
+        List<RuleEventAttrDTO> ruleEventAttributeDTOList = ruleEventDTO.getRuleEventAttrDTOList()
         if (CollectionUtil.isEmptyOrContainsNulls(ruleEventAttributeDTOList)) {
             // 规则中不包含事件属性相关的配置，则表明不需要进行事件属性匹配，直接跳过即可
             return true
@@ -256,7 +259,7 @@ class ProcessorOne implements Processor {
                 // kafka事件中对于规则中事件属性值为空，则表明不符合匹配
                 return false
             }
-            String ruleEventAttributeValue = ruleEventAttributeDTO.getAttributeValue()
+            RuleEventAttrValueDTO ruleEventAttributeValue = ruleEventAttributeDTO.getRuleEventAttrValueDTO()
             if (Objects.isNull(ruleEventAttributeValue)) {
                 throw new BusinessException("规则事件属性值必须非空")
             }
@@ -285,7 +288,7 @@ class ProcessorOne implements Processor {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
         // 获取规则条件
-        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondGroup()
+        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondDTOList()
         if (groupGroup == null || groupGroup.isEmpty()) {
             throw new BusinessException("运算机 groupGroup 必须非空")
         }

@@ -1,5 +1,7 @@
 package com.liboshuai.slr.module.engine.dto;
 
+
+import com.liboshuai.slr.framework.common.pojo.BaseDTO;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.*;
@@ -19,51 +21,66 @@ public class RuleCondDTO extends BaseDTO {
 
     /**
      * 规则编号
+     * {@link RuleInfoDTO#getRuleCode()}
      */
     private String ruleCode;
+
     /**
      * 事件编号
+     * {@link RuleEventDTO#getEventCode()}
      */
     private String eventCode;
+
+    /**
+     * 条件编号
+     */
+    private String condCode;
+
     /**
      * 条件类型
      * {@link RuleCondTypeEnum}
      */
     private String condType;
+
     /**
-     * 窗口值
-     * （仅在条件类型为周期时使用）
+     * 窗口值,仅在条件类型为周期时使用
      */
     private Long windowValue;
+
     /**
-     * 窗口单位
-     * （仅在条件类型为周期时使用）
+     * 窗口单位,仅在条件类型为周期时使用
      * {@link TimeUnitEnum}
      */
     private String windowUnit;
+
     /**
-     * 开始时间
-     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
+     * 开始时间,仅在条件类型为范围时使用
+     * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private String beginTime;
+
     /**
-     * 结束时间
-     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
+     * 结束时间,仅在条件类型为范围时使用
+     * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private String endTime;
+
     /**
      * 阈值
      */
     private Long threshold;
+
     /**
      * 是否跨历史数据
      */
     private Boolean crossHistory;
+
     /**
      * 跨历史时间点
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private String crossHistoryTimeline;
+
     /**
      * 事件信息
      */

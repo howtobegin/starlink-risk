@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.dto;
 
+import com.liboshuai.slr.framework.common.pojo.BaseDTO;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -18,11 +19,12 @@ public class RuleJsonDTO extends BaseDTO {
 
     /**
      * 规则编号
+     * {@link RuleInfoDTO#getRuleCode()}
      */
     private String ruleCode;
 
     /**
-     * 规则json
+     * 规则json数据
      */
     private String ruleJson;
 

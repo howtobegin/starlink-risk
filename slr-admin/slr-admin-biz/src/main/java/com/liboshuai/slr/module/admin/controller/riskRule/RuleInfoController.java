@@ -33,7 +33,8 @@ public class RuleInfoController {
 
     @PostMapping("/list")
     @Operation(summary = "列表")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoPageReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleInfoPageReqVO.class)))
     public CommonResult<PageResult<RuleInfoRespVO>> list(@RequestBody @Valid RuleInfoPageReqVO ruleInfoPageReqVO) {
         PageResult<RuleInfoRespVO> ruleInfoPage = ruleInfoService.list(ruleInfoPageReqVO);
         return success(ruleInfoPage);
@@ -48,7 +49,8 @@ public class RuleInfoController {
 
     @PostMapping(value = "/create")
     @Operation(summary = "新增")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息保存请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息保存请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
     public CommonResult<String> create(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
         String ruleCode = ruleInfoService.create(ruleInfoSaveReqVO);
         return success(ruleCode);
@@ -56,7 +58,8 @@ public class RuleInfoController {
 
     @PostMapping(value = "/update")
     @Operation(summary = "更新")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息更新请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息更新请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
     public CommonResult<Boolean> update(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
         ruleInfoService.update(ruleInfoSaveReqVO);
         return success(true);
@@ -64,7 +67,8 @@ public class RuleInfoController {
 
     @PostMapping(value = "/changeStatus")
     @Operation(summary = "变更状态")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息变更状态请求", required = true, content = @Content(schema = @Schema(implementation = RuleInfoChangeStatusReqVO.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息变更状态请求", required = true,
+            content = @Content(schema = @Schema(implementation = RuleInfoChangeStatusReqVO.class)))
     public CommonResult<Boolean> changeStatus(@RequestBody @Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
         ruleInfoService.changeStatus(ruleInfoChangeStatusReqVO);
         return success(true);

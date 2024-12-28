@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -79,7 +80,7 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime crossHistoryTimeline;
 
-    @NotNull(message = "事件属性组[ruleEventAttrSaveReqVOList]，不能为空")
+    @NotEmpty(message = "事件属性组[ruleEventAttrSaveReqVOList]，不能为空")
     @Schema(description = "事件属性组", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList;
 

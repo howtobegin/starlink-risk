@@ -7,14 +7,15 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReq
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 public interface RuleInfoService {
 
-    PageResult<RuleInfoRespVO> list(RuleInfoPageReqVO ruleInfoPageReqVO);
+    PageResult<RuleInfoRespVO> list(@Valid RuleInfoPageReqVO ruleInfoPageReqVO);
 
-    RuleInfoRespVO detail(String ruleCode);
+    RuleInfoRespVO detail(@NotBlank String ruleCode);
 
-    String create(RuleInfoSaveReqVO ruleInfoSaveReqVO);
+    String create(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 
     void update(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 

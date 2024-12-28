@@ -1,23 +1,21 @@
-package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
+package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
-import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
+import com.liboshuai.slr.framework.common.pojo.PageParam;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.List;
 
-/**
- * 风控规则目标表
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class RuleKeyRespVO extends BaseRespVO {
+@Schema(description = "管理后台 - 分页风控目标信息 Request VO")
+public class RuleKeyPageReqVO extends PageParam {
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -35,6 +33,4 @@ public class RuleKeyRespVO extends BaseRespVO {
     @Schema(description = "key描述", example = "游戏平台的用户ID")
     private String keyDesc;
 
-    @Schema(description = "规则事件组")
-    private List<RuleEventRespVO> ruleEventRespVOList;
 }
