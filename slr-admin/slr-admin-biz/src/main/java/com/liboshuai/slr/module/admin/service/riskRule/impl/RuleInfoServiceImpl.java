@@ -222,6 +222,9 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         List<RuleCondDTO> ruleCondDTOList = BeanUtils.toBean(ruleCondDOList, RuleCondDTO.class);
         List<String> ruleCondCodeList = ruleCondDTOList.stream().map(RuleCondDTO::getCondCode).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(ruleCondCodeList)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CONDITION_CODE_IS_NULL);
+        }
         List<String> ruleEventCodeList = ruleCondDTOList.stream().map(RuleCondDTO::getEventCode).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(ruleEventCodeList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CONDITION_EVENT_CODE_IS_NULL);
