@@ -6,6 +6,8 @@ import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessag
 import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessageRespVO;
 import com.liboshuai.slr.module.connector.service.alertMessage.AlertMessageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -28,7 +30,9 @@ public class AlertMessageController {
     private AlertMessageService alertMessageService;
 
     @PostMapping("/list")
-    @Operation(summary = "获取预警信息列表")
+    @Operation(summary = "列表")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "预警消息列表请求", required = true,
+            content = @Content(schema = @Schema(implementation = AlertMessageReqVO.class)))
     public CommonResult<PageResult<AlertMessageRespVO>> list(@RequestBody @Validated AlertMessageReqVO alertMessageReqVO) {
         return success(alertMessageService.list(alertMessageReqVO));
     }
