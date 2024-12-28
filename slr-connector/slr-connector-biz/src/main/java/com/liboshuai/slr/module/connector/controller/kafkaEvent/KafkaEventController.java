@@ -16,7 +16,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
 @Slf4j
 @RestController
-@Tag(name = "Kafka事件推送")
+@Tag(name = "风控事件推送")
 @RequestMapping("/kafkaEvent")
 public class KafkaEventController {
 
