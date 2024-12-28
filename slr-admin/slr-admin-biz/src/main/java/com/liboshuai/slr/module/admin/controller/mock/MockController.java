@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 
 @Slf4j
 @RestController
-@Tag(name = "mock接口")
+@Tag(name = "mock数据测试")
 @RequestMapping("/mock")
 public class MockController {
 
