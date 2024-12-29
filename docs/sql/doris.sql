@@ -32,22 +32,27 @@ CREATE TABLE IF NOT EXISTS slr_event
 (
     16
 ) NOT NULL COMMENT '渠道'
-)
-ENGINE = OLAP
+    )
+    ENGINE = OLAP
     DUPLICATE KEY
 (
     `EVENT_TIME`,
     `TARGET_CODE`,
     `TARGET_VALUE`
 )
-PARTITION BY RANGE(`EVENT_TIME`) ()
+    PARTITION BY RANGE
+(
+    `EVENT_TIME`
+)
+(
+)
     DISTRIBUTED BY HASH
 (
     `EVENT_TIME`,
     `TARGET_CODE`,
     `TARGET_VALUE`
 ) BUCKETS AUTO
-PROPERTIES
+    PROPERTIES
 (
     "dynamic_partition.enable" = "true",
     "dynamic_partition.time_unit" = "MONTH",
