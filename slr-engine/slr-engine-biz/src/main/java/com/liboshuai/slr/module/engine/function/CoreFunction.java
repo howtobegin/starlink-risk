@@ -44,7 +44,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private GroovyClassLoader groovyClassLoader;
 
     /**
-     * 最近15分钟时间事件数据缓存
+     * 最近5分钟时间事件数据缓存
      */
     private ListState<KafkaEventDTO> recentEventListState;
 
@@ -66,7 +66,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_LIST_STATE_DESC
-                .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(15)).neverReturnExpired().build());
+                .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(5)).neverReturnExpired().build());
         recentEventListState = getRuntimeContext().getListState(RECENT_EVENT_LIST_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
         // 查询在线规则数量
