@@ -8,8 +8,6 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageR
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
-
 @Mapper
 public interface RuleTargetMapper extends BaseMapperX<RuleTargetDO> {
 
@@ -29,9 +27,9 @@ public interface RuleTargetMapper extends BaseMapperX<RuleTargetDO> {
         );
     }
 
-    default List<RuleTargetDO> selectOneByNeId(Long id) {
-        return selectList(new LambdaQueryWrapperX<RuleTargetDO>()
-                .ne(RuleTargetDO::getId, id)
+    default void updateByTargetCode(RuleTargetDO ruleTargetDO, String targetCode) {
+        update(ruleTargetDO, new LambdaQueryWrapperX<RuleTargetDO>()
+                .eq(RuleTargetDO::getTargetCode, targetCode)
         );
     }
 }

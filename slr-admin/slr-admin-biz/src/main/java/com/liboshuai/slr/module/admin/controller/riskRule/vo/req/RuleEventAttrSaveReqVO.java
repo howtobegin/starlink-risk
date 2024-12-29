@@ -1,12 +1,15 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
-import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 
 @Data
@@ -14,8 +17,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class RuleEventAttrSaveReqVO extends BaseRespVO {
+public class RuleEventAttrSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Size(max = 256, message = "属性编号[attrCode]，长度不能超过 256 个字符")
@@ -23,7 +25,7 @@ public class RuleEventAttrSaveReqVO extends BaseRespVO {
     private String attrCode;
 
     @Size(max = 32, message = "属性名称[attrCode]，长度不能超过 32 个字符")
-    @Schema(description = "属性名称", example = "订单号")
+    @Schema(description = "属性名称", example = "活动ID")
     private String attrName;
 
     /**

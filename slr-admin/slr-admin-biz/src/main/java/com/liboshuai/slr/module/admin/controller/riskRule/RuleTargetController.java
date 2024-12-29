@@ -40,8 +40,8 @@ public class RuleTargetController {
 
     @GetMapping("/detail")
     @Operation(summary = "详情")
-    public CommonResult<RuleTargetRespVO> detail(@NotBlank String keyCode) {
-        RuleTargetRespVO ruletargetRespVO = ruleTargetService.detail(keyCode);
+    public CommonResult<RuleTargetRespVO> detail(@NotBlank String targetCode) {
+        RuleTargetRespVO ruletargetRespVO = ruleTargetService.detail(targetCode);
         return success(ruletargetRespVO);
     }
 

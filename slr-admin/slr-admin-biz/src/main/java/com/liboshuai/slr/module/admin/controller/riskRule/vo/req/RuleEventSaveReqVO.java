@@ -21,9 +21,6 @@ import java.util.List;
 public class RuleEventSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "主键ID", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Long id;
-
     @NotBlank(message = "事件编号[eventCode]，不能为空")
     @Size(max = 256, message = "事件编号[eventCode]，长度不能超过 256 个字符")
     @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)

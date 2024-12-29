@@ -108,6 +108,8 @@ public class RuleEventAttrCompUtil {
                     return value;
                 case BIG_DECIMAL:
                     return new BigDecimal(value);
+                case DateTime:
+                    return DateUtil.convertStr2LocalDateTime(value);
                 default:
                     throw new IllegalArgumentException("未知的类型: " + typeEnum);
             }

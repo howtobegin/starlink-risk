@@ -93,21 +93,18 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(RuleTargetSaveReqVO ruleTargetSaveReqVO) {
-        Long targetId = ruleTargetSaveReqVO.getId();
-        if (Objects.isNull(targetId)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_ID_NOT_NULL);
-        }
         // 更新 规则目标信息
-        RuleTargetDO oldRuleTargetDO = ruleTargetMapper.selectById(targetId);
-        ruleTargetMapper.updateById(BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class));
+        String targetCode = ruleTargetSaveReqVO.getTargetCode();
+        RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class);
+        ruleTargetMapper.updateByTargetCode(ruleTargetDO, targetCode);
         // 更新 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveGroup();
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
-        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleTargetDO.getTargetCode());
+        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(targetCode);
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
-        ruleEventMapper.deleteByKeyCode(oldRuleTargetDO.getTargetCode());
+        ruleEventMapper.deleteByKeyCode(targetCode);
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
         // 更新 规则事件属性信息
         List<RuleEventAttrSaveReqVO> ruleEventAttrGroup = ruleEventSaveReqVOList.stream()

@@ -24,9 +24,6 @@ import java.util.List;
 public class RuleTargetSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "主键ID", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Long id;
-
     /**
      * {@link ChannelEnum}
      */
