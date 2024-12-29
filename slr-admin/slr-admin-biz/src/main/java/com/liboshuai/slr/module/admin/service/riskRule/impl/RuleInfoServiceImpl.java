@@ -100,6 +100,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
 
         // 保存 事件属性值信息
         List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup = ruleCondSaveReqVOList.stream()
+                .filter(ruleCondSaveReqVO -> !CollectionUtils.isEmpty(ruleCondSaveReqVO.getRuleEventAttrValueGroup()))
                 .flatMap(ruleCondSaveReqVO -> ruleCondSaveReqVO.getRuleEventAttrValueGroup().stream())
                 .collect(Collectors.toList());
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(ruleEventAttrValueGroup, RuleEventAttrValueDO.class);
@@ -124,6 +125,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 更新 事件属性值信息
         List<String> condCodeList = ruleCondSaveReqVOList.stream().map(RuleCondSaveReqVO::getCondCode).collect(Collectors.toList());
         List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList = ruleCondSaveReqVOList.stream()
+                .filter(ruleCondSaveReqVO -> !CollectionUtils.isEmpty(ruleCondSaveReqVO.getRuleEventAttrValueGroup()))
                 .flatMap(ruleCondSaveReqVO -> ruleCondSaveReqVO.getRuleEventAttrValueGroup().stream())
                 .collect(Collectors.toList());
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(ruleEventAttrValueSaveReqVOList, RuleEventAttrValueDO.class);

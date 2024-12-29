@@ -108,6 +108,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
         // 更新 规则事件属性信息
         List<RuleEventAttrSaveReqVO> ruleEventAttrGroup = ruleEventSaveReqVOList.stream()
+                .filter(ruleEventSaveReqVO -> !CollectionUtils.isEmpty(ruleEventSaveReqVO.getRuleEventAttrGroup()))
                 .flatMap(ruleEventSaveReqVO -> ruleEventSaveReqVO.getRuleEventAttrGroup().stream())
                 .collect(Collectors.toList());
         ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
