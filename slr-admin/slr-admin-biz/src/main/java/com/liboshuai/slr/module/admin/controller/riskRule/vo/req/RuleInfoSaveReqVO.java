@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -92,6 +93,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "条件组合符", example = "AND", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleCondCombOp;
 
+    @Valid
     @NotEmpty(message = "条件组[ruleCondGroup]，不能为空")
     @Schema(description = "条件组", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<RuleCondSaveReqVO> ruleCondGroup;

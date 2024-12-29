@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -41,6 +42,7 @@ public class RuleEventSaveReqVO implements Serializable {
     @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetCode;
 
+    @Valid
     @Schema(description = "事件属性组")
     private List<RuleEventAttrSaveReqVO> ruleEventAttrGroup;
 }

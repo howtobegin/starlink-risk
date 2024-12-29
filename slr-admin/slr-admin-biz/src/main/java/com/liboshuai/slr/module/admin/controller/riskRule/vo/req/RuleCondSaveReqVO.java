@@ -1,7 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -38,7 +38,7 @@ public class RuleCondSaveReqVO implements Serializable {
      * {@link RuleCondTypeEnum}
      */
     @NotBlank(message = "条件类型[condType]，不能为空")
-    @InStringEnum(value = RuleCondCombOpEnum.class, message = "条件类型[condType]，必须在指定范围 {value}")
+    @InStringEnum(value = RuleCondTypeEnum.class, message = "条件类型[condType]，必须在指定范围 {value}")
     @Schema(description = "条件类型", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String condType;
 
@@ -82,6 +82,7 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
+    @Valid
     @NotEmpty(message = "事件属性值组[ruleEventAttrValueGroup]，不能为空")
     @Schema(description = "事件属性值组", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup;

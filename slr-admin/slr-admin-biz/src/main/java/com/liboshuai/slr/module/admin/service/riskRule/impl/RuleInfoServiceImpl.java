@@ -93,7 +93,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<RuleCondSaveReqVO> ruleCondSaveReqVOList = ruleInfoSaveReqVO.getRuleCondGroup();
         ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> {
             ruleCondSaveReqVO.setRuleCode(ruleCode);
-            ruleCondSaveReqVO.setCondCode(ruleCode + DefaultConstants.CODE_SEPARATOR + ruleCondSaveReqVO.getEventCode());
+            ruleCondSaveReqVO.setCondCode(ruleCode + DefaultConstants.UNDERSCORE + ruleCondSaveReqVO.getEventCode());
         }); // 条件信息设置 规则编号、条件编号
         List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
         ruleCondMapper.insertBatch(ruleCondDOList);

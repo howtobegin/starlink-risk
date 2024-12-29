@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -47,6 +48,7 @@ public class RuleTargetSaveReqVO implements Serializable {
     @Schema(description = "目标描述", example = "游戏平台的用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetDesc;
 
+    @Valid
     @NotEmpty(message = "规则事件组[ruleEventSaveGroup]，不能为空")
     @Schema(description = "规则事件组")
     private List<RuleEventSaveReqVO> ruleEventSaveGroup;
