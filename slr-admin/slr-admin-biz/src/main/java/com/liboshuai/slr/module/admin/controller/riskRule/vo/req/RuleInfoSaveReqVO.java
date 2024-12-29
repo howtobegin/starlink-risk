@@ -1,7 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
@@ -42,7 +41,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 
-    @Size(max = 20, message = "规则名称[ruleName]，长度不能超过 20 个字符")
+    @Size(max = 32, message = "规则名称[ruleName]，长度不能超过 32 个字符")
     @NotBlank(message = "规则名称[ruleName]，不能为空")
     @Schema(description = "规则名称", example = "游戏高频抽奖", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleName;
@@ -76,15 +75,14 @@ public class RuleInfoSaveReqVO implements Serializable {
     private String alertMessage;
 
     /**
-     * {@link RuleTargetDO#getTargetCode()}
+     * {@link RuleTargetSaveReqVO#getTargetCode()}
      */
-    @NotBlank(message = "规则目标[keyCode]，不能为空")
+    @NotBlank(message = "规则目标[targetCode]，不能为空")
     @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String keyCode;
+    private String targetCode;
 
-    @NotBlank
     @NotBlank(message = "模型编号[modelCode]，不能为空")
-    @Schema(description = "模型编号", example = "M175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "模型编号", example = "M1553673459123456001", requiredMode = Schema.RequiredMode.REQUIRED)
     private String modelCode;
 
     /**
@@ -95,7 +93,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "条件组合符", example = "AND", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleCondCombOp;
 
-    @NotEmpty(message = "条件组[ruleCondSaveReqVOList]，不能为空")
+    @NotEmpty(message = "条件组[ruleCondGroup]，不能为空")
     @Schema(description = "条件组", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<RuleCondSaveReqVO> ruleCondSaveReqVOList;
+    private List<RuleCondSaveReqVO> ruleCondGroup;
 }

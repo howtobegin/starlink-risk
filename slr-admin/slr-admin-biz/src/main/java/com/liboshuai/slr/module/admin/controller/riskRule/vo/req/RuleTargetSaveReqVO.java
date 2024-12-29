@@ -21,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RuleKeySaveReqVO implements Serializable {
+public class RuleTargetSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键ID", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -35,20 +35,20 @@ public class RuleKeySaveReqVO implements Serializable {
     @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
-    @NotBlank(message = "key编号[keyCode]，不能为空")
-    @Size(max = 64, message = "key编号[keyCode]，长度不能超过 64 个字符")
-    @Schema(description = "key编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String keyCode;
+    @NotBlank(message = "目标编号[targetCode]，不能为空")
+    @Size(max = 256, message = "目标编号[targetCode]，长度不能超过 256 个字符")
+    @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String targetCode;
 
-    @NotBlank(message = "key名称[keyName]，不能为空")
-    @Size(max = 64, message = "key名称[keyName]，长度不能超过 64 个字符")
-    @Schema(description = "key名称", example = "用户id", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String keyName;
+    @NotBlank(message = "目标名称[targetName]，不能为空")
+    @Size(max = 32, message = "key名称[targetName]，长度不能超过 32 个字符")
+    @Schema(description = "目标名称", example = "用户id", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String targetName;
 
-    @NotBlank(message = "key描述[keyDesc]，不能为空")
-    @Size(max = 64, message = "key描述[keyDesc]，长度不能超过 64 个字符")
-    @Schema(description = "key描述", example = "游戏平台的用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String keyDesc;
+    @NotBlank(message = "目标描述[targetDesc]，不能为空")
+    @Size(max = 64, message = "目标描述[targetDesc]，长度不能超过 64 个字符")
+    @Schema(description = "目标描述", example = "游戏平台的用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String targetDesc;
 
     @NotEmpty(message = "规则事件组[ruleEventSaveReqVOList]，不能为空")
     @Schema(description = "规则事件组")

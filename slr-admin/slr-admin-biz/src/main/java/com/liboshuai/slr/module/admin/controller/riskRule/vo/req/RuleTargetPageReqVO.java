@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "管理后台 - 分页风控目标信息 Request VO")
-public class RuleKeyPageReqVO extends PageParam {
+public class RuleTargetPageReqVO extends PageParam {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,13 +24,13 @@ public class RuleKeyPageReqVO extends PageParam {
     @Schema(description = "渠道", example = "GAME")
     private String channel;
 
-    @Schema(description = "key编号", example = "GAME_userId")
-    private String keyCode;
+    @Schema(description = "目标编号", example = "GAME_userId")
+    private String targetCode;
 
-    @Schema(description = "key名称", example = "用户id")
-    private String keyName;
+    @Schema(description = "目标名称", example = "用户id")
+    private String targetName;
 
-    @Schema(description = "key描述", example = "游戏平台的用户ID")
-    private String keyDesc;
+    @Schema(description = "目标描述", example = "游戏平台的用户ID")
+    private String targetDesc;
 
 }

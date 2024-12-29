@@ -19,10 +19,13 @@ import java.util.List;
 public class RuleEventRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "key编号", example = "GAME_userId")
-    private String keyCode;
+    /**
+     * {@link RuleTargetRespVO#getTargetCode()}
+     */
+    @Schema(description = "目标编号", example = "GAME_userId")
+    private String targetCode;
 
-    @Schema(description = "事件编号", example = "GAME_LOTTERY")
+    @Schema(description = "事件编号", example = "GAME_userId_lottery")
     private String eventCode;
 
     @Schema(description = "事件名称", example = "游戏抽奖")
@@ -32,5 +35,5 @@ public class RuleEventRespVO extends BaseRespVO {
     private String eventDesc;
 
     @Schema(description = "事件属性组")
-    private List<RuleEventAttrRespVO> ruleEventAttrRespVoList;
+    private List<RuleEventAttrRespVO> ruleEventAttrGroup;
 }

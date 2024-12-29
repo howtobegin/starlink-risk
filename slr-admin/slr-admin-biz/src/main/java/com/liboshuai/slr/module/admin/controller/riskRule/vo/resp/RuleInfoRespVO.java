@@ -30,13 +30,13 @@ public class RuleInfoRespVO extends BaseRespVO {
     @Schema(description = "渠道", example = "GAME")
     private String channel;
 
-    @Schema(description = "规则编号", example = "R175928847299117063")
+    @Schema(description = "规则编号", example = "R1553673459123456000")
     private String ruleCode;
 
     @Schema(description = "规则名称", example = "游戏高频抽奖")
     private String ruleName;
 
-    @Schema(description = "规则描述", example = "游戏低龄高频抽奖规则")
+    @Schema(description = "规则描述", example = "游戏高频抽奖规则")
     private String ruleDesc;
 
     /**
@@ -58,19 +58,31 @@ public class RuleInfoRespVO extends BaseRespVO {
     private String alertMessage;
 
     /**
-     * {@link RuleKeyRespVO#getKeyCode()}
+     * {@link RuleTargetRespVO#getTargetCode()}
      */
     @Schema(description = "规则目标", example = "GAME_userId")
-    private String keyCode;
+    private String targetCode;
 
-    @Schema(description = "规则目标信息")
-    private RuleKeyRespVO ruleKeyRespVO;
+    @Schema(description = "目标名称", example = "用户id")
+    private String targetName;
 
-    @Schema(description = "模型编号", example = "M175928847299117063")
+    @Schema(description = "目标描述", example = "游戏平台的用户ID")
+    private String targetDesc;
+
+    /**
+     * {@link RuleModelRespVO#getModelCode()}
+     */
+    @Schema(description = "模型编号", example = "M1553673459123456001")
     private String modelCode;
 
-    @Schema(description = "模型信息")
-    private RuleModelRespVO ruleModelRespVO;
+    @Schema(description = "模型名称", example = "模型运算机一")
+    private String modelName;
+
+    @Schema(description = "模型描述", example = "支持周期条件的规则模型")
+    private String modelDesc;
+
+    @Schema(description = "运算机groovy代码")
+    private String groovy;
 
     /**
      * {@link RuleCondCombOpEnum}
@@ -79,5 +91,5 @@ public class RuleInfoRespVO extends BaseRespVO {
     private String ruleCondCombOp;
 
     @Schema(description = "条件组")
-    private List<RuleCondRespVO> ruleCondRespVoList;
+    private List<RuleCondRespVO> ruleCondGroup;
 }

@@ -60,19 +60,21 @@ public class RuleInfoDO extends BaseDO {
      */
     private String alertMessage;
     /**
+     * 条件组合符
+     * {@link RuleCondCombOpEnum}
+     */
+    private String ruleCondCombOp;
+    /**
      * 规则目标
+     * （例如：GAME_userId）
      * {@link RuleTargetDO#getTargetCode()}
      */
     private String targetCode;
     /**
      * 模型编号
+     * （例如：M1553673459123456001）
      * {@link RuleModelDO#getModelCode()}
      */
     private String modelCode;
-    /**
-     * 条件组合符
-     * {@link RuleCondCombOpEnum}
-     */
-    private String ruleCondCombOp;
 
 }

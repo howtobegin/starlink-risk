@@ -11,7 +11,7 @@ import java.util.List;
 public interface RuleEventAttrMapper extends BaseMapperX<RuleEventAttrDO> {
     default List<RuleEventAttrDO> selectListByAttributeCodes(List<String> attributeCodeList) {
         return selectList(new LambdaQueryWrapperX<RuleEventAttrDO>()
-                .in(RuleEventAttrDO::getAttributeCode, attributeCodeList));
+                .in(RuleEventAttrDO::getAttrCode, attributeCodeList));
     }
 
     default List<RuleEventAttrDO> selectListByEventCodes(List<String> ruleEventCodeList) {

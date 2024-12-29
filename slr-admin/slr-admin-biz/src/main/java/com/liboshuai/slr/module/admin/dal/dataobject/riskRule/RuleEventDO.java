@@ -19,12 +19,6 @@ public class RuleEventDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 目标编号
-     *（例如：GAME_userId）
-     * {@link RuleTargetDO#getTargetCode()}
-     */
-    private String targetCode;
-    /**
      * 事件编号
      * （例如：GAME_userId_lottery)
      */
@@ -37,4 +31,10 @@ public class RuleEventDO extends BaseDO {
      * 事件描述
      */
     private String eventDesc;
+    /**
+     * 目标编号
+     * （例如：GAME_userId）
+     * {@link RuleTargetDO#getTargetCode()}
+     */
+    private String targetCode;
 }

@@ -3,11 +3,11 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueEventCodeReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueKeyCodeReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeyPageReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleKeySaveReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
-import com.liboshuai.slr.module.admin.service.riskRule.RuleKeyService;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueTargetCodeReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
+import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,51 +26,51 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Validated
 @RestController
 @Tag(name = "风控规则目标")
-@RequestMapping("/ruleKey")
-public class RuleKeyController {
+@RequestMapping("/ruleTarget")
+public class RuleTargetController {
     @Resource
-    private RuleKeyService ruleKeyService;
+    private RuleTargetService ruleTargetService;
 
     @PostMapping("/list")
     @Operation(summary = "列表")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标列表请求", required = true,
-            content = @Content(schema = @Schema(implementation = RuleKeyPageReqVO.class)))
-    public CommonResult<PageResult<RuleKeyRespVO>> list(@RequestBody @Valid RuleKeyPageReqVO ruleKeyPageReqVO) {
-        PageResult<RuleKeyRespVO> ruleKeyRespVOPageResult = ruleKeyService.list(ruleKeyPageReqVO);
+            content = @Content(schema = @Schema(implementation = RuleTargetPageReqVO.class)))
+    public CommonResult<PageResult<RuleTargetRespVO>> list(@RequestBody @Valid RuleTargetPageReqVO ruleTargetPageReqVO) {
+        PageResult<RuleTargetRespVO> ruleKeyRespVOPageResult = ruleTargetService.list(ruleTargetPageReqVO);
         return success(ruleKeyRespVOPageResult);
     }
 
     @GetMapping("/detail")
     @Operation(summary = "详情")
-    public CommonResult<RuleKeyRespVO> detail(@NotBlank String keyCode) {
-        RuleKeyRespVO ruleKeyRespVO = ruleKeyService.detail(keyCode);
-        return success(ruleKeyRespVO);
+    public CommonResult<RuleTargetRespVO> detail(@NotBlank String keyCode) {
+        RuleTargetRespVO ruletargetRespVO = ruleTargetService.detail(keyCode);
+        return success(ruletargetRespVO);
     }
 
     @PostMapping(value = "/create")
     @Operation(summary = "新增")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true,
-            content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
-    public CommonResult<Boolean> create(@RequestBody @Valid RuleKeySaveReqVO ruleKeySaveReqVO) {
-        ruleKeyService.create(ruleKeySaveReqVO);
+            content = @Content(schema = @Schema(implementation = RuleTargetSaveReqVO.class)))
+    public CommonResult<Boolean> create(@RequestBody @Valid RuleTargetSaveReqVO ruleTargetSaveReqVO) {
+        ruleTargetService.create(ruleTargetSaveReqVO);
         return success(true);
     }
 
     @PostMapping(value = "/update")
     @Operation(summary = "更新")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标保存请求", required = true,
-            content = @Content(schema = @Schema(implementation = RuleKeySaveReqVO.class)))
-    public CommonResult<Boolean> update(@RequestBody @Valid RuleKeySaveReqVO ruleKeySaveReqVO) {
-        ruleKeyService.update(ruleKeySaveReqVO);
+            content = @Content(schema = @Schema(implementation = RuleTargetSaveReqVO.class)))
+    public CommonResult<Boolean> update(@RequestBody @Valid RuleTargetSaveReqVO ruleTargetSaveReqVO) {
+        ruleTargetService.update(ruleTargetSaveReqVO);
         return success(true);
     }
 
-    @PostMapping(value = "/checkUniqueKeyCode")
+    @PostMapping(value = "/checkUniqueTargetCode")
     @Operation(summary = "检查目标编号是否唯一")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标编号唯一请求", required = true,
-            content = @Content(schema = @Schema(implementation = CheckUniqueKeyCodeReqVO.class)))
-    public CommonResult<Boolean> checkUniqueKeyCode(@RequestBody @Valid CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
-        boolean checkResult = ruleKeyService.checkUniqueKeyCode(checkUniqueKeyCodeReqVO);
+            content = @Content(schema = @Schema(implementation = CheckUniqueTargetCodeReqVO.class)))
+    public CommonResult<Boolean> checkUniqueTargetCode(@RequestBody @Valid CheckUniqueTargetCodeReqVO checkUniqueTargetCodeReqVO) {
+        boolean checkResult = ruleTargetService.checkUniqueKeyCode(checkUniqueTargetCodeReqVO);
         return success(checkResult);
     }
 
@@ -79,7 +79,7 @@ public class RuleKeyController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则事件编号唯一请求", required = true,
             content = @Content(schema = @Schema(implementation = CheckUniqueEventCodeReqVO.class)))
     public CommonResult<Boolean> checkUniqueEventCode(@RequestBody @Valid CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
-        boolean checkResult = ruleKeyService.checkUniqueEventCode(checkUniqueEventCodeReqVO);
+        boolean checkResult = ruleTargetService.checkUniqueEventCode(checkUniqueEventCodeReqVO);
         return success(checkResult);
     }
 }

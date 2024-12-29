@@ -1,6 +1,5 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
@@ -29,14 +28,8 @@ import java.util.List;
 public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "规则编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String ruleCode;
-
-    @NotBlank(message = "事件编号[eventCode]，不能为空")
-    @Schema(description = "事件编号", example = "GAME_LOTTERY", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String eventCode;
-
-    @Schema(description = "条件编号", example = "C175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @NotBlank(message = "条件编号[condCode]，不能为空")
+    @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
     /**
@@ -58,12 +51,10 @@ public class RuleCondSaveReqVO implements Serializable {
     private String windowUnit;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime beginTime;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime endTime;
 
@@ -76,12 +67,19 @@ public class RuleCondSaveReqVO implements Serializable {
     private Boolean crossHistory;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime crossHistoryTimeline;
 
-    @NotEmpty(message = "事件属性组[ruleEventAttrSaveReqVOList]，不能为空")
-    @Schema(description = "事件属性组", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList;
+    @NotBlank(message = "规则编号[ruleCode]，不能为空")
+    @Schema(description = "规则编号", example = "R1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String ruleCode;
+
+    @NotBlank(message = "事件编号[eventCode]，不能为空")
+    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String eventCode;
+
+    @NotEmpty(message = "事件属性值组[ruleEventAttrValueGroup]，不能为空")
+    @Schema(description = "事件属性值组", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup;
 
 }

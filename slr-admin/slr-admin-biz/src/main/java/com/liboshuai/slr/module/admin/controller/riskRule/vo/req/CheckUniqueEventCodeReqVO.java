@@ -19,6 +19,7 @@ import java.io.Serializable;
 public class CheckUniqueEventCodeReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @NotBlank(message = "事件ID[eventId]，不能为空")
     @Schema(description = "事件ID", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long eventId;
 

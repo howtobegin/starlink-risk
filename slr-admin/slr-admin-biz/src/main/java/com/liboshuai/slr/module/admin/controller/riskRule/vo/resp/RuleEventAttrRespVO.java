@@ -18,27 +18,22 @@ import lombok.experimental.Accessors;
 public class RuleEventAttrRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
+    @Schema(description = "属性编号", example = "GAME_userId_lottery_campaignId")
+    private String attrCode;
+
+    @Schema(description = "属性名称", example = "活动id")
+    private String attrName;
+
+    /**
+     * {@link RuleEventAttrTypeEnum}
+     */
+    @Schema(description = "属性类型", example = "String")
+    private String attrType;
+
     /**
      * {@link RuleEventRespVO#getEventCode()}
      */
     @Schema(description = "事件编号", example = "GAME_LOTTERY")
     private String eventCode;
 
-    @Schema(description = "属性编号", example = "A175928847299117063")
-    private String attributeCode;
-
-    @Schema(description = "属性名称", example = "订单号")
-    private String attributeName;
-
-    @Schema(description = "属性key", example = "orderNo")
-    private String attributeKey;
-
-    /**
-     * {@link RuleEventAttrTypeEnum}
-     */
-    @Schema(description = "属性类型", example = "String")
-    private String attributeType;
-
-    @Schema(description = "属性值")
-    private RuleEventAttrValueRespVO ruleEventAttrValueRespVO;
 }

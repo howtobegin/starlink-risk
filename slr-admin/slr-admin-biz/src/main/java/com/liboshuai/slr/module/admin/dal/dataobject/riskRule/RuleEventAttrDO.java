@@ -20,25 +20,25 @@ public class RuleEventAttrDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 事件编号
-     * （例如：GAME_userId_lottery）
-     * {@link RuleEventDO#getEventCode()}
-     */
-    private String eventCode;
-    /**
      * 属性编号
      * （例如：GAME_userId_lottery_campaignId）
      */
-    private String attributeCode;
+    private String attrCode;
     /**
      * 属性名称
      * （例如：活动id）
      */
-    private String attributeName;
+    private String attrName;
     /**
      * 属性类型
      * （例如：String）
      * {@link RuleEventAttrTypeEnum}
      */
-    private String attributeType;
+    private String attrType;
+    /**
+     * 事件编号
+     * （例如：GAME_userId_lottery）
+     * {@link RuleEventDO#getEventCode()}
+     */
+    private String eventCode;
 }

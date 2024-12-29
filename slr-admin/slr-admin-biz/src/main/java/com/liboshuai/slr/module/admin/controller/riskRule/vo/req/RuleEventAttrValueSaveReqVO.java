@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
-import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
+import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,20 +20,25 @@ import java.io.Serializable;
 public class RuleEventAttrValueSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "条件编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String condCode;
+    @NotEmpty(message = "属性编号[attrCode]，不能为空")
+    @Schema(description = "属性编号", example = "GAME_userId_lottery_campaignId", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String attrCode;
 
-    @NotEmpty(message = "属性编号[attributeCode]，不能为空")
-    @Schema(description = "属性编号", example = "A175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String attributeCode;
-
-    @NotEmpty(message = "属性值[attributeValue]，不能为空")
-    @Schema(description = "属性值", example = "C175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String attributeValue;
     /**
-     * {@link RuleAuditOpEnum}
+     * {@link RuleEventAttrOpEnum}
      */
-    @NotEmpty(message = "属性比较符[attributeOp]，不能为空")
-    @Schema(description = "属性比较符", example = "C175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String attributeOp;
+    @NotEmpty(message = "属性比较符[attrOp]，不能为空")
+    @Schema(description = "属性比较符", example = "==", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String attrOp;
+
+    @NotEmpty(message = "属性值[attrValue]，不能为空")
+    @Schema(description = "属性值", example = "C000000001", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String attrValue;
+
+    /**
+     * {@link RuleCondSaveReqVO#getCondCode()}
+     */
+    @NotEmpty(message = "条件编号[condCode]，不能为空")
+    @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String condCode;
 }

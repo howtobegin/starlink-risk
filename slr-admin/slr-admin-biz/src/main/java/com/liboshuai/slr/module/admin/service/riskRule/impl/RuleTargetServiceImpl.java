@@ -8,15 +8,15 @@ import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventAttrDO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventDO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventAttrMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
-import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleKeyMapper;
+import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleTargetMapper;
 import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
-import com.liboshuai.slr.module.admin.service.riskRule.RuleKeyService;
+import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +34,10 @@ import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstan
 
 @Slf4j
 @Service
-public class RuleKeyServiceImpl implements RuleKeyService {
+public class RuleTargetServiceImpl implements RuleTargetService {
 
     @Resource
-    private RuleKeyMapper ruleKeyMapper;
+    private RuleTargetMapper ruleTargetMapper;
     @Resource
     private RuleEventMapper ruleEventMapper;
     @Resource
@@ -46,35 +46,35 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     private SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
-    public PageResult<RuleKeyRespVO> list(RuleKeyPageReqVO ruleKeyPageReqVO) {
-        PageResult<RuleTargetDO> ruleInfoEntityPageResult = ruleKeyMapper.selectPage(ruleKeyPageReqVO);
-        return BeanUtils.toBean(ruleInfoEntityPageResult, RuleKeyRespVO.class);
+    public PageResult<RuleTargetRespVO> list(RuleTargetPageReqVO ruleTargetPageReqVO) {
+        PageResult<RuleTargetDO> ruleInfoEntityPageResult = ruleTargetMapper.selectPage(ruleTargetPageReqVO);
+        return BeanUtils.toBean(ruleInfoEntityPageResult, RuleTargetRespVO.class);
     }
 
     @Override
-    public RuleKeyRespVO detail(String keyCode) {
-        RuleTargetDO ruleTargetDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
+    public RuleTargetRespVO detail(String keyCode) {
+        RuleTargetDO ruleTargetDO = ruleTargetMapper.selectOneByKeyCode(keyCode);
         if (Objects.isNull(ruleTargetDO)) {
-            return new RuleKeyRespVO();
+            return new RuleTargetRespVO();
         }
-        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleTargetDO, RuleKeyRespVO.class);
+        RuleTargetRespVO ruletargetRespVO = BeanUtils.toBean(ruleTargetDO, RuleTargetRespVO.class);
         // 设置 规则事件组
-        detailSetRuleEventList(ruleKeyRespVO);
-        return ruleKeyRespVO;
+        detailSetRuleEventList(ruletargetRespVO);
+        return ruletargetRespVO;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(RuleKeySaveReqVO ruleKeySaveReqVO) {
+    public void create(RuleTargetSaveReqVO ruleTargetSaveReqVO) {
         // 保存 规则目标信息
-        RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleKeySaveReqVO, RuleTargetDO.class);
+        RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class);
         String ruleKeyCode = ruleTargetDO.getTargetCode();
-        if (Objects.nonNull(ruleKeyMapper.selectOneByKeyCode(ruleKeyCode))) {
+        if (Objects.nonNull(ruleTargetMapper.selectOneByKeyCode(ruleKeyCode))) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, ruleKeyCode);
         }
-        ruleKeyMapper.insert(ruleTargetDO);
+        ruleTargetMapper.insert(ruleTargetDO);
         // 保存 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
+        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveReqVOList();
         List<RuleEventDO> ruleEventDOList = BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class);
         assert ruleEventDOList != null;
         ruleEventDOList.forEach(ruleEventDO -> {
@@ -87,7 +87,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         // 保存 规则事件属性信息
         List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
         for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
-            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrSaveRespVOList();
+            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrGroup();
             if (CollectionUtils.isEmpty(ruleEventAttrSaveRespVOList)) {
                 continue;
             }
@@ -102,13 +102,13 @@ public class RuleKeyServiceImpl implements RuleKeyService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void update(RuleKeySaveReqVO ruleKeySaveReqVO) {
+    public void update(RuleTargetSaveReqVO ruleTargetSaveReqVO) {
         // 更新 规则目标信息
-        validateUniqueRuleKey(ruleKeySaveReqVO.getId(), ruleKeySaveReqVO.getKeyCode()); // 效验 ruleKey 唯一
-        RuleTargetDO oldRuleTargetDO = ruleKeyMapper.selectById(ruleKeySaveReqVO.getId());
-        ruleKeyMapper.updateById(BeanUtils.toBean(ruleKeySaveReqVO, RuleTargetDO.class));
+        validateUniqueRuleKey(ruleTargetSaveReqVO.getId(), ruleTargetSaveReqVO.getTargetCode()); // 效验 ruleKey 唯一
+        RuleTargetDO oldRuleTargetDO = ruleTargetMapper.selectById(ruleTargetSaveReqVO.getId());
+        ruleTargetMapper.updateById(BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class));
         // 更新 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
+        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveReqVOList();
         batchValidateUniqueEventCode(ruleEventSaveReqVOList); // 批量效验 eventCode 唯一
         List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleTargetDO.getTargetCode());
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
@@ -117,7 +117,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         // 更新 规则事件属性信息
         List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
         for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
-            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrSaveRespVOList();
+            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrGroup();
             if (CollectionUtils.isEmpty(ruleEventAttrSaveRespVOList)) {
                 continue;
             }
@@ -132,18 +132,18 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     }
 
     @Override
-    public boolean checkUniqueKeyCode(CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
-        Long keyId = checkUniqueKeyCodeReqVO.getKeyId();
-        String keyCode = checkUniqueKeyCodeReqVO.getKeyCode();
+    public boolean checkUniqueKeyCode(CheckUniqueTargetCodeReqVO checkUniqueTargetCodeReqVO) {
+        Long keyId = checkUniqueTargetCodeReqVO.getTargetId();
+        String keyCode = checkUniqueTargetCodeReqVO.getTargetCode();
         List<RuleTargetDO> ruleTargetDOList;
         if (Objects.isNull(keyId)) {
-            ruleTargetDOList = ruleKeyMapper.selectList();
+            ruleTargetDOList = ruleTargetMapper.selectList();
         } else {
-            RuleTargetDO ruleTargetDO = ruleKeyMapper.selectById(keyId);
+            RuleTargetDO ruleTargetDO = ruleTargetMapper.selectById(keyId);
             if (Objects.isNull(ruleTargetDO)) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_EXISTS, keyId);
             }
-            ruleTargetDOList = ruleKeyMapper.selectOneByNeId(keyId);
+            ruleTargetDOList = ruleTargetMapper.selectOneByNeId(keyId);
         }
         if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
             for (RuleTargetDO keyDO : ruleTargetDOList) {
@@ -212,7 +212,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         if (Objects.isNull(keyId)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_NULL);
         }
-        List<RuleTargetDO> ruleTargetDOList = ruleKeyMapper.selectOneByNeId(keyId);
+        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectOneByNeId(keyId);
         if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
             for (RuleTargetDO keyDO : ruleTargetDOList) {
                 if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
@@ -225,8 +225,8 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     /**
      * 设置 规则事件组
      */
-    private void detailSetRuleEventList(RuleKeyRespVO ruleKeyRespVO) {
-        String keyCode = ruleKeyRespVO.getKeyCode();
+    private void detailSetRuleEventList(RuleTargetRespVO ruletargetRespVO) {
+        String keyCode = ruletargetRespVO.getTargetCode();
         if (!StringUtils.hasText(keyCode)) {
             return;
         }
@@ -240,7 +240,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         // 查询 事件属性组
         List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByEventCodes(ruleEventCodeList);
         if (CollectionUtils.isEmpty(ruleEventAttrDOList)) {
-            ruleKeyRespVO.setRuleEventRespVOList(ruleEventRespVOS);
+            ruletargetRespVO.setRuleEventGroup(ruleEventRespVOS);
             return;
         }
         List<RuleEventAttrRespVO> ruleEventAttrRespVOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
@@ -249,10 +249,10 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         // 给 事件 设置 属性
         ruleEventRespVOS.forEach(
                 ruleEventRespVO ->
-                        ruleEventRespVO.setRuleEventAttrRespVoList(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))
+                        ruleEventRespVO.setRuleEventAttrGroup(eventCodeAndEventAttrRespVoMap.get(ruleEventRespVO.getEventCode()))
         );
         // 给 目标 设置 事件
-        ruleKeyRespVO.setRuleEventRespVOList(ruleEventRespVOS);
+        ruletargetRespVO.setRuleEventGroup(ruleEventRespVOS);
     }
 
 

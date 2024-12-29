@@ -24,18 +24,18 @@ public class RuleEventSaveReqVO implements Serializable {
     @Schema(description = "主键ID", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long id;
 
-    @NotBlank(message = "key编号[keyCode]，不能为空")
-    @Size(max = 64, message = "key编号[keyCode]，长度不能超过 64 个字符")
-    @Schema(description = "key编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String keyCode;
+    @NotBlank(message = "目标编号[targetCode]，不能为空")
+    @Size(max = 256, message = "目标编号[targetCode]，长度不能超过 256 个字符")
+    @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String targetCode;
 
     @NotBlank(message = "事件编号[eventCode]，不能为空")
-    @Size(max = 64, message = "事件编号[eventCode]，长度不能超过 64 个字符")
-    @Schema(description = "事件编号", example = "GAME_LOTTERY", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Size(max = 256, message = "事件编号[eventCode]，长度不能超过 256 个字符")
+    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
     @NotBlank(message = "事件名称[eventName]，不能为空")
-    @Size(max = 64, message = "事件名称[eventName]，长度不能超过 64 个字符")
+    @Size(max = 32, message = "事件名称[eventName]，长度不能超过 32 个字符")
     @Schema(description = "事件名称", example = "游戏抽奖", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventName;
 
@@ -45,5 +45,5 @@ public class RuleEventSaveReqVO implements Serializable {
     private String eventDesc;
 
     @Schema(description = "事件属性组")
-    private List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList;
+    private List<RuleEventAttrSaveReqVO> ruleEventAttrGroup;
 }

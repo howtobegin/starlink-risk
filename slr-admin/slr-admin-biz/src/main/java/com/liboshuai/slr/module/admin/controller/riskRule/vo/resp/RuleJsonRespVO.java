@@ -21,7 +21,7 @@ public class RuleJsonRespVO extends BaseRespVO {
     /**
      * {@link RuleInfoRespVO#getRuleCode()}
      */
-    @Schema(description = "规则编号", example = "R175928847299117063")
+    @Schema(description = "规则编号", example = "R1553673459123456000")
     private String ruleCode;
 
     @Schema(description = "规则json数据")

@@ -23,18 +23,6 @@ public class RuleCondDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 规则编号
-     * （例如：R1553673459123456000）
-     * {@link RuleInfoDO#getRuleCode()}
-     */
-    private String ruleCode;
-    /**
-     * 事件编号
-     * （例如：GAME_userId_lottery）
-     * {@link RuleEventDO#getEventCode()}
-     */
-    private String eventCode;
-    /**
      * 条件编号
      * （例如：R1553673459123456000_GAME_userId_lottery）
      */
@@ -78,5 +66,17 @@ public class RuleCondDO extends BaseDO {
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private LocalDateTime crossHistoryTimeline;
+    /**
+     * 规则编号
+     * （例如：R1553673459123456000）
+     * {@link RuleInfoDO#getRuleCode()}
+     */
+    private String ruleCode;
+    /**
+     * 事件编号
+     * （例如：GAME_userId_lottery）
+     * {@link RuleEventDO#getEventCode()}
+     */
+    private String eventCode;
 
 }

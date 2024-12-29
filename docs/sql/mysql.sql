@@ -30,8 +30,6 @@ DROP TABLE IF EXISTS `slr_rule_cond`;
 CREATE TABLE `slr_rule_cond`
 (
     `id`                     bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `rule_code`              varchar(256)    DEFAULT NULL COMMENT '规则编号',
-    `event_code`             varchar(256)    DEFAULT NULL COMMENT '事件编号',
     `cond_code`              varchar(256)    DEFAULT NULL COMMENT '条件编号',
     `cond_type`              varchar(32)     DEFAULT NULL COMMENT '条件类型',
     `window_value`           bigint UNSIGNED DEFAULT NULL COMMENT '窗口值',
@@ -41,6 +39,8 @@ CREATE TABLE `slr_rule_cond`
     `threshold`              bigint          DEFAULT NULL COMMENT '阈值',
     `cross_history`          bit(1)          DEFAULT NULL COMMENT '条件类型',
     `cross_history_timeline` datetime        DEFAULT NULL COMMENT '跨历史时间点',
+    `rule_code`  varchar(256) DEFAULT NULL COMMENT '规则编号',
+    `event_code` varchar(256) DEFAULT NULL COMMENT '事件编号',
     `creator`                varchar(32)     DEFAULT NULL COMMENT '创建用户',
     `updater`                varchar(32)     DEFAULT NULL COMMENT '更新用户',
     `create_time`            datetime        DEFAULT NULL COMMENT '创建时间',
@@ -58,10 +58,10 @@ DROP TABLE IF EXISTS `slr_rule_event`;
 CREATE TABLE `slr_rule_event`
 (
     `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `target_code` varchar(256) DEFAULT NULL COMMENT '目标编号',
     `event_code`  varchar(256) DEFAULT NULL COMMENT '事件编号',
     `event_name`  varchar(32)  DEFAULT NULL COMMENT '事件名称',
     `event_desc`  varchar(64)  DEFAULT NULL COMMENT '事件描述',
+    `target_code` varchar(256) DEFAULT NULL COMMENT '目标编号',
     `creator`     varchar(32)  DEFAULT NULL COMMENT '创建用户',
     `updater`     varchar(32)  DEFAULT NULL COMMENT '更新用户',
     `create_time` datetime     DEFAULT NULL COMMENT '创建时间',
@@ -78,15 +78,15 @@ CREATE TABLE `slr_rule_event`
 DROP TABLE IF EXISTS `slr_rule_event_attr`;
 CREATE TABLE `slr_rule_event_attr`
 (
-    `id`             bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `event_code`     varchar(256) DEFAULT NULL COMMENT '事件编号',
-    `attribute_code` varchar(256) DEFAULT NULL COMMENT '属性编号',
-    `attribute_name` varchar(32)  DEFAULT NULL COMMENT '属性名称',
-    `attribute_type` varchar(32)  DEFAULT NULL COMMENT '属性类型',
-    `creator`        varchar(32)  DEFAULT NULL COMMENT '创建用户',
-    `updater`        varchar(32)  DEFAULT NULL COMMENT '更新用户',
-    `create_time`    datetime     DEFAULT NULL COMMENT '创建时间',
-    `update_time`    datetime     DEFAULT NULL COMMENT '创建时间',
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
+    `attr_code`   varchar(256) DEFAULT NULL COMMENT '属性编号',
+    `attr_name`   varchar(32)  DEFAULT NULL COMMENT '属性名称',
+    `attr_type`   varchar(32)  DEFAULT NULL COMMENT '属性类型',
+    `event_code`  varchar(256) DEFAULT NULL COMMENT '事件编号',
+    `creator`     varchar(32)  DEFAULT NULL COMMENT '创建用户',
+    `updater`     varchar(32)  DEFAULT NULL COMMENT '更新用户',
+    `create_time` datetime     DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime     DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB
   CHARACTER SET = utf8mb4
@@ -99,15 +99,15 @@ CREATE TABLE `slr_rule_event_attr`
 DROP TABLE IF EXISTS `slr_rule_event_attr_value`;
 CREATE TABLE `slr_rule_event_attr_value`
 (
-    `id`              bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `cond_code`       varchar(256) DEFAULT NULL COMMENT '条件编号',
-    `attribute_code`  varchar(256) DEFAULT NULL COMMENT '属性编号',
-    `attribute_value` varchar(64)  DEFAULT NULL COMMENT '属性值',
-    `attribute_op`    varchar(32)  DEFAULT NULL COMMENT '属性比较符',
-    `creator`         varchar(32)  DEFAULT NULL COMMENT '创建用户',
-    `updater`         varchar(32)  DEFAULT NULL COMMENT '更新用户',
-    `create_time`     datetime     DEFAULT NULL COMMENT '创建时间',
-    `update_time`     datetime     DEFAULT NULL COMMENT '创建时间',
+    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
+    `attr_code`   varchar(256) DEFAULT NULL COMMENT '属性编号',
+    `attr_op`     varchar(32)  DEFAULT NULL COMMENT '属性比较符',
+    `attr_value`  varchar(64)  DEFAULT NULL COMMENT '属性值',
+    `cond_code`   varchar(256) DEFAULT NULL COMMENT '条件编号',
+    `creator`     varchar(32)  DEFAULT NULL COMMENT '创建用户',
+    `updater`     varchar(32)  DEFAULT NULL COMMENT '更新用户',
+    `create_time` datetime     DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime     DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB
   CHARACTER SET = utf8mb4
@@ -129,9 +129,9 @@ CREATE TABLE `slr_rule_info`
     `alert_interval_value` bigint UNSIGNED      DEFAULT NULL COMMENT '预警间隔值',
     `alert_interval_unit`  varchar(32)          DEFAULT NULL COMMENT '预警间隔单位',
     `alert_message`        text COMMENT '预警消息',
-    `target_code`          varchar(256)         DEFAULT NULL COMMENT '目标编号',
-    `model_code`           varchar(256)         DEFAULT NULL COMMENT '模型编号',
     `rule_cond_comb_op`    varchar(32)          DEFAULT NULL COMMENT '条件组合符',
+    `target_code` varchar(256) DEFAULT NULL COMMENT '目标编号',
+    `model_code`  varchar(256) DEFAULT NULL COMMENT '模型编号',
     `creator`              varchar(32)          DEFAULT NULL COMMENT '创建用户',
     `updater`              varchar(32)          DEFAULT NULL COMMENT '更新用户',
     `create_time`          datetime        NULL DEFAULT NULL COMMENT '创建时间',

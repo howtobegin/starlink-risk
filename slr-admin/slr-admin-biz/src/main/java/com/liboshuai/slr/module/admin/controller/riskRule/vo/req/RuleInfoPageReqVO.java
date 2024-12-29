@@ -25,7 +25,7 @@ public class RuleInfoPageReqVO extends PageParam {
     @Schema(description = "渠道", example = "GAME")
     private String channel;
 
-    @Schema(description = "规则编号", example = "R175928847299117063")
+    @Schema(description = "规则编号", example = "R1553673459123456000")
     private String ruleCode;
 
     @Schema(description = "规则名称", example = "游戏高频抽奖")
@@ -37,7 +37,7 @@ public class RuleInfoPageReqVO extends PageParam {
     @Schema(description = "规则状态", example = "ONLINE")
     private String ruleStatus;
 
-    @Schema(description = "模型编号", example = "M175928847299117066")
+    @Schema(description = "模型编号", example = "M1553673459123456001")
     private String modelCode;
 
 }

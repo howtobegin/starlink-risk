@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class RuleKeyRespVO extends BaseRespVO {
+public class RuleTargetRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -26,15 +26,15 @@ public class RuleKeyRespVO extends BaseRespVO {
     @Schema(description = "渠道", example = "GAME")
     private String channel;
 
-    @Schema(description = "key编号", example = "GAME_userId")
-    private String keyCode;
+    @Schema(description = "目标编号", example = "GAME_userId")
+    private String targetCode;
 
-    @Schema(description = "key名称", example = "用户id")
-    private String keyName;
+    @Schema(description = "目标名称", example = "用户id")
+    private String targetName;
 
-    @Schema(description = "key描述", example = "游戏平台的用户ID")
-    private String keyDesc;
+    @Schema(description = "目标描述", example = "游戏平台的用户ID")
+    private String targetDesc;
 
     @Schema(description = "规则事件组")
-    private List<RuleEventRespVO> ruleEventRespVOList;
+    private List<RuleEventRespVO> ruleEventGroup;
 }
