@@ -9,7 +9,10 @@ import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.RuntimeContext;
-import org.apache.flink.api.common.state.*;
+import org.apache.flink.api.common.state.BroadcastState;
+import org.apache.flink.api.common.state.MapState;
+import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
@@ -45,8 +48,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     /**
      * 最近5分钟时间事件数据缓存
+     * （对于需要设置过期时间的大状态，不要使用ListState，而是使用MapState。详见：https://juejin.cn/spost/7453734359793778698）
      */
-    private ListState<KafkaEventDTO> recentEventListState;
+    private MapState<KafkaEventDTO, Object> recentEventMapState;
 
     /**
      * 旧规则列表
@@ -65,9 +69,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void open(Configuration parameters) {
         ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
-        RECENT_EVENT_LIST_STATE_DESC
+        RECENT_EVENT_MAP_STATE_DESC
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(5)).neverReturnExpired().build());
-        recentEventListState = getRuntimeContext().getListState(RECENT_EVENT_LIST_STATE_DESC);
+        recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
         // 查询在线规则数量
         onlineRuleCount = queryOnlineRuleCount();
@@ -80,7 +84,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
         // 将事件放入缓存列表中
-        recentEventListState.add(kafkaEventDTO);
+        recentEventMapState.put(kafkaEventDTO, null);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 获取当前事件时间戳
@@ -91,7 +95,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
-                for (KafkaEventDTO historyKafkaEventDTO : recentEventListState.get()) {
+                for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
                     processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), historyKafkaEventDTO);
                 }
                 oldRuleListState.put(ruleCode, null);

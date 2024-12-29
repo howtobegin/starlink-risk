@@ -2,7 +2,6 @@ package com.liboshuai.slr.module.engine.framework.state;
 
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 
 /**
@@ -20,7 +19,7 @@ public class StateDescContainer {
     /**
      * 最近事件数据缓存状态定义
      */
-    public static ListStateDescriptor<KafkaEventDTO> RECENT_EVENT_LIST_STATE_DESC = new ListStateDescriptor<>("recentEventCacheListState", KafkaEventDTO.class);
+    public static MapStateDescriptor<KafkaEventDTO, Object> RECENT_EVENT_MAP_STATE_DESC = new MapStateDescriptor<>("recentEventCacheMapState", KafkaEventDTO.class, Object.class);
 
     /**
      * 旧规则状态定义
