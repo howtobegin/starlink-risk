@@ -17,6 +17,7 @@ import org.apache.flink.api.common.state.ValueState
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.common.typeinfo.Types
 import org.apache.flink.api.java.tuple.Tuple2
+import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction
 import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
@@ -280,7 +281,8 @@ class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
+    void onTimer(long timestamp, KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.OnTimerContext ctx,
+                 RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -328,7 +330,7 @@ class ProcessorOne implements Processor {
             out.collect(alertMessageDTO)
         }
         // 调试使用，待删除
-        logBigMapState(ruleInfoDTO.getRuleCode(), ruleConditionMapByEventCode.keySet(), null, bigMapState)
+        logBigMapState(ruleInfoDTO.getRuleCode(), ruleConditionMapByEventCode.keySet(), ctx.getCurrentKey(), bigMapState)
     }
 
     /**

@@ -168,14 +168,18 @@ public class ReflectUtils {
             prefix = "get";
         } else if (getterMethodName.startsWith("is")) {
             prefix = "is";
+        } else {
+            throw new IllegalArgumentException("Invalid getter method: " + getterMethodName);
         }
 
-        if (prefix == null) {
-            throw new IllegalArgumentException("invalid getter method: " + getterMethodName);
+        String withoutPrefix = getterMethodName.substring(prefix.length());
+
+        if (withoutPrefix.isEmpty()) {
+            throw new IllegalArgumentException("Getter method name is too short: " + getterMethodName);
         }
 
-        // 截取get/is之后的字符串并转换首字母为小写
-        return Introspector.decapitalize(getterMethodName.replace(prefix, ""));
+        // 转换首字母为小写
+        return Introspector.decapitalize(withoutPrefix);
     }
 
     /**

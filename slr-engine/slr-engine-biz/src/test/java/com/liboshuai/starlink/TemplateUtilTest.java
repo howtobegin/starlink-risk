@@ -46,7 +46,7 @@ public class TemplateUtilTest {
                 .alertIntervalUnit("MINUTE")
                 .alertIntervalValue(10L)
                 .ruleStatus("ONLINE")
-                .ruleCondDTOList(Arrays.asList(ruleCondDTO, ruleCondDTO2))
+                .ruleCondGroup(Arrays.asList(ruleCondDTO, ruleCondDTO2))
                 .build();
 
         Map<String, String> eventAttribute = new HashMap<>();
@@ -126,7 +126,7 @@ public class TemplateUtilTest {
                 .alertIntervalUnit("MINUTE")
                 .alertIntervalValue(10L)
                 .ruleStatus("ONLINE")
-                .ruleCondDTOList(RuleCondDTOS)
+                .ruleCondGroup(RuleCondDTOS)
                 .modelCode("xxx")
                 .build();
 

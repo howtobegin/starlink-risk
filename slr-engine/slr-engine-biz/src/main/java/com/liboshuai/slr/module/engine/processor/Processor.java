@@ -2,8 +2,10 @@ package com.liboshuai.slr.module.engine.processor;
 
 import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
 /**
@@ -24,5 +26,5 @@ public interface Processor {
     /**
      * 定时器
      */
-    void onTimer(long timestamp, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception;
+    void onTimer(long timestamp, KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.OnTimerContext ctx, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception;
 }
