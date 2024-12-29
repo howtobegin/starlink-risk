@@ -38,4 +38,5 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_MODEL_GROOVY_IS_NULL = new ErrorCode(20026, "规则模型编号[{}]的groovy脚本不能为空");
     ErrorCode RULE_TARGET_CODE_IS_NULL = new ErrorCode(20027, "规则目标编号不能为空");
     ErrorCode RULE_TARGET_NOT_EXISTS = new ErrorCode(20028, "规则目标编号[{}]不存在");
+    ErrorCode RULE_INFO_STATUS_NOT_OFFLINE_OR_DRAFT = new ErrorCode(20029, "规则[{}]状态不是[已下线/草稿]，无法进行修改");
 }

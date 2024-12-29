@@ -112,8 +112,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     @Transactional(rollbackFor = Exception.class)
     public void update(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
         String ruleCode = ruleInfoSaveReqVO.getRuleCode();
-        // 参数效验
-        validateParameter(ruleCode);
+        // 效验
+        validate(ruleCode);
         // 更新 规则信息
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class);
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
@@ -332,12 +332,17 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 参数效验
      */
-    private void validateParameter(String ruleCode) {
+    private void validate(String ruleCode) {
         if (!StringUtils.hasText(ruleCode)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CODE_NOT_BLANK);
         }
-        if (Objects.isNull(ruleInfoMapper.selectOneByRuleCode(ruleCode))) {
+        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
+        if (Objects.isNull(ruleInfoDO)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
+        }
+        if (!Objects.equals(ruleInfoDO.getRuleStatus(), RuleStatusEnum.OFFLINE.getCode())
+                && !Objects.equals(ruleInfoDO.getRuleStatus(), RuleStatusEnum.DRAFT.getCode())) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_OR_DRAFT, ruleCode);
         }
     }
 
