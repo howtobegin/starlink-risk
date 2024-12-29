@@ -220,7 +220,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 查询规则数据
         String sql = String.format("select count(*) from %s", tableName);
         Long ruleOnlineCount = JdbcUtil.queryForObject(
-                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), (Object) null);
+                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), null);
         if (Objects.isNull(ruleOnlineCount)) {
             throw new BusinessException("Mysql Jdbc 查询上线的规则数量为 null！");
         }

@@ -1,12 +1,15 @@
 package com.liboshuai.slr.module.engine.dto;
 
 
-import com.liboshuai.slr.framework.common.pojo.BaseDTO;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,8 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class RuleCondDTO extends BaseDTO {
+public class RuleCondDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**

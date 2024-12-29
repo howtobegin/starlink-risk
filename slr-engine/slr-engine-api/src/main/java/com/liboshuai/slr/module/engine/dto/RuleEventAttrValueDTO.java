@@ -1,10 +1,14 @@
 package com.liboshuai.slr.module.engine.dto;
 
-import com.liboshuai.slr.framework.common.pojo.BaseDTO;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * 风控规则事件属性值
@@ -14,8 +18,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class RuleEventAttrValueDTO extends BaseDTO {
+public class RuleEventAttrValueDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
