@@ -17,7 +17,6 @@ import org.apache.flink.api.common.state.ValueState
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.common.typeinfo.Types
 import org.apache.flink.api.java.tuple.Tuple2
-import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction
 import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
@@ -281,8 +280,7 @@ class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    void onTimer(long timestamp, KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.OnTimerContext ctx,
-                 RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
+    void onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -330,7 +328,7 @@ class ProcessorOne implements Processor {
             out.collect(alertMessageDTO)
         }
         // 调试使用，待删除
-        logBigMapState(ruleInfoDTO.getRuleCode(), ruleConditionMapByEventCode.keySet(), ctx.getCurrentKey(), bigMapState)
+        logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventCode.keySet(), bigMapState)
     }
 
     /**
@@ -479,7 +477,10 @@ class ProcessorOne implements Processor {
         }
     }
 
-    private void logBigMapState(String ruleCode, Set<String> eventCodeList, String keyCode, MapState<String,
+    /**
+     * 日志打印
+     */
+    private void logBigMapState(String currentKey, String ruleCode, Set<String> eventCodeList, MapState<String,
             Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapState) throws Exception {
         Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMap = new HashMap<>()
         Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> iterator = bigMapState.iterator()
@@ -487,8 +488,8 @@ class ProcessorOne implements Processor {
             Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> next = iterator.next()
             bigMap.put(next.getKey(), next.getValue())
         }
-        log.warn("ProcessorOne对象onTimer方法结束 ruleCode={}, eventCodeList={}, keyCode={}, bigMapState={}",
-                ruleCode, JsonUtil.toJsonString(eventCodeList), keyCode, JsonUtil.toJsonString(bigMap))
+        log.warn("ProcessorOne对象onTimer方法结束 currentKey={}, ruleCode={}, eventCodeList={}, bigMapState={}",
+                currentKey, ruleCode, JsonUtil.toJsonString(eventCodeList), JsonUtil.toJsonString(bigMap))
     }
 
     /**

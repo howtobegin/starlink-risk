@@ -186,7 +186,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
-            processor.onTimer(timestamp, ctx, broadcastState.get(ruleCode), out);
+            processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
     }
 
