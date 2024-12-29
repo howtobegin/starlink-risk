@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Size(max = 256, message = "条件编号[condCode]，长度不能超过 256 个字符")
     @NotBlank(message = "条件编号[condCode]，不能为空")
     @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
@@ -70,10 +72,12 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime crossHistoryTimeline;
 
+    @Size(max = 256, message = "规则编号[ruleCode]，长度不能超过 256 个字符")
     @NotBlank(message = "规则编号[ruleCode]，不能为空")
     @Schema(description = "规则编号", example = "R1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 
+    @Size(max = 256, message = "事件编号[eventCode]，长度不能超过 256 个字符")
     @NotBlank(message = "事件编号[eventCode]，不能为空")
     @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
