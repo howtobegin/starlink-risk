@@ -21,7 +21,7 @@ public class RuleEventDO extends BaseDO {
     /**
      * 目标编号
      *（例如：GAME_userId）
-     * {@link RuleKeyDO#getTargetCode()}
+     * {@link RuleTargetDO#getTargetCode()}
      */
     private String targetCode;
     /**

@@ -61,9 +61,9 @@ public class RuleInfoDO extends BaseDO {
     private String alertMessage;
     /**
      * 规则目标
-     * {@link RuleKeyDO#getTargetCode()}
+     * {@link RuleTargetDO#getTargetCode()}
      */
-    private String keyCode;
+    private String targetCode;
     /**
      * 模型编号
      * {@link RuleModelDO#getModelCode()}

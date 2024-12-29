@@ -305,11 +305,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (!StringUtils.hasText(keyCode)) {
             return;
         }
-        RuleKeyDO ruleKeyDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
-        if (Objects.isNull(ruleKeyDO)) {
+        RuleTargetDO ruleTargetDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
+        if (Objects.isNull(ruleTargetDO)) {
             return;
         }
-        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleKeyDO, RuleKeyRespVO.class);
+        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleTargetDO, RuleKeyRespVO.class);
         ruleInfoRespVO.setRuleKeyRespVO(ruleKeyRespVO);
     }
 

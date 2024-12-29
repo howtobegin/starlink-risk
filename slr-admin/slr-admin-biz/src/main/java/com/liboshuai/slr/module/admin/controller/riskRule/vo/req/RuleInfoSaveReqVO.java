@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleKeyDO;
+import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
@@ -76,7 +76,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     private String alertMessage;
 
     /**
-     * {@link RuleKeyDO#getTargetCode()}
+     * {@link RuleTargetDO#getTargetCode()}
      */
     @NotBlank(message = "规则目标[keyCode]，不能为空")
     @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)

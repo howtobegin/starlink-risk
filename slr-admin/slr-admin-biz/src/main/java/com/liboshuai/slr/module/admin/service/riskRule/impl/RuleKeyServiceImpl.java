@@ -11,7 +11,7 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespV
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleKeyRespVO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventAttrDO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventDO;
-import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleKeyDO;
+import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventAttrMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleKeyMapper;
@@ -47,17 +47,17 @@ public class RuleKeyServiceImpl implements RuleKeyService {
 
     @Override
     public PageResult<RuleKeyRespVO> list(RuleKeyPageReqVO ruleKeyPageReqVO) {
-        PageResult<RuleKeyDO> ruleInfoEntityPageResult = ruleKeyMapper.selectPage(ruleKeyPageReqVO);
+        PageResult<RuleTargetDO> ruleInfoEntityPageResult = ruleKeyMapper.selectPage(ruleKeyPageReqVO);
         return BeanUtils.toBean(ruleInfoEntityPageResult, RuleKeyRespVO.class);
     }
 
     @Override
     public RuleKeyRespVO detail(String keyCode) {
-        RuleKeyDO ruleKeyDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
-        if (Objects.isNull(ruleKeyDO)) {
+        RuleTargetDO ruleTargetDO = ruleKeyMapper.selectOneByKeyCode(keyCode);
+        if (Objects.isNull(ruleTargetDO)) {
             return new RuleKeyRespVO();
         }
-        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleKeyDO, RuleKeyRespVO.class);
+        RuleKeyRespVO ruleKeyRespVO = BeanUtils.toBean(ruleTargetDO, RuleKeyRespVO.class);
         // 设置 规则事件组
         detailSetRuleEventList(ruleKeyRespVO);
         return ruleKeyRespVO;
@@ -67,12 +67,12 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     @Transactional(rollbackFor = Exception.class)
     public void create(RuleKeySaveReqVO ruleKeySaveReqVO) {
         // 保存 规则目标信息
-        RuleKeyDO ruleKeyDO = BeanUtils.toBean(ruleKeySaveReqVO, RuleKeyDO.class);
-        String ruleKeyCode = ruleKeyDO.getTargetCode();
+        RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleKeySaveReqVO, RuleTargetDO.class);
+        String ruleKeyCode = ruleTargetDO.getTargetCode();
         if (Objects.nonNull(ruleKeyMapper.selectOneByKeyCode(ruleKeyCode))) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, ruleKeyCode);
         }
-        ruleKeyMapper.insert(ruleKeyDO);
+        ruleKeyMapper.insert(ruleTargetDO);
         // 保存 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
         List<RuleEventDO> ruleEventDOList = BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class);
@@ -105,14 +105,14 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     public void update(RuleKeySaveReqVO ruleKeySaveReqVO) {
         // 更新 规则目标信息
         validateUniqueRuleKey(ruleKeySaveReqVO.getId(), ruleKeySaveReqVO.getKeyCode()); // 效验 ruleKey 唯一
-        RuleKeyDO oldRuleKeyDO = ruleKeyMapper.selectById(ruleKeySaveReqVO.getId());
-        ruleKeyMapper.updateById(BeanUtils.toBean(ruleKeySaveReqVO, RuleKeyDO.class));
+        RuleTargetDO oldRuleTargetDO = ruleKeyMapper.selectById(ruleKeySaveReqVO.getId());
+        ruleKeyMapper.updateById(BeanUtils.toBean(ruleKeySaveReqVO, RuleTargetDO.class));
         // 更新 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
         batchValidateUniqueEventCode(ruleEventSaveReqVOList); // 批量效验 eventCode 唯一
-        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleKeyDO.getTargetCode());
+        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleTargetDO.getTargetCode());
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
-        ruleEventMapper.deleteByKeyCode(oldRuleKeyDO.getTargetCode());
+        ruleEventMapper.deleteByKeyCode(oldRuleTargetDO.getTargetCode());
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
         // 更新 规则事件属性信息
         List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
@@ -135,18 +135,18 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     public boolean checkUniqueKeyCode(CheckUniqueKeyCodeReqVO checkUniqueKeyCodeReqVO) {
         Long keyId = checkUniqueKeyCodeReqVO.getKeyId();
         String keyCode = checkUniqueKeyCodeReqVO.getKeyCode();
-        List<RuleKeyDO> ruleKeyDOList;
+        List<RuleTargetDO> ruleTargetDOList;
         if (Objects.isNull(keyId)) {
-            ruleKeyDOList = ruleKeyMapper.selectList();
+            ruleTargetDOList = ruleKeyMapper.selectList();
         } else {
-            RuleKeyDO ruleKeyDO = ruleKeyMapper.selectById(keyId);
-            if (Objects.isNull(ruleKeyDO)) {
+            RuleTargetDO ruleTargetDO = ruleKeyMapper.selectById(keyId);
+            if (Objects.isNull(ruleTargetDO)) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_EXISTS, keyId);
             }
-            ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
+            ruleTargetDOList = ruleKeyMapper.selectOneByNeId(keyId);
         }
-        if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
-            for (RuleKeyDO keyDO : ruleKeyDOList) {
+        if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
+            for (RuleTargetDO keyDO : ruleTargetDOList) {
                 if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
                     return false;
                 }
@@ -212,9 +212,9 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         if (Objects.isNull(keyId)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_NULL);
         }
-        List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
-        if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
-            for (RuleKeyDO keyDO : ruleKeyDOList) {
+        List<RuleTargetDO> ruleTargetDOList = ruleKeyMapper.selectOneByNeId(keyId);
+        if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
+            for (RuleTargetDO keyDO : ruleTargetDOList) {
                 if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
                     throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, keyCode);
                 }

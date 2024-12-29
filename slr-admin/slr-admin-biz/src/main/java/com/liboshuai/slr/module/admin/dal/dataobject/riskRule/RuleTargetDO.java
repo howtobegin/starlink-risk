@@ -14,9 +14,9 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TableName("slr_rule_key")
+@TableName("slr_rule_target")
 @EqualsAndHashCode(callSuper = true)
-public class RuleKeyDO extends BaseDO {
+public class RuleTargetDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -35,7 +35,7 @@ public class RuleKeyDO extends BaseDO {
      */
     private String targetName;
     /**
-     * key描述
+     * 目标描述
      */
     private String targetDesc;
 }
