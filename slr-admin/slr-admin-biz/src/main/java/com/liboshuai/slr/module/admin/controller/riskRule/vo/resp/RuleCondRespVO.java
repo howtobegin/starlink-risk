@@ -38,7 +38,7 @@ public class RuleCondRespVO extends BaseRespVO {
     /**
      * {@link TimeUnitEnum}
      */
-    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "MINUTE")
+    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "分钟")
     private String windowUnit;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

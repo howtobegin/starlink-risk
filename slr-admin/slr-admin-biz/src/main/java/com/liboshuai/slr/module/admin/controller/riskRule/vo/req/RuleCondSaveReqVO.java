@@ -49,7 +49,7 @@ public class RuleCondSaveReqVO implements Serializable {
      * {@link TimeUnitEnum}
      */
     @InStringEnum(value = TimeUnitEnum.class, message = "窗口单位[windowUnit]，必须在指定范围 {value}")
-    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "MINUTE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "分钟", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String windowUnit;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

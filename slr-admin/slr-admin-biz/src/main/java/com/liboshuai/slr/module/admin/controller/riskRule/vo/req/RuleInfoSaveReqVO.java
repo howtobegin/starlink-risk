@@ -67,7 +67,7 @@ public class RuleInfoSaveReqVO implements Serializable {
      */
     @NotBlank(message = "预警间隔单位[alertIntervalUnit]，不能为空")
     @InStringEnum(value = TimeUnitEnum.class, message = "预警间隔单位[alertIntervalUnit]，必须在指定范围 {value}")
-    @Schema(description = "预警间隔单位", example = "MINUTE", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "预警间隔单位", example = "分钟", requiredMode = Schema.RequiredMode.REQUIRED)
     private String alertIntervalUnit;
 
     @NotBlank(message = "预警消息[alertMessage]，不能为空")

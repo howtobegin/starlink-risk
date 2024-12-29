@@ -51,7 +51,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     /**
      * {@link TimeUnitEnum}
      */
-    @Schema(description = "预警间隔单位", example = "MINUTE")
+    @Schema(description = "预警间隔单位", example = "分钟")
     private String alertIntervalUnit;
 
     @Schema(description = "预警消息", example = "触发xxx预警啦！")
