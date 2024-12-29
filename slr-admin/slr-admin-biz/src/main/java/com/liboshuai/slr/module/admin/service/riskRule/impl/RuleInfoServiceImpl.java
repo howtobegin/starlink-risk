@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
@@ -90,7 +91,10 @@ public class RuleInfoServiceImpl implements RuleInfoService {
 
         // 保存 条件信息
         List<RuleCondSaveReqVO> ruleCondSaveReqVOList = ruleInfoSaveReqVO.getRuleCondGroup();
-        ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> ruleCondSaveReqVO.setRuleCode(ruleCode)); // 条件信息设置 规则编号
+        ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> {
+            ruleCondSaveReqVO.setRuleCode(ruleCode);
+            ruleCondSaveReqVO.setCondCode(ruleCode + DefaultConstants.CODE_SEPARATOR + ruleCondSaveReqVO.getEventCode());
+        }); // 条件信息设置 规则编号、条件编号
         List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
         ruleCondMapper.insertBatch(ruleCondDOList);
 

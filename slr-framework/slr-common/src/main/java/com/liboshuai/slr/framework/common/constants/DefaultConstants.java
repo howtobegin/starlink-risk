@@ -17,4 +17,16 @@ public interface DefaultConstants {
      * redis key 分隔符
      */
     String REDIS_KEY_SEPARATOR = ":";
+    /**
+     * flink key 分隔符
+     */
+    String FLINK_KEY_SEPARATOR = ":";
+    /**
+     * 编号分隔符
+     */
+    String CODE_SEPARATOR = "_";
+    /**
+     * 策略模式默认名称
+     */
+    String DEFAULT_STRATEGY = "default_strategy";
 }

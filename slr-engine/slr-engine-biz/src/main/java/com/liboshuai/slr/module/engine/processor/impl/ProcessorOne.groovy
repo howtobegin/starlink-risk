@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.engine.processor.impl
 
-import com.liboshuai.slr.module.engine.constants.EngineConstants
+import com.liboshuai.slr.framework.common.constants.DefaultConstants
 import com.liboshuai.slr.module.engine.constants.RedisKeyConstants
 import com.liboshuai.slr.module.engine.dto.*
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum
@@ -201,7 +201,7 @@ class ProcessorOne implements Processor {
         String keyValue = kafkaEventDTO.getTargetValue()
         return new StringBuilder()
                 .append(keyCode)
-                .append(EngineConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
                 .append(keyValue).toString()
     }
 
@@ -210,12 +210,12 @@ class ProcessorOne implements Processor {
      */
     private String buildRedisKey(RuleCondDTO ruleCondDTO) {
         return new StringBuilder()
-                .append(EngineConstants.SYSTEM_NAME)
-                .append(EngineConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.SYSTEM_NAME)
+                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
                 .append(RedisKeyConstants.DORIS)
-                .append(EngineConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
                 .append(ruleCondDTO.getRuleCode())
-                .append(EngineConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
                 .append(ruleCondDTO.getEventCode())
     }
 
