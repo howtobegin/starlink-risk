@@ -74,9 +74,6 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "事件名称", example = "游戏抽奖")
     private String eventName;
 
-    @Schema(description = "事件描述", example = "游戏平台的抽奖事件")
-    private String eventDesc;
-
     @Schema(description = "事件属性值组")
     private List<RuleEventAttrValueRespVO> ruleEventAttrValueGroup;
 

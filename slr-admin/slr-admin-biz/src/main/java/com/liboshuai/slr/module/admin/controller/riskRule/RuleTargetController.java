@@ -2,8 +2,6 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueEventCodeReqVO;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.CheckUniqueTargetCodeReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -63,23 +61,5 @@ public class RuleTargetController {
     public CommonResult<Boolean> update(@RequestBody @Valid RuleTargetSaveReqVO ruleTargetSaveReqVO) {
         ruleTargetService.update(ruleTargetSaveReqVO);
         return success(true);
-    }
-
-    @PostMapping(value = "/checkUniqueTargetCode")
-    @Operation(summary = "检查目标编号是否唯一")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标编号唯一请求", required = true,
-            content = @Content(schema = @Schema(implementation = CheckUniqueTargetCodeReqVO.class)))
-    public CommonResult<Boolean> checkUniqueTargetCode(@RequestBody @Valid CheckUniqueTargetCodeReqVO checkUniqueTargetCodeReqVO) {
-        boolean checkResult = ruleTargetService.checkUniqueKeyCode(checkUniqueTargetCodeReqVO);
-        return success(checkResult);
-    }
-
-    @PostMapping(value = "/checkUniqueEventCode")
-    @Operation(summary = "检查事件编号是否唯一")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则事件编号唯一请求", required = true,
-            content = @Content(schema = @Schema(implementation = CheckUniqueEventCodeReqVO.class)))
-    public CommonResult<Boolean> checkUniqueEventCode(@RequestBody @Valid CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
-        boolean checkResult = ruleTargetService.checkUniqueEventCode(checkUniqueEventCodeReqVO);
-        return success(checkResult);
     }
 }

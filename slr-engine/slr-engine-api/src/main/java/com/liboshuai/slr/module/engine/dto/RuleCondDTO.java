@@ -7,6 +7,8 @@ import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+
 /**
  * 规则条件组
  */
@@ -20,19 +22,8 @@ public class RuleCondDTO extends BaseDTO {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 规则编号
-     * {@link RuleInfoDTO#getRuleCode()}
-     */
-    private String ruleCode;
-
-    /**
-     * 事件编号
-     * {@link RuleEventDTO#getEventCode()}
-     */
-    private String eventCode;
-
-    /**
      * 条件编号
+     * （例如：R1553673459123456000_GAME_userId_lottery）
      */
     private String condCode;
 
@@ -82,8 +73,27 @@ public class RuleCondDTO extends BaseDTO {
     private String crossHistoryTimeline;
 
     /**
-     * 事件信息
+     * 规则编号
+     * （例如：R1553673459123456000）
+     * {@link RuleInfoDTO#getRuleCode()}
      */
-    private RuleEventDTO ruleEventDTO;
+    private String ruleCode;
+
+    /**
+     * 事件编号
+     * （例如：GAME_userId_lottery）
+     */
+    private String eventCode;
+
+    /**
+     * 事件名称
+     * （例如：游戏抽奖）
+     */
+    private String eventName;
+
+    /**
+     * 事件属性值组
+     */
+    private List<RuleEventAttrValueDTO> ruleEventAttrValueGroup;
 
 }

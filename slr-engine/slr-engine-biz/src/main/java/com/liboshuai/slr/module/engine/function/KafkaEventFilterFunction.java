@@ -37,10 +37,10 @@ public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
             nullFields.add("channel");
         }
         if (event.getTargetCode() == null || event.getTargetCode().trim().isEmpty()) {
-            nullFields.add("keyCode");
+            nullFields.add("targetCode");
         }
         if (event.getTargetValue() == null || event.getTargetValue().trim().isEmpty()) {
-            nullFields.add("keyValue");
+            nullFields.add("targetValue");
         }
         if (event.getEventCode() == null || event.getEventCode().trim().isEmpty()) {
             nullFields.add("eventCode");
@@ -48,7 +48,7 @@ public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
         if (event.getEventValue() == null || event.getEventValue().trim().isEmpty()) {
             nullFields.add("eventValue");
         }
-        if (event.getEventAttribute() == null || event.getEventAttribute().isEmpty()) {
+        if (event.getEventAttrMap() == null || event.getEventAttrMap().isEmpty()) {
             nullFields.add("eventAttribute");
         }
 

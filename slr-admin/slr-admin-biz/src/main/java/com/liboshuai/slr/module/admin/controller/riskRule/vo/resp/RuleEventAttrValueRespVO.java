@@ -44,12 +44,6 @@ public class RuleEventAttrValueRespVO extends BaseRespVO {
     private String attrValue;
 
     /**
-     * {@link RuleEventRespVO#getEventCode()}
-     */
-    @Schema(description = "事件编号", example = "GAME_LOTTERY")
-    private String eventCode;
-
-    /**
      * {@link RuleCondRespVO#getCondCode()}
      */
     @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery")

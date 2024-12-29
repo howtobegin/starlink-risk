@@ -103,11 +103,11 @@ class ProcessorOne implements Processor {
             return
         }
         // 规则keyCode与kafkaEventDTO的keyCode不匹配，则直接跳过
-        if (!Objects.equals(ruleInfoDTO.getKeyCode(), kafkaEventDTO.getTargetCode())) {
+        if (!Objects.equals(ruleInfoDTO.getTargetCode(), kafkaEventDTO.getTargetCode())) {
             return
         }
         // 获取规则条件
-        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondDTOList()
+        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup()
         if (condGroupList == null || condGroupList.isEmpty()) {
             throw new BusinessException("运算机 condGroupList 必须非空")
         }
@@ -141,11 +141,8 @@ class ProcessorOne implements Processor {
                 continue
             }
             // 进行事件属性匹配
-            RuleEventDTO ruleEventDTO = ruleCondDTO.getRuleEventDTO()
-            if (Objects.isNull(ruleEventDTO)) {
-                throw new BusinessException("事件信息 ruleEventDTO 不能为空")
-            }
-            boolean eventAttributeMatchResult = matchEventAttribute(ruleEventDTO, kafkaEventDTO)
+            List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup()
+            boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, kafkaEventDTO)
             if (!eventAttributeMatchResult) {
                 // 事件属性匹配不上，则直接跳过
                 continue
@@ -232,40 +229,39 @@ class ProcessorOne implements Processor {
      * @param kafkaEventDTO Kafka事件DTO，包含Kafka事件的详细信息，包括事件属性
      * @return boolean 如果Kafka事件属性与规则事件属性完全匹配，则返回true；否则返回false
      */
-    private boolean matchEventAttribute(RuleEventDTO ruleEventDTO, KafkaEventDTO kafkaEventDTO) {
-        List<RuleEventAttrDTO> ruleEventAttributeDTOList = ruleEventDTO.getRuleEventAttrDTOList()
-        if (CollectionUtil.isEmptyOrContainsNulls(ruleEventAttributeDTOList)) {
+    private boolean matchEventAttribute(List<RuleEventAttrValueDTO> ruleEventAttrValueGroup, KafkaEventDTO kafkaEventDTO) {
+        if (CollectionUtil.isEmptyOrContainsNulls(ruleEventAttrValueGroup)) {
             // 规则中不包含事件属性相关的配置，则表明不需要进行事件属性匹配，直接跳过即可
             return true
         }
         // 逐一便利验证事件属性
-        for (RuleEventAttrDTO ruleEventAttributeDTO in ruleEventAttributeDTOList) {
-            RuleEventAttrValueDTO ruleEventAttributeValue = ruleEventAttributeDTO.getRuleEventAttrValueDTO()
-            if (Objects.isNull(ruleEventAttributeValue)) {
+        for (RuleEventAttrValueDTO ruleEventAttrValueDTO in ruleEventAttrValueGroup) {
+            String attrValue = ruleEventAttrValueDTO.getAttrValue()
+            if (StringUtils.isNullOrWhitespaceOnly(attrValue)) {
                 // 规则中不包含事件属性值相关的配置，则表明不需要进行事件属性值匹配，直接跳过即可
                 continue
             }
-            String ruleAttributeKey = ruleEventAttributeDTO.getAttributeKey()
-            Map<String, String> kafkaEventAttributeMap = kafkaEventDTO.getEventAttribute()
-            if (CollectionUtil.isEmpty(kafkaEventAttributeMap)) {
+            String attrCode = ruleEventAttrValueDTO.getAttrCode()
+            Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap()
+            if (CollectionUtil.isEmpty(kafkaEventAttrMap)) {
                 // 规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求
                 log.warn("规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求！" +
-                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttributeDTO, kafkaEventDTO)
+                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO)
                 return false
             }
-            if (!kafkaEventAttributeMap.containsKey(ruleAttributeKey)) {
+            if (!kafkaEventAttrMap.containsKey(attrCode)) {
                 // kafka事件属性不包含规则中事件属性，则表明不符合匹配
                 log.warn("kafka数据事件属性map并不包含规则配置的事件属性key，故直接判定为不符合规则要求！" +
-                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttributeDTO, kafkaEventDTO)
+                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO)
                 return false
             }
-            String kafkaEventAttributeValue = kafkaEventAttributeMap.get(ruleAttributeKey)
+            String kafkaEventAttributeValue = kafkaEventAttrMap.get(attrCode)
             if (Objects.isNull(kafkaEventAttributeValue)) {
                 // kafka事件中对于规则中事件属性值为空，则表明不符合匹配
                 return false
             }
             // 比较kafka中属性值与规则中属性值
-            boolean isMatch = RuleEventAttrCompUtil.compareValues(ruleEventAttributeDTO, kafkaEventDTO)
+            boolean isMatch = RuleEventAttrCompUtil.compareValues(ruleEventAttrValueDTO, kafkaEventDTO)
             if (!isMatch) {
                 // kafka事件属性值与规则事件属性值不相等，则表明不符合匹配
                 return false
@@ -289,7 +285,7 @@ class ProcessorOne implements Processor {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
         // 获取规则条件
-        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondDTOList()
+        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondGroup()
         if (groupGroup == null || groupGroup.isEmpty()) {
             throw new BusinessException("运算机 groupGroup 必须非空")
         }

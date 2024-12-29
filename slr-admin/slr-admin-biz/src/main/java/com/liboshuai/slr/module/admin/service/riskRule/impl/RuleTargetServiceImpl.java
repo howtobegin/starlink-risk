@@ -2,10 +2,12 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -15,7 +17,6 @@ import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleTargetDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventAttrMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleTargetMapper;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.ATTR_CODE_PREFIX;
 
 @Slf4j
 @Service
@@ -42,8 +41,6 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     private RuleEventMapper ruleEventMapper;
     @Resource
     private RuleEventAttrMapper ruleEventAttrMapper;
-    @Resource
-    private SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
     public PageResult<RuleTargetRespVO> list(RuleTargetPageReqVO ruleTargetPageReqVO) {
@@ -53,7 +50,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
 
     @Override
     public RuleTargetRespVO detail(String keyCode) {
-        RuleTargetDO ruleTargetDO = ruleTargetMapper.selectOneByKeyCode(keyCode);
+        RuleTargetDO ruleTargetDO = ruleTargetMapper.selectOneByTargetCode(keyCode);
         if (Objects.isNull(ruleTargetDO)) {
             return new RuleTargetRespVO();
         }
@@ -68,14 +65,14 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     public void create(RuleTargetSaveReqVO ruleTargetSaveReqVO) {
         // 保存 规则目标信息
         RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class);
-        String ruleKeyCode = ruleTargetDO.getTargetCode();
-        if (Objects.nonNull(ruleTargetMapper.selectOneByKeyCode(ruleKeyCode))) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, ruleKeyCode);
+        String targetCode = ruleTargetDO.getTargetCode();
+        if (Objects.nonNull(ruleTargetMapper.selectOneByTargetCode(targetCode))) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_CODE_EXISTS, targetCode);
         }
         ruleTargetMapper.insert(ruleTargetDO);
         // 保存 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveReqVOList();
-        List<RuleEventDO> ruleEventDOList = BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class);
+        List<RuleEventSaveReqVO> ruleEventSaveGroup = ruleTargetSaveReqVO.getRuleEventSaveGroup();
+        List<RuleEventDO> ruleEventDOList = BeanUtils.toBean(ruleEventSaveGroup, RuleEventDO.class);
         assert ruleEventDOList != null;
         ruleEventDOList.forEach(ruleEventDO -> {
             String eventCode = ruleEventDO.getEventCode();
@@ -85,141 +82,39 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         });
         ruleEventMapper.insertBatch(ruleEventDOList);
         // 保存 规则事件属性信息
-        List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
-        for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
-            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrGroup();
-            if (CollectionUtils.isEmpty(ruleEventAttrSaveRespVOList)) {
-                continue;
-            }
-            ruleEventAttrSaveRespVOList.forEach(
-                    ruleEventAttrSaveRespVO ->
-                            ruleEventAttrSaveRespVO.setAttributeCode(ATTR_CODE_PREFIX + snowflakeIdGenerator.nextIdStr())
-            );
-            ruleEventAttrDOList.addAll(BeanUtils.toBean(ruleEventAttrSaveRespVOList, RuleEventAttrDO.class));
-        }
+        List<RuleEventAttrSaveReqVO> ruleEventAttrSaveGroup = ruleEventSaveGroup.stream()
+                .filter(ruleEventSaveReqVO -> !CollectionUtils.isEmpty(ruleEventSaveReqVO.getRuleEventAttrGroup()))
+                .flatMap(ruleEventSaveReqVO -> ruleEventSaveReqVO.getRuleEventAttrGroup().stream())
+                .collect(Collectors.toList());
+        List<RuleEventAttrDO> ruleEventAttrDOList = BeanUtils.toBean(ruleEventAttrSaveGroup, RuleEventAttrDO.class);
         ruleEventAttrMapper.insertBatch(ruleEventAttrDOList);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(RuleTargetSaveReqVO ruleTargetSaveReqVO) {
+        Long targetId = ruleTargetSaveReqVO.getId();
+        if (Objects.isNull(targetId)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_ID_NOT_NULL);
+        }
         // 更新 规则目标信息
-        validateUniqueRuleKey(ruleTargetSaveReqVO.getId(), ruleTargetSaveReqVO.getTargetCode()); // 效验 ruleKey 唯一
-        RuleTargetDO oldRuleTargetDO = ruleTargetMapper.selectById(ruleTargetSaveReqVO.getId());
+        RuleTargetDO oldRuleTargetDO = ruleTargetMapper.selectById(targetId);
         ruleTargetMapper.updateById(BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class));
         // 更新 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveReqVOList();
-        batchValidateUniqueEventCode(ruleEventSaveReqVOList); // 批量效验 eventCode 唯一
+        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveGroup();
+        if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
+        }
         List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleTargetDO.getTargetCode());
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
         ruleEventMapper.deleteByKeyCode(oldRuleTargetDO.getTargetCode());
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
         // 更新 规则事件属性信息
-        List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
-        for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
-            List<RuleEventAttrSaveRespVO> ruleEventAttrSaveRespVOList = ruleEventSaveReqVO.getRuleEventAttrGroup();
-            if (CollectionUtils.isEmpty(ruleEventAttrSaveRespVOList)) {
-                continue;
-            }
-            ruleEventAttrSaveRespVOList = ruleEventAttrSaveRespVOList.stream()
-                    .filter(ruleEventAttrSaveRespVO -> !StringUtils.hasText(ruleEventAttrSaveRespVO.getAttributeCode()))
-                    .peek(ruleEventAttrSaveRespVO -> ruleEventAttrSaveRespVO.setAttributeCode(ATTR_CODE_PREFIX + snowflakeIdGenerator.nextIdStr()))
-                    .collect(Collectors.toList());
-            ruleEventAttrDOList.addAll(BeanUtils.toBean(ruleEventAttrSaveRespVOList, RuleEventAttrDO.class));
-        }
-        ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
-        ruleEventAttrMapper.insertBatch(ruleEventAttrDOList);
-    }
-
-    @Override
-    public boolean checkUniqueKeyCode(CheckUniqueTargetCodeReqVO checkUniqueTargetCodeReqVO) {
-        Long keyId = checkUniqueTargetCodeReqVO.getTargetId();
-        String keyCode = checkUniqueTargetCodeReqVO.getTargetCode();
-        List<RuleTargetDO> ruleTargetDOList;
-        if (Objects.isNull(keyId)) {
-            ruleTargetDOList = ruleTargetMapper.selectList();
-        } else {
-            RuleTargetDO ruleTargetDO = ruleTargetMapper.selectById(keyId);
-            if (Objects.isNull(ruleTargetDO)) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_EXISTS, keyId);
-            }
-            ruleTargetDOList = ruleTargetMapper.selectOneByNeId(keyId);
-        }
-        if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
-            for (RuleTargetDO keyDO : ruleTargetDOList) {
-                if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean checkUniqueEventCode(CheckUniqueEventCodeReqVO checkUniqueEventCodeReqVO) {
-        Long eventId = checkUniqueEventCodeReqVO.getEventId();
-        String eventCode = checkUniqueEventCodeReqVO.getEventCode();
-        List<RuleEventDO> ruleEventDOList;
-        if (Objects.isNull(eventId)) {
-            ruleEventDOList = ruleEventMapper.selectList();
-        } else {
-            RuleEventDO ruleEventDO = ruleEventMapper.selectById(eventId);
-            if (Objects.isNull(ruleEventDO)) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_ID_NOT_EXISTS, eventId);
-            }
-            ruleEventDOList = ruleEventMapper.selectListByNeId(eventId);
-        }
-        if (!CollectionUtils.isEmpty(ruleEventDOList)) {
-            List<String> ruleEventCodeList = ruleEventDOList.stream()
-                    .map(RuleEventDO::getEventCode)
-                    .collect(Collectors.toList());
-            return !ruleEventCodeList.contains(eventCode);
-        }
-        return true;
-    }
-
-    /**
-     * 批量效验 eventCode 唯一
-     */
-    private void batchValidateUniqueEventCode(List<RuleEventSaveReqVO> ruleEventSaveReqVOList) {
-        if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
-        }
-        List<String> ruleEventCodeList = ruleEventSaveReqVOList.stream().map(RuleEventSaveReqVO::getEventCode)
+        List<RuleEventAttrSaveReqVO> ruleEventAttrGroup = ruleEventSaveReqVOList.stream()
+                .flatMap(ruleEventSaveReqVO -> ruleEventSaveReqVO.getRuleEventAttrGroup().stream())
                 .collect(Collectors.toList());
-        List<Long> ruleEventIdList = new ArrayList<>();
-        for (RuleEventSaveReqVO ruleEventSaveReqVO : ruleEventSaveReqVOList) {
-            Long id = ruleEventSaveReqVO.getId();
-            if (Objects.isNull(id)) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_ID_NOT_NULL);
-            }
-            ruleEventIdList.add(id);
-        }
-        List<RuleEventDO> ruleEventDOS = ruleEventMapper.selectListByNotInIds(ruleEventIdList);
-        if (!CollectionUtils.isEmpty(ruleEventDOS)) {
-            List<String> eventCodeList = ruleEventDOS.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
-            eventCodeList.retainAll(ruleEventCodeList);
-            if (!CollectionUtils.isEmpty(eventCodeList)) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_CODE_EXISTS, JsonUtils.toJsonString(eventCodeList));
-            }
-        }
-    }
-
-    /**
-     * 效验 ruleKey 唯一
-     */
-    private void validateUniqueRuleKey(Long keyId, String keyCode) {
-        if (Objects.isNull(keyId)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_ID_NOT_NULL);
-        }
-        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectOneByNeId(keyId);
-        if (!CollectionUtils.isEmpty(ruleTargetDOList)) {
-            for (RuleTargetDO keyDO : ruleTargetDOList) {
-                if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
-                    throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, keyCode);
-                }
-            }
-        }
+        ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
+        ruleEventAttrMapper.insertBatch(BeanUtils.toBean(ruleEventAttrGroup, RuleEventAttrDO.class));
     }
 
     /**

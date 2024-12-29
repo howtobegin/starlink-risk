@@ -58,7 +58,7 @@ public class TemplateUtilTest {
                 .targetValue("keyValue1")
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
-                .eventAttribute(eventAttribute)
+                .eventAttrMap(eventAttribute)
                 .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
                 .build();
         Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
@@ -92,7 +92,7 @@ public class TemplateUtilTest {
                 .targetValue("keyValue1")
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
-                .eventAttribute(attributes)
+                .eventAttrMap(attributes)
                 .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
                 .build();
 

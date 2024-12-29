@@ -66,9 +66,6 @@ public class RuleInfoRespVO extends BaseRespVO {
     @Schema(description = "目标名称", example = "用户id")
     private String targetName;
 
-    @Schema(description = "目标描述", example = "游戏平台的用户ID")
-    private String targetDesc;
-
     /**
      * {@link RuleModelRespVO#getModelCode()}
      */
@@ -77,12 +74,6 @@ public class RuleInfoRespVO extends BaseRespVO {
 
     @Schema(description = "模型名称", example = "模型运算机一")
     private String modelName;
-
-    @Schema(description = "模型描述", example = "支持周期条件的规则模型")
-    private String modelDesc;
-
-    @Schema(description = "运算机groovy代码")
-    private String groovy;
 
     /**
      * {@link RuleCondCombOpEnum}

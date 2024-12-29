@@ -19,7 +19,8 @@ public enum RuleEventAttrTypeEnum implements StringArrayValuable {
     DOUBLE("double", "双精度浮点型"),
     BOOLEAN("boolean", "布尔型"),
     CHAR("char", "字符型"),
-    STRING("String", "字符串类型");
+    STRING("String", "字符串类型"),
+    BIG_DECIMAL("BigDecimal", "金额类型");
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(RuleEventAttrTypeEnum::getType).toArray(String[]::new);
 

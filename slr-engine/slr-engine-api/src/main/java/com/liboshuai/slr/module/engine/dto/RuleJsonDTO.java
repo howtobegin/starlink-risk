@@ -19,6 +19,7 @@ public class RuleJsonDTO extends BaseDTO {
 
     /**
      * 规则编号
+     * （例如：R1553673459123456000）
      * {@link RuleInfoDTO#getRuleCode()}
      */
     private String ruleCode;

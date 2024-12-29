@@ -8,17 +8,6 @@ public interface SnowflakeIdPrefixConstants {
      * 规则编号 前缀
      */
     String RULE_CODE_PREFIX = "R";
-
-    /**
-     * 条件编号 前缀
-     */
-    String COND_CODE_PREFIX = "C";
-
-    /**
-     * 属性编号 前缀
-     */
-    String ATTR_CODE_PREFIX = "A";
-
     /**
      * 模型编号 前缀
      */

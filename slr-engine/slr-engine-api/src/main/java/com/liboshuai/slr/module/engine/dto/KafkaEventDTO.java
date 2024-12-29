@@ -29,25 +29,30 @@ public class KafkaEventDTO implements Serializable {
     private String eventTime;
     /**
      * 目标编号
+     * （例如：GAME_userId）
+     * {@link RuleInfoDTO#getTargetCode()}
      */
     private String targetCode;
     /**
      * 目标值
+     * （例如：U127944222222）
      */
     private String targetValue;
     /**
      * 事件编号
+     * （例如：GAME_userId_lottery）
+     * {@link RuleCondDTO#getEventCode()}
      */
     private String eventCode;
     /**
      * 事件值
+     * （例如：1）
      */
     private String eventValue;
     /**
      * 属性
-     * {@link RuleEventAttrDTO}
      */
-    private Map<String, String> eventAttribute;
+    private Map<String, String> eventAttrMap;
     /**
      * 渠道
      * {@link ChannelEnum}

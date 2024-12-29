@@ -31,16 +31,19 @@ public class RuleInfoDTO extends BaseDTO {
 
     /**
      * 规则编号
+     * （例如：R1553673459123456000）
      */
     private String ruleCode;
 
     /**
      * 规则名称
+     * （例如：游戏高频抽奖）
      */
     private String ruleName;
 
     /**
      * 规则描述
+     * （例如：游戏高频抽奖规则）
      */
     private String ruleDesc;
 
@@ -52,6 +55,7 @@ public class RuleInfoDTO extends BaseDTO {
 
     /**
      * 预警间隔值
+     * （例如：10）
      */
     private Long alertIntervalValue;
 
@@ -63,19 +67,21 @@ public class RuleInfoDTO extends BaseDTO {
 
     /**
      * 预警消息
+     * （例如：触发xxx预警啦！）
      */
     private String alertMessage;
 
     /**
-     * 规则目标
-     * {@link RuleKeyDTO#getKeyCode()}
+     * 目标ID
+     * （例如：GAME_userId）
      */
-    private String keyCode;
+    private String targetCode;
 
     /**
-     * 规则目标信息
+     * 目标名称
+     * （例如：用户id）
      */
-    private RuleKeyDTO ruleKeyDTO;
+    private String targetName;
 
     /**
      * 模型编号
@@ -83,9 +89,9 @@ public class RuleInfoDTO extends BaseDTO {
     private String modelCode;
 
     /**
-     * 模型信息
+     * 模型groovy代码
      */
-    private RuleModelDTO ruleModelDTO;
+    private String modelGroovy;
 
     /**
      * 条件组合符
@@ -96,5 +102,5 @@ public class RuleInfoDTO extends BaseDTO {
     /**
      * 条件组
      */
-    private List<RuleCondDTO> ruleCondDTOList;
+    private List<RuleCondDTO> ruleCondGroup;
 }

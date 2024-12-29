@@ -51,6 +51,9 @@ CREATE TABLE `slr_rule_cond`
   COLLATE = utf8mb4_bin COMMENT = '风控规则条件'
   ROW_FORMAT = DYNAMIC;
 
+ALTER TABLE `slr_rule_cond`
+    ADD UNIQUE INDEX `uk_cond_code` (`cond_code`);
+
 -- ----------------------------
 -- Table structure for slr_rule_event
 -- ----------------------------
@@ -71,6 +74,9 @@ CREATE TABLE `slr_rule_event`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT = '风控规则事件表'
   ROW_FORMAT = DYNAMIC;
+
+ALTER TABLE `slr_rule_event`
+    ADD UNIQUE INDEX `uk_event_code` (`event_code`);
 
 -- ----------------------------
 -- Table structure for slr_rule_event_attr
@@ -93,6 +99,9 @@ CREATE TABLE `slr_rule_event_attr`
   COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性'
   ROW_FORMAT = DYNAMIC;
 
+ALTER TABLE `slr_rule_event_attr`
+    ADD UNIQUE INDEX `uk_attr_code` (`attr_code`);
+
 -- ----------------------------
 -- Table structure for slr_rule_event_attr_value
 -- ----------------------------
@@ -113,6 +122,10 @@ CREATE TABLE `slr_rule_event_attr_value`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT = '风控规则事件属性值表'
   ROW_FORMAT = DYNAMIC;
+
+ALTER TABLE `slr_rule_event_attr_value`
+    ADD UNIQUE INDEX `uk_cond_code_attr_code` (`cond_code`, `attr_code`);
+
 
 -- ----------------------------
 -- Table structure for slr_rule_info
@@ -142,6 +155,9 @@ CREATE TABLE `slr_rule_info`
   COLLATE = utf8mb4_bin COMMENT = '风控规则信息表'
   ROW_FORMAT = DYNAMIC;
 
+ALTER TABLE `slr_rule_info`
+    ADD UNIQUE INDEX `uk_rule_code` (`rule_code`);
+
 -- ----------------------------
 -- Table structure for slr_rule_json
 -- ----------------------------
@@ -160,6 +176,9 @@ CREATE TABLE `slr_rule_json`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT = '风控规则json表'
   ROW_FORMAT = DYNAMIC;
+
+ALTER TABLE `slr_rule_json`
+    ADD UNIQUE INDEX `uk_rule_code` (`rule_code`);
 
 -- ----------------------------
 -- Table structure for slr_rule_target
@@ -182,6 +201,9 @@ CREATE TABLE `slr_rule_target`
   COLLATE = utf8mb4_bin COMMENT = '风控规则目标表'
   ROW_FORMAT = DYNAMIC;
 
+ALTER TABLE `slr_rule_target`
+    ADD UNIQUE INDEX `uk_target_code` (`target_code`);
+
 -- ----------------------------
 -- Table structure for slr_rule_model
 -- ----------------------------
@@ -202,5 +224,8 @@ CREATE TABLE `slr_rule_model`
   CHARACTER SET = utf8mb4
   COLLATE = utf8mb4_bin COMMENT = '风控规则模型表'
   ROW_FORMAT = DYNAMIC;
+
+ALTER TABLE `slr_rule_model`
+    ADD UNIQUE INDEX `uk_model_code` (`model_code`);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,6 +1,5 @@
 package com.liboshuai.slr.module.connector.controller.kafkaEvent.vo;
 
-import com.liboshuai.slr.module.engine.dto.RuleEventAttrDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

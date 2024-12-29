@@ -1,12 +1,12 @@
 package com.liboshuai.slr.module.engine.utils;
 
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.dto.RuleEventAttrDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,15 +17,14 @@ public class RuleEventAttrCompUtil {
      * 比较两个值，判断是否满足指定的关系
      * @return 比较结果，满足关系返回 true，否则返回 false
      */
-    public static boolean compareValues(RuleEventAttrDTO ruleEventAttributeDTO, KafkaEventDTO kafkaEventDTO) {
-        String ruleEventAttrKey = ruleEventAttributeDTO.getAttributeKey();
-        String ruleEventAttrType = ruleEventAttributeDTO.getAttributeType();
-        RuleEventAttrValueDTO ruleEventAttrValueDTO = ruleEventAttributeDTO.getRuleEventAttrValueDTO();
-        String ruleEventAttrOp = ruleEventAttrValueDTO.getAttributeOp();
-        String ruleEventAttrValue = ruleEventAttrValueDTO.getAttributeValue();
+    public static boolean compareValues(RuleEventAttrValueDTO ruleEventAttrValueDTO, KafkaEventDTO kafkaEventDTO) {
+        String ruleEventAttrCode = ruleEventAttrValueDTO.getAttrCode();
+        String ruleEventAttrType = ruleEventAttrValueDTO.getAttrType();
+        String ruleEventAttrOp = ruleEventAttrValueDTO.getAttrOp();
+        String ruleEventAttrValue = ruleEventAttrValueDTO.getAttrValue();
 
-        Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttribute();
-        String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrKey);
+        Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap();
+        String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrCode);
         if (Objects.isNull(kafkaEventAttrValue)) {
             return false;
         }
@@ -45,7 +44,7 @@ public class RuleEventAttrCompUtil {
 
         if ((val1 == null) || (val2 == null)) {
             log.warn("kafka数据事件属性值比较失败，可能是规则配置中事件属性类型与事件属性值不匹配，故直接判定为不符合规则要求！" +
-                    "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttributeDTO, kafkaEventDTO);
+                    "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
             return false;
         }
 
@@ -107,6 +106,8 @@ public class RuleEventAttrCompUtil {
                     return value.charAt(0);
                 case STRING:
                     return value;
+                case BIG_DECIMAL:
+                    return new BigDecimal(value);
                 default:
                     throw new IllegalArgumentException("未知的类型: " + typeEnum);
             }

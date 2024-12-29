@@ -29,6 +29,7 @@ public class AlertMessageDTO implements Serializable {
     private String channel;
     /**
      * 规则编号
+     * {@link RuleInfoDTO#getRuleCode()}
      */
     private String ruleCode;
     /**

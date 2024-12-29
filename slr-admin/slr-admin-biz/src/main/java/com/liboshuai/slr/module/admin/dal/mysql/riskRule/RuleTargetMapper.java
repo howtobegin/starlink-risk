@@ -23,7 +23,7 @@ public interface RuleTargetMapper extends BaseMapperX<RuleTargetDO> {
         );
     }
 
-    default RuleTargetDO selectOneByKeyCode(String keyCode) {
+    default RuleTargetDO selectOneByTargetCode(String keyCode) {
         return selectOne(new LambdaQueryWrapperX<RuleTargetDO>()
                 .eq(RuleTargetDO::getTargetCode, keyCode)
         );

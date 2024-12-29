@@ -194,11 +194,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 构造运算机对象
      */
     private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-        RuleModelDTO ruleModelDTO = ruleInfoDTO.getRuleModelDTO();
-        if (Objects.isNull(ruleModelDTO)) {
-            throw new BusinessException("运算机模型信息 modelInfoDTO 必须非空");
-        }
-        String ruleModelGroovyCode = ruleModelDTO.getGroovy();
+        String ruleModelGroovyCode = ruleInfoDTO.getModelGroovy();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
         }
