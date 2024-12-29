@@ -121,6 +121,10 @@ public class RuleKeyServiceImpl implements RuleKeyService {
             if (CollectionUtils.isEmpty(ruleEventAttrSaveRespVOList)) {
                 continue;
             }
+            ruleEventAttrSaveRespVOList = ruleEventAttrSaveRespVOList.stream()
+                    .filter(ruleEventAttrSaveRespVO -> !StringUtils.hasText(ruleEventAttrSaveRespVO.getAttributeCode()))
+                    .peek(ruleEventAttrSaveRespVO -> ruleEventAttrSaveRespVO.setAttributeCode(ATTR_CODE_PREFIX + snowflakeIdGenerator.nextIdStr()))
+                    .collect(Collectors.toList());
             ruleEventAttrDOList.addAll(BeanUtils.toBean(ruleEventAttrSaveRespVOList, RuleEventAttrDO.class));
         }
         ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
