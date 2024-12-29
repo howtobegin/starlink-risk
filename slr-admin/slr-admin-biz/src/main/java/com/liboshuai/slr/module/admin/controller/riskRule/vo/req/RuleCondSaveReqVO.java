@@ -13,7 +13,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -83,8 +82,7 @@ public class RuleCondSaveReqVO implements Serializable {
     private String eventCode;
 
     @Valid
-    @NotEmpty(message = "事件属性值组[ruleEventAttrValueGroup]，不能为空")
-    @Schema(description = "事件属性值组", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "事件属性值组", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup;
 
 }
