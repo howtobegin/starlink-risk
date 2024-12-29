@@ -14,19 +14,19 @@ public interface DefaultConstants {
      */
     String SYSTEM_NAME = "starlink_risk";
     /**
-     * redis key 分隔符
-     */
-    String REDIS_KEY_SEPARATOR = ":";
-    /**
-     * flink key 分隔符
-     */
-    String FLINK_KEY_SEPARATOR = ":";
-    /**
-     * 编号分隔符
-     */
-    String CODE_SEPARATOR = "_";
-    /**
      * 策略模式默认名称
      */
     String DEFAULT_STRATEGY = "default_strategy";
+    /**
+     * 冒号
+     */
+    String COLON = ":";
+    /**
+     * 下划线
+     */
+    String UNDERSCORE = "_";
+    /**
+     * 逗号
+     */
+    String COMMA = ",";
 }

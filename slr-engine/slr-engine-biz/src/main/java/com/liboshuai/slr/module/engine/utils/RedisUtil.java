@@ -1,6 +1,8 @@
 package com.liboshuai.slr.module.engine.utils;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -15,6 +17,7 @@ import java.util.Set;
 /**
  * redis读写工具类
  */
+@Slf4j
 public class RedisUtil {
 
     private static final JedisCluster jedisCluster;
@@ -23,10 +26,10 @@ public class RedisUtil {
     static {
         // 节点信息
         String clusterNodes = ParameterUtil.getParameters().get(ParameterConstants.REDIS_CLUSTER_NODES);
-        String[] nodes = clusterNodes.split(",");
+        String[] nodes = clusterNodes.split(DefaultConstants.COMMA);
         Set<HostAndPort> jedisClusterNodes = new HashSet<>();
         for (String node : nodes) {
-            String[] hostPort = node.split(":");
+            String[] hostPort = node.split(DefaultConstants.COLON);
             jedisClusterNodes.add(new HostAndPort(hostPort[0].trim(), Integer.parseInt(hostPort[1].trim())));
         }
         // 密码
@@ -37,7 +40,7 @@ public class RedisUtil {
         int maxAttempts = Integer.parseInt(ParameterUtil.getParameters().get(ParameterConstants.REDIS_MAX_ATTEMPTS));
         // 连接池
         JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxWaitMillis(Long.parseLong(ParameterUtil.getParameters().get(ParameterConstants.REDIS_POOL_MAX_WAIT)));
+        poolConfig.setMaxWait(Duration.ofMillis(Long.parseLong(ParameterUtil.getParameters().get(ParameterConstants.REDIS_POOL_MAX_WAIT))));
         poolConfig.setTimeBetweenEvictionRuns(Duration.ofMillis(Long.parseLong(ParameterUtil.getParameters().get(ParameterConstants.REDIS_POOL_TIME_BETWEEN_EVICTION_RUNS))));
         poolConfig.setNumTestsPerEvictionRun(Integer.parseInt(ParameterUtil.getParameters().get(ParameterConstants.REDIS_POOL_NUM_TESTS_PER_EVICTION_RUN)));
         poolConfig.setMaxTotal(Integer.parseInt(ParameterUtil.getParameters().get(ParameterConstants.REDIS_POOL_MAX_TOTAL)));

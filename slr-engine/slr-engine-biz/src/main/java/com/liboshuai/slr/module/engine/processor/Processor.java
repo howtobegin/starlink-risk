@@ -25,4 +25,9 @@ public interface Processor {
      * 定时器
      */
     void onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception;
+
+    /**
+     * 关闭：用于释放资源、清理旧状态值
+     */
+    void close() throws Exception;
 }

@@ -201,7 +201,7 @@ class ProcessorOne implements Processor {
         String keyValue = kafkaEventDTO.getTargetValue()
         return new StringBuilder()
                 .append(keyCode)
-                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.COLON)
                 .append(keyValue).toString()
     }
 
@@ -211,11 +211,11 @@ class ProcessorOne implements Processor {
     private String buildRedisKey(RuleCondDTO ruleCondDTO) {
         return new StringBuilder()
                 .append(DefaultConstants.SYSTEM_NAME)
-                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.COLON)
                 .append(RedisKeyConstants.DORIS)
-                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.COLON)
                 .append(ruleCondDTO.getRuleCode())
-                .append(DefaultConstants.REDIS_KEY_SEPARATOR)
+                .append(DefaultConstants.COLON)
                 .append(ruleCondDTO.getEventCode())
     }
 
@@ -332,6 +332,21 @@ class ProcessorOne implements Processor {
     }
 
     /**
+     * 清理资源和状态
+     *
+     * 该方法重写了父类的close方法，主要用于清理当前对象占用的资源和状态
+     * 通过清空所有MapState对象，确保没有不必要的内存泄漏或状态残留
+     *
+     * @throws Exception 如果清理过程中发生错误
+     */
+    @Override
+    void close() throws Exception {
+        smallMapState.clear()
+        smallInitMapState.clear()
+        bigMapState.clear()
+        lastWarningTimeState.clear()
+    }
+/**
      * 判断是否触发规则事件阈值。
      *
      * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
