@@ -88,7 +88,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 获取当前事件时间戳
-        long currentEventTimestamp = DateUtil.convertString2Timestamp(kafkaEventDTO.getEventTime());
+        long currentProcessingTime = ctx.timerService().currentProcessingTime();
+        kafkaEventDTO.setEventTime(DateUtil.convertTimestamp2String(currentProcessingTime));
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
@@ -96,17 +97,17 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
-                    processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), historyKafkaEventDTO);
+                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentEventTimestamp, broadcastState.get(ruleCode), kafkaEventDTO);
+                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
             }
         }
         // 注册定时器（窗口大小1分钟）
-        // long fireTime = Long.parseLong(currentEventTimestamp) - Long.parseLong(currentEventTimestamp) % 60000 + 60000; （简化写法）
-        long fireTime = WindowUtil.getWindowStartWithOffset(currentEventTimestamp, 0, 60 * 1000) + 60 * 1000;
+        // long fireTime = Long.parseLong(currentProcessingTime) - Long.parseLong(currentProcessingTime) % 60000 + 60000; （简化写法）
+        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 

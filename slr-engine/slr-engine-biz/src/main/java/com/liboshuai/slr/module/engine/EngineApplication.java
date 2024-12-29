@@ -10,7 +10,7 @@ import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
-import com.liboshuai.slr.module.engine.function.KafkaEventMapFunction;
+import com.liboshuai.slr.module.engine.function.KafkaEventProcessFunction;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +45,7 @@ public class EngineApplication {
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象，并设置处理时间
-                .map(new KafkaEventMapFunction()).uid("kafkaEventDTO-map-function")
+                .process(new KafkaEventProcessFunction()).uid("kafkaEventDTO-process-function")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
