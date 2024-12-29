@@ -21,23 +21,20 @@ public class RuleEventAttrDO extends BaseDO {
 
     /**
      * 事件编号
+     * （例如：GAME_userId_lottery）
      * {@link RuleEventDO#getEventCode()}
      */
     private String eventCode;
     /**
      * 属性编号
+     * （例如：GAME_userId_lottery_campaignId）
      */
     private String attributeCode;
     /**
      * 属性名称
-     * （例如：订单号）
+     * （例如：活动id）
      */
     private String attributeName;
-    /**
-     * 属性key
-     * （例如：orderNo）
-     */
-    private String attributeKey;
     /**
      * 属性类型
      * （例如：String）

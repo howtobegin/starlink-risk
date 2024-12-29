@@ -20,6 +20,7 @@ public class RuleModelDO extends BaseDO {
 
     /**
      * 模型编号
+     * （例如：M1553673459123456001）
      */
     private String modelCode;
     /**

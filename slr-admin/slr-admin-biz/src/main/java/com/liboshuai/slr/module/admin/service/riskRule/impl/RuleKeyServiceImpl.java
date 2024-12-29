@@ -68,7 +68,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
     public void create(RuleKeySaveReqVO ruleKeySaveReqVO) {
         // 保存 规则目标信息
         RuleKeyDO ruleKeyDO = BeanUtils.toBean(ruleKeySaveReqVO, RuleKeyDO.class);
-        String ruleKeyCode = ruleKeyDO.getKeyCode();
+        String ruleKeyCode = ruleKeyDO.getTargetCode();
         if (Objects.nonNull(ruleKeyMapper.selectOneByKeyCode(ruleKeyCode))) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, ruleKeyCode);
         }
@@ -110,9 +110,9 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         // 更新 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleKeySaveReqVO.getRuleEventSaveReqVOList();
         batchValidateUniqueEventCode(ruleEventSaveReqVOList); // 批量效验 eventCode 唯一
-        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleKeyDO.getKeyCode());
+        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(oldRuleKeyDO.getTargetCode());
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
-        ruleEventMapper.deleteByKeyCode(oldRuleKeyDO.getKeyCode());
+        ruleEventMapper.deleteByKeyCode(oldRuleKeyDO.getTargetCode());
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
         // 更新 规则事件属性信息
         List<RuleEventAttrDO> ruleEventAttrDOList = new ArrayList<>();
@@ -147,7 +147,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         }
         if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
             for (RuleKeyDO keyDO : ruleKeyDOList) {
-                if (Objects.equals(keyDO.getKeyCode(), keyCode)) {
+                if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
                     return false;
                 }
             }
@@ -215,7 +215,7 @@ public class RuleKeyServiceImpl implements RuleKeyService {
         List<RuleKeyDO> ruleKeyDOList = ruleKeyMapper.selectOneByNeId(keyId);
         if (!CollectionUtils.isEmpty(ruleKeyDOList)) {
             for (RuleKeyDO keyDO : ruleKeyDOList) {
-                if (Objects.equals(keyDO.getKeyCode(), keyCode)) {
+                if (Objects.equals(keyDO.getTargetCode(), keyCode)) {
                     throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_KEY_CODE_EXISTS, keyCode);
                 }
             }

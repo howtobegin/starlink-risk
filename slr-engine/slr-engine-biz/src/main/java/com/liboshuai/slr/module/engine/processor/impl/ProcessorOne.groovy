@@ -103,7 +103,7 @@ class ProcessorOne implements Processor {
             return
         }
         // 规则keyCode与kafkaEventDTO的keyCode不匹配，则直接跳过
-        if (!Objects.equals(ruleInfoDTO.getKeyCode(), kafkaEventDTO.getKeyCode())) {
+        if (!Objects.equals(ruleInfoDTO.getKeyCode(), kafkaEventDTO.getTargetCode())) {
             return
         }
         // 获取规则条件
@@ -200,8 +200,8 @@ class ProcessorOne implements Processor {
      * 构建Redis的哈希键
      */
     private String buildRedisHashKey(KafkaEventDTO kafkaEventDTO) {
-        String keyCode = kafkaEventDTO.getKeyCode()
-        String keyValue = kafkaEventDTO.getKeyValue()
+        String keyCode = kafkaEventDTO.getTargetCode()
+        String keyValue = kafkaEventDTO.getTargetValue()
         return new StringBuilder()
                 .append(keyCode)
                 .append(EngineConstants.REDIS_KEY_SEPARATOR)

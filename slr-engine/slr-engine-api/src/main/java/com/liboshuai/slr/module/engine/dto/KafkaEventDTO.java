@@ -28,13 +28,13 @@ public class KafkaEventDTO implements Serializable {
      */
     private String eventTime;
     /**
-     * key编号
+     * 目标编号
      */
-    private String keyCode;
+    private String targetCode;
     /**
-     * key值
+     * 目标值
      */
-    private String keyValue;
+    private String targetValue;
     /**
      * 事件编号
      */

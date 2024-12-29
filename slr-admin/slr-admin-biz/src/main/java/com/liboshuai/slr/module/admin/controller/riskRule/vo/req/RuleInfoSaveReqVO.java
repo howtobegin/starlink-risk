@@ -76,7 +76,7 @@ public class RuleInfoSaveReqVO implements Serializable {
     private String alertMessage;
 
     /**
-     * {@link RuleKeyDO#getKeyCode()}
+     * {@link RuleKeyDO#getTargetCode()}
      */
     @NotBlank(message = "规则目标[keyCode]，不能为空")
     @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)

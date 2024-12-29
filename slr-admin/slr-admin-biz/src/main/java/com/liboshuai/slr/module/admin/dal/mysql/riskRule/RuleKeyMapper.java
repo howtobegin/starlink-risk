@@ -16,16 +16,16 @@ public interface RuleKeyMapper extends BaseMapperX<RuleKeyDO> {
     default PageResult<RuleKeyDO> selectPage(RuleKeyPageReqVO ruleKeyPageReqVO) {
         return selectPage(ruleKeyPageReqVO, new LambdaQueryWrapperX<RuleKeyDO>()
                 .eqIfPresent(RuleKeyDO::getChannel, ruleKeyPageReqVO.getChannel())
-                .eqIfPresent(RuleKeyDO::getKeyCode, ruleKeyPageReqVO.getKeyCode())
-                .likeIfPresent(RuleKeyDO::getKeyName, ruleKeyPageReqVO.getKeyName())
-                .likeIfPresent(RuleKeyDO::getKeyDesc, ruleKeyPageReqVO.getKeyDesc())
+                .eqIfPresent(RuleKeyDO::getTargetCode, ruleKeyPageReqVO.getKeyCode())
+                .likeIfPresent(RuleKeyDO::getTargetName, ruleKeyPageReqVO.getKeyName())
+                .likeIfPresent(RuleKeyDO::getTargetDesc, ruleKeyPageReqVO.getKeyDesc())
                 .orderByDesc(RuleKeyDO::getId)
         );
     }
 
     default RuleKeyDO selectOneByKeyCode(String keyCode) {
         return selectOne(new LambdaQueryWrapperX<RuleKeyDO>()
-                .eq(RuleKeyDO::getKeyCode, keyCode)
+                .eq(RuleKeyDO::getTargetCode, keyCode)
         );
     }
 

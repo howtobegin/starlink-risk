@@ -22,7 +22,7 @@ public interface RuleEventMapper extends BaseMapperX<RuleEventDO> {
 
     default List<RuleEventDO> selectListByKeyCode(String keyCode) {
         return selectList(new LambdaQueryWrapperX<RuleEventDO>()
-                .eq(RuleEventDO::getKeyCode, keyCode));
+                .eq(RuleEventDO::getTargetCode, keyCode));
     }
 
     default List<RuleEventDO> selectListByNotInIds(List<Long> ruleEventIdList) {
@@ -32,7 +32,7 @@ public interface RuleEventMapper extends BaseMapperX<RuleEventDO> {
 
     default void deleteByKeyCode(String keyCode) {
         delete(new LambdaQueryWrapperX<RuleEventDO>()
-                .eq(RuleEventDO::getKeyCode, keyCode));
+                .eq(RuleEventDO::getTargetCode, keyCode));
     }
 
     default List<RuleEventDO> selectListByNeId(Long eventId) {

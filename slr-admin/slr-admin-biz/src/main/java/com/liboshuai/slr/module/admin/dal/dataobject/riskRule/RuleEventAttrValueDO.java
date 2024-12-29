@@ -21,23 +21,25 @@ public class RuleEventAttrValueDO extends BaseDO {
 
     /**
      * 条件编号
+     * （例如：R1553673459123456000_GAME_userId_lottery）
      * {@link RuleCondDO#getCondCode()}
      */
     private String condCode;
     /**
      * 属性编号
+     * （例如：GAME_userId_lottery_campaignId）
      * {@link RuleEventAttrDO#getAttributeCode()}
      */
     private String attributeCode;
-    /**
-     * 属性值
-     * （例如：C000000001）
-     */
-    private String attributeValue;
     /**
      * 属性比较符
      * （例如：=）
      * {@link RuleAuditOpEnum}
      */
     private String attributeOp;
+    /**
+     * 属性值
+     * （例如：C000000001）
+     */
+    private String attributeValue;
 }

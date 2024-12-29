@@ -25,17 +25,17 @@ public class RuleKeyDO extends BaseDO {
      */
     private String channel;
     /**
-     * key编号
+     * 目标编号
      * （例如：GAME_userId）
      */
-    private String keyCode;
+    private String targetCode;
     /**
-     * key名称
+     * 目标名称
      * （例如：用户id）
      */
-    private String keyName;
+    private String targetName;
     /**
      * key描述
      */
-    private String keyDesc;
+    private String targetDesc;
 }

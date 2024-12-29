@@ -30,6 +30,7 @@ public class RuleInfoDO extends BaseDO {
     private String channel;
     /**
      * 规则编号
+     * （例如：R1553673459123456000）
      */
     private String ruleCode;
     /**
@@ -60,7 +61,7 @@ public class RuleInfoDO extends BaseDO {
     private String alertMessage;
     /**
      * 规则目标
-     * {@link RuleKeyDO#getKeyCode()}
+     * {@link RuleKeyDO#getTargetCode()}
      */
     private String keyCode;
     /**

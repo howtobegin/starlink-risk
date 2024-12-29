@@ -21,6 +21,7 @@ public class RuleJsonDO extends BaseDO {
 
     /**
      * 规则编号
+     * （例如：R1553673459123456000）
      * {@link RuleInfoDO#getRuleCode()}
      */
     private String ruleCode;
