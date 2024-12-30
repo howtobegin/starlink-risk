@@ -30,6 +30,11 @@ public class RuleTargetDO extends BaseDO {
      */
     private String targetCode;
     /**
+     * 目标字段
+     * （例如：userId）
+     */
+    private String targetField;
+    /**
      * 目标名称
      * （例如：用户id）
      */

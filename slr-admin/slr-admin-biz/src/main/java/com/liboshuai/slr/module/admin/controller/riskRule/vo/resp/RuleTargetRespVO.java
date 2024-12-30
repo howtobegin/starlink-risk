@@ -29,6 +29,9 @@ public class RuleTargetRespVO extends BaseRespVO {
     @Schema(description = "目标编号", example = "GAME_userId")
     private String targetCode;
 
+    @Schema(description = "目标字段", example = "userId")
+    private String targetFiled;
+
     @Schema(description = "目标名称", example = "用户id")
     private String targetName;
 

@@ -60,8 +60,11 @@ public class RuleInfoRespVO extends BaseRespVO {
     /**
      * {@link RuleTargetRespVO#getTargetCode()}
      */
-    @Schema(description = "规则目标", example = "GAME_userId")
+    @Schema(description = "目标编号", example = "GAME_userId")
     private String targetCode;
+
+    @Schema(description = "目标字段", example = "userId")
+    private String targetFiled;
 
     @Schema(description = "目标名称", example = "用户id")
     private String targetName;

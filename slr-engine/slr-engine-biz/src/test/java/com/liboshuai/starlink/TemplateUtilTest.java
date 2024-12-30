@@ -53,9 +53,9 @@ public class TemplateUtilTest {
         eventAttribute.put("campaignName", "活动01");
         KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
-                .targetCode("keyCode1")
+                .targetFiled("keyCode1")
                 .targetValue("keyValue1")
-                .eventCode("eventCode1")
+                .eventFiled("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(eventAttribute)
                 .eventTime(System.currentTimeMillis())
@@ -87,9 +87,9 @@ public class TemplateUtilTest {
 
         KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
-                .targetCode("keyCode1")
+                .targetFiled("keyCode1")
                 .targetValue("keyValue1")
-                .eventCode("eventCode1")
+                .eventFiled("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(attributes)
                 .eventTime(System.currentTimeMillis())

@@ -102,7 +102,7 @@ class ProcessorOne implements Processor {
             return
         }
         // 事件与规则目标匹配不上，则直接跳过
-        if (!Objects.equals(ruleInfoDTO.getTargetCode(), kafkaEventDTO.getTargetCode())) {
+        if (!Objects.equals(kafkaEventDTO.getTargetFiled(), ruleInfoDTO.getTargetFiled())) {
             return
         }
         // 获取规则条件
@@ -135,7 +135,7 @@ class ProcessorOne implements Processor {
     private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup, KafkaEventDTO kafkaEventDTO) {
         for (RuleCondDTO ruleCondDTO : ruleCondDtoGroup) {
             // 事件与规则中的事件编号匹配不上，则直接跳过
-            if (!Objects.equals(kafkaEventDTO.getEventCode(), ruleCondDTO.getEventCode())) {
+            if (!Objects.equals(kafkaEventDTO.getEventFiled(), ruleCondDTO.getEventFiled())) {
                 // 事件编号匹配不上，则直接跳过
                 continue
             }
@@ -147,8 +147,8 @@ class ProcessorOne implements Processor {
                 continue
             }
             // 状态值防空
-            if (smallMapState.get(kafkaEventDTO.getEventCode()) == null) {
-                smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(0L, kafkaEventDTO))
+            if (smallMapState.get(kafkaEventDTO.getEventFiled()) == null) {
+                smallMapState.put(kafkaEventDTO.getEventFiled(), Tuple2.of(0L, kafkaEventDTO))
             }
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
                 String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline()
@@ -160,7 +160,7 @@ class ProcessorOne implements Processor {
                 }
                 // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
                 // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
-                if (!smallInitMapState.contains(kafkaEventDTO.getEventCode())) {
+                if (!smallInitMapState.contains(kafkaEventDTO.getEventFiled())) {
                     // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
                     // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
                     String redisKey = buildRedisKey(ruleCondDTO)
@@ -172,21 +172,21 @@ class ProcessorOne implements Processor {
                                 StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
                         )
                     }
-                    smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO))
-                    smallInitMapState.put(kafkaEventDTO.getEventCode(), true)
+                    smallMapState.put(kafkaEventDTO.getEventFiled(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO))
+                    smallInitMapState.put(kafkaEventDTO.getEventFiled(), true)
                 }
                 // 从redis初始化值后，正常处理数据
-                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventCode())
+                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventFiled())
                 Long newValue = currentTuple.f0 + Long.parseLong(kafkaEventDTO.getEventValue())
-                smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
+                smallMapState.put(kafkaEventDTO.getEventFiled(), Tuple2.of(newValue, kafkaEventDTO))
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
                 if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
                     continue
                 }
-                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventCode())
+                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventFiled())
                 Long newValue = currentTuple.f0 + Long.parseLong(kafkaEventDTO.getEventValue())
-                smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
+                smallMapState.put(kafkaEventDTO.getEventFiled(), Tuple2.of(newValue, kafkaEventDTO))
             }
         }
     }
@@ -196,12 +196,12 @@ class ProcessorOne implements Processor {
      * 构建Redis的哈希键
      */
     private String buildRedisHashKey(KafkaEventDTO kafkaEventDTO) {
-        String keyCode = kafkaEventDTO.getTargetCode()
-        String keyValue = kafkaEventDTO.getTargetValue()
+        String targetFiled = kafkaEventDTO.getTargetFiled()
+        String targetValue = kafkaEventDTO.getTargetValue()
         return new StringBuilder()
-                .append(keyCode)
+                .append(targetFiled)
                 .append(DefaultConstants.COLON)
-                .append(keyValue).toString()
+                .append(targetValue).toString()
     }
 
     /**
@@ -215,7 +215,7 @@ class ProcessorOne implements Processor {
                 .append(DefaultConstants.COLON)
                 .append(ruleCondDTO.getRuleCode())
                 .append(DefaultConstants.COLON)
-                .append(ruleCondDTO.getEventCode())
+                .append(ruleCondDTO.getEventFiled())
     }
 
     /**
@@ -240,7 +240,7 @@ class ProcessorOne implements Processor {
                 // 规则中不包含事件属性值相关的配置，则表明不需要进行事件属性值匹配，直接跳过即可
                 continue
             }
-            String attrCode = ruleEventAttrValueDTO.getAttrCode()
+            String attrFiled = ruleEventAttrValueDTO.getAttrFiled()
             Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap()
             if (CollectionUtil.isEmpty(kafkaEventAttrMap)) {
                 // 规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求
@@ -248,13 +248,13 @@ class ProcessorOne implements Processor {
                         "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO)
                 return false
             }
-            if (!kafkaEventAttrMap.containsKey(attrCode)) {
+            if (!kafkaEventAttrMap.containsKey(attrFiled)) {
                 // kafka事件属性不包含规则中事件属性，则表明不符合匹配
                 log.warn("kafka数据事件属性map并不包含规则配置的事件属性key，故直接判定为不符合规则要求！" +
                         "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO)
                 return false
             }
-            String kafkaEventAttributeValue = kafkaEventAttrMap.get(attrCode)
+            String kafkaEventAttributeValue = kafkaEventAttrMap.get(attrFiled)
             if (Objects.isNull(kafkaEventAttributeValue)) {
                 // kafka事件中对于规则中事件属性值为空，则表明不符合匹配
                 return false
@@ -291,7 +291,7 @@ class ProcessorOne implements Processor {
         // 将规则条件根据事件编号存储到map中，方便后续操作
         Map<String, RuleCondDTO> ruleConditionMapByEventCode = new HashMap<>()
         for (RuleCondDTO ruleCondDTO : groupGroup) {
-            ruleConditionMapByEventCode.put(ruleCondDTO.getEventCode(), ruleCondDTO)
+            ruleConditionMapByEventCode.put(ruleCondDTO.getEventFiled(), ruleCondDTO)
         }
         // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
         updateBigMapWithSmallMap(timestamp)

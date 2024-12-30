@@ -18,13 +18,13 @@ public class RuleEventAttrCompUtil {
      * @return 比较结果，满足关系返回 true，否则返回 false
      */
     public static boolean compareValues(RuleEventAttrValueDTO ruleEventAttrValueDTO, KafkaEventDTO kafkaEventDTO) {
-        String ruleEventAttrCode = ruleEventAttrValueDTO.getAttrCode();
+        String ruleEventAttrFiled = ruleEventAttrValueDTO.getAttrFiled();
         String ruleEventAttrType = ruleEventAttrValueDTO.getAttrType();
         String ruleEventAttrOp = ruleEventAttrValueDTO.getAttrOp();
         String ruleEventAttrValue = ruleEventAttrValueDTO.getAttrValue();
 
         Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap();
-        String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrCode);
+        String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrFiled);
         if (Objects.isNull(kafkaEventAttrValue)) {
             return false;
         }

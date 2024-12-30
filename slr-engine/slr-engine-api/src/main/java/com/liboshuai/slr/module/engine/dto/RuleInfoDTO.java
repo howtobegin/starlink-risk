@@ -74,10 +74,16 @@ public class RuleInfoDTO implements Serializable {
     private String alertMessage;
 
     /**
-     * 目标ID
+     * 目标编号
      * （例如：GAME_userId）
      */
     private String targetCode;
+
+    /**
+     * 目标字段
+     * （例如：userId）
+     */
+    private String targetFiled;
 
     /**
      * 目标名称

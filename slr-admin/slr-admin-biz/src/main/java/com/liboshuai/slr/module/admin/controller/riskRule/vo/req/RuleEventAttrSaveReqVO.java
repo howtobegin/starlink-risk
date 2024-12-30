@@ -24,6 +24,10 @@ public class RuleEventAttrSaveReqVO implements Serializable {
     @Schema(description = "属性编号", example = "GAME_userId_lottery_campaignId")
     private String attrCode;
 
+    @Size(max = 256, message = "属性字段[attrFiled]，长度不能超过 256 个字符")
+    @Schema(description = "属性字段", example = "campaignId")
+    private String attrFiled;
+
     @Size(max = 32, message = "属性名称[attrCode]，长度不能超过 32 个字符")
     @Schema(description = "属性名称", example = "活动ID")
     private String attrName;

@@ -28,6 +28,9 @@ public class RuleEventRespVO extends BaseRespVO {
     @Schema(description = "事件编号", example = "GAME_userId_lottery")
     private String eventCode;
 
+    @Schema(description = "事件字段", example = "lottery")
+    private String eventFiled;
+
     @Schema(description = "事件名称", example = "游戏抽奖")
     private String eventName;
 

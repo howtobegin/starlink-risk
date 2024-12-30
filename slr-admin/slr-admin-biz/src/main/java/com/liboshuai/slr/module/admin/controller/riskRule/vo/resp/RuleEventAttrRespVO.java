@@ -21,6 +21,9 @@ public class RuleEventAttrRespVO extends BaseRespVO {
     @Schema(description = "属性编号", example = "GAME_userId_lottery_campaignId")
     private String attrCode;
 
+    @Schema(description = "属性字段", example = "campaignId")
+    private String attrFiled;
+
     @Schema(description = "属性名称", example = "活动id")
     private String attrName;
 

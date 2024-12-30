@@ -28,6 +28,12 @@ public class RuleEventAttrValueDTO implements Serializable {
     private String attrCode;
 
     /**
+     * 属性字段
+     * （例如：campaignId）
+     */
+    private String attrFiled;
+
+    /**
      * 属性名称
      * （例如：活动id）
      */
