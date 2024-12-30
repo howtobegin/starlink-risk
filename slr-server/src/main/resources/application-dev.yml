@@ -1,4 +1,46 @@
 spring:
+  # 数据源配置项
+  autoconfigure:
+    exclude:
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
+  datasource:
+    druid: # Druid 【监控】相关的全局配置
+      web-stat-filter:
+        enabled: true
+      stat-view-servlet:
+        enabled: true
+        allow: # 设置白名单，不填则允许所有访问
+        url-pattern: /druid/*
+        login-username: lbs # 控制台管理用户名和密码
+        login-password: Rongshu@2024
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true # 慢 SQL 记录
+          slow-sql-millis: 100
+          merge-sql: true
+        wall:
+          config:
+            multi-statement-allow: true
+    dynamic: # 多数据源配置
+      druid: # Druid 【连接池】相关的全局配置
+        initial-size: 5 # 初始连接数
+        min-idle: 10 # 最小连接池数量
+        max-active: 20 # 最大连接池数量
+        max-wait: 600000 # 配置获取连接等待超时的时间，单位：毫秒
+        time-between-eviction-runs-millis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
+        min-evictable-idle-time-millis: 300000 # 配置一个连接在池中最小生存的时间，单位：毫秒
+        max-evictable-idle-time-millis: 900000 # 配置一个连接在池中最大生存的时间，单位：毫秒
+        validation-query: SELECT 1 # 配置检测连接是否有效
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+      primary: master
+      datasource:
+        master:
+          url: jdbc:mysql://one:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          username: lbs
+          password: Rongshu@2024
   redis:
     database: 0
     password: Rongshu@2024
@@ -6,12 +48,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - rocky:6381
-        - rocky:6382
-        - rocky:6383
-        - rocky:6384
-        - rocky:6385
-        - rocky:6386
+        - one:6381
+        - one:6382
+        - one:6383
+        - one:6384
+        - one:6385
+        - one:6386
     lettuce:
       pool:
         min-idle: 0
@@ -20,12 +62,24 @@ spring:
         max-wait: -1ms
   kafka:
     producer:
-      bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
+      bootstrap-servers: one:9096,one:9097,one:9098
     consumer:
-      bootstrap-servers: rocky:9096,rocky:9097,rocky:9098
-      group-id: slr_connector
+      bootstrap-servers: one:9096,one:9097,one:9098
+      group-id: starlink_risk
+  data:
+    mongodb:
+      host: one
+      port: 27018
+      username: lbs
+      password: Rongshu@2024
+      database: starlink_risk
+      authentication-database: starlink_risk
 
-slr_connector:
+slr-connector:
   kafka:
     provider_topic: slr_event
     consumer_topic: slr_alert
+
+slr-admin:
+  loadTest:
+    filePath: /slr-server/data/
