@@ -98,12 +98,10 @@ class ProcessorOne implements Processor {
             return
         }
         // 事件与规则渠道匹配不上，则直接跳过
-        String eventKafkaDTOChannel = kafkaEventDTO.getChannel()
-        String ruleInfoChannel = ruleInfoDTO.getChannel()
-        if (!Objects.equals(eventKafkaDTOChannel, ruleInfoChannel)) {
+        if (!Objects.equals(kafkaEventDTO.getChannel(), ruleInfoDTO.getChannel())) {
             return
         }
-        // 规则keyCode与kafkaEventDTO的keyCode不匹配，则直接跳过
+        // 事件与规则目标匹配不上，则直接跳过
         if (!Objects.equals(ruleInfoDTO.getTargetCode(), kafkaEventDTO.getTargetCode())) {
             return
         }
@@ -136,7 +134,7 @@ class ProcessorOne implements Processor {
      */
     private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup, KafkaEventDTO kafkaEventDTO) {
         for (RuleCondDTO ruleCondDTO : ruleCondDtoGroup) {
-            // 进行事件编号匹配
+            // 事件与规则中的事件编号匹配不上，则直接跳过
             if (!Objects.equals(kafkaEventDTO.getEventCode(), ruleCondDTO.getEventCode())) {
                 // 事件编号匹配不上，则直接跳过
                 continue
