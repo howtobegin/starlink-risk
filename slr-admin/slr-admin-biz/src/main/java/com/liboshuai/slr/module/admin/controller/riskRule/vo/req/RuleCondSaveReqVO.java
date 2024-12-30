@@ -29,7 +29,6 @@ public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Size(max = 256, message = "条件编号[condCode]，长度不能超过 256 个字符")
-    @NotBlank(message = "条件编号[condCode]，不能为空")
     @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
@@ -72,7 +71,6 @@ public class RuleCondSaveReqVO implements Serializable {
     private LocalDateTime crossHistoryTimeline;
 
     @Size(max = 256, message = "规则编号[ruleCode]，长度不能超过 256 个字符")
-    @NotBlank(message = "规则编号[ruleCode]，不能为空")
     @Schema(description = "规则编号", example = "R1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleCode;
 

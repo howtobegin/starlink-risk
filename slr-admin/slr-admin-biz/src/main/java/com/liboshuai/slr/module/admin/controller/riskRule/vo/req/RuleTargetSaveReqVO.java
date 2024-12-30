@@ -51,5 +51,5 @@ public class RuleTargetSaveReqVO implements Serializable {
     @Valid
     @NotEmpty(message = "规则事件组[ruleEventSaveGroup]，不能为空")
     @Schema(description = "规则事件组")
-    private List<RuleEventSaveReqVO> ruleEventSaveGroup;
+    private List<RuleEventSaveReqVO> ruleEventGroup;
 }

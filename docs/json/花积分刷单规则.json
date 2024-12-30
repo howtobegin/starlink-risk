@@ -1,0 +1,34 @@
+{
+  "ruleCode": "R1873622180391161856",
+  "channel": "HJF",
+  "ruleName": "花积分刷单",
+  "ruleDesc": "花积分刷单规则",
+  "alertIntervalValue": 2,
+  "alertIntervalUnit": "分钟",
+  "alertMessage": "[刷单预警]${KafkaEventDTO.eventAttrMap.HJF_userId_orderAmount_bankName}(${KafkaEventDTO.eventAttrMap.HJF_userId_orderAmount_bankId}): 花积分用户(${KafkaEventDTO.targetValue})，最近${RuleInfoDTO.ruleCondGroup.0.windowValue}${RuleInfoDTO.ruleCondGroup.0.windowUnit}内下单金额为${ProcessorDTO.eventCodeAndValueSumMap.HJF_userId_orderAmount}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次；且最近${RuleInfoDTO.ruleCondGroup.1.windowValue}${RuleInfoDTO.ruleCondGroup.1.windowUnit}内下单数量为${ProcessorDTO.eventCodeAndValueSumMap.HJF_userId_orderCount}，超过${RuleInfoDTO.ruleCondGroup.1.threshold}次；触发预警的商品为：${KafkaEventDTO.eventAttrMap.HJF_userId_orderAmount_productName}(${KafkaEventDTO.eventAttrMap.HJF_userId_orderAmount_productId})。请您及时查看原因！",
+  "targetCode": "HJF_userId",
+  "modelCode": "M1873324910378618880",
+  "ruleCondCombOp": "AND",
+  "ruleCondGroup": [
+    {
+      "ruleCode": "R1873622180391161856",
+      "condCode": "R1873622180391161856_HJF_userId_orderAmount",
+      "condType": "CYCLE",
+      "windowValue": 3,
+      "windowUnit": "分钟",
+      "threshold": 100,
+      "crossHistory": false,
+      "eventCode": "HJF_userId_orderAmount"
+    },
+    {
+      "ruleCode": "R1873622180391161856",
+      "condCode": "R1873622180391161856_HJF_userId_orderCount",
+      "condType": "CYCLE",
+      "windowValue": 5,
+      "windowUnit": "分钟",
+      "threshold": 10,
+      "crossHistory": false,
+      "eventCode": "HJF_userId_orderCount"
+    }
+  ]
+}

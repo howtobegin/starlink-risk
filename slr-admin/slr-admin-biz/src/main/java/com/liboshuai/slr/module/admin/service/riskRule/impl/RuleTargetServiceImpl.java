@@ -71,7 +71,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         }
         ruleTargetMapper.insert(ruleTargetDO);
         // 保存 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveGroup = ruleTargetSaveReqVO.getRuleEventSaveGroup();
+        List<RuleEventSaveReqVO> ruleEventSaveGroup = ruleTargetSaveReqVO.getRuleEventGroup();
         List<RuleEventDO> ruleEventDOList = BeanUtils.toBean(ruleEventSaveGroup, RuleEventDO.class);
         assert ruleEventDOList != null;
         ruleEventDOList.forEach(ruleEventDO -> {
@@ -98,7 +98,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         RuleTargetDO ruleTargetDO = BeanUtils.toBean(ruleTargetSaveReqVO, RuleTargetDO.class);
         ruleTargetMapper.updateByTargetCode(ruleTargetDO, targetCode);
         // 更新 规则事件信息
-        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventSaveGroup();
+        List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventGroup();
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
