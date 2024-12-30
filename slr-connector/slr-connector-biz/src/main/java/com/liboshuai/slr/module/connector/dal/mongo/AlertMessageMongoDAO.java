@@ -3,10 +3,7 @@ package com.liboshuai.slr.module.connector.dal.mongo;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.module.connector.controller.alertMessage.vo.AlertMessageReqVO;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -65,7 +62,7 @@ public class AlertMessageMongoDAO {
         int pageSize = alertMessageReqVO.getPageSize();
         // 设置分页参数
         // 页码从0开始，需要减1
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(Sort.Direction.DESC, "alertTime"));
         query.with(pageable);
         // 执行查询
         List<AlertMessageDO> list = mongoTemplate.find(query, AlertMessageDO.class);
