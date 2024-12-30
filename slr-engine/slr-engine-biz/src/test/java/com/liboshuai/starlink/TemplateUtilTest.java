@@ -4,7 +4,6 @@ import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.ProcessorDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-import com.liboshuai.slr.module.engine.utils.DateUtil;
 import com.liboshuai.slr.module.engine.utils.TemplateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,7 +58,7 @@ public class TemplateUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(eventAttribute)
-                .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
+                .eventTime(System.currentTimeMillis())
                 .build();
         Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
         eventCodeAndValueSumMap.put("GAME_LOTTERY", 10L);
@@ -93,7 +92,7 @@ public class TemplateUtilTest {
                 .eventCode("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(attributes)
-                .eventTime(DateUtil.convertTimestamp2String(System.currentTimeMillis()))
+                .eventTime(System.currentTimeMillis())
                 .build();
 
         List<RuleCondDTO> RuleCondDTOS = new ArrayList<>();
