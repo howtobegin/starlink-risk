@@ -74,6 +74,7 @@ CREATE TABLE `slr_rule_event`
 (
     `id`          bigint UNSIGNED                                        NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
     `event_code`  varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件编号',
+    `event_filed` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件字段',
     `event_name`  varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '事件名称',
     `event_desc`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '事件描述',
     `target_code` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '目标编号',
@@ -116,6 +117,7 @@ CREATE TABLE `slr_rule_event_attr`
 (
     `id`          bigint UNSIGNED                                        NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
     `attr_code`   varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性编号',
+    `attr_filed` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '属性字段',
     `attr_name`   varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '属性名称',
     `attr_type`   varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '属性类型',
     `event_code`  varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '事件编号',
@@ -340,15 +342,16 @@ VALUES (1, 'M1873324910378618880', '模型运算机一', '支持多周期条件�
 DROP TABLE IF EXISTS `slr_rule_target`;
 CREATE TABLE `slr_rule_target`
 (
-    `id`          bigint UNSIGNED                                        NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-    `channel`     varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '渠道',
-    `target_code` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '目标编号',
-    `target_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '目标名称',
-    `target_desc` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '目标描述',
-    `creator`     varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '创建用户',
-    `updater`     varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '更新用户',
-    `create_time` datetime                                               NULL DEFAULT NULL COMMENT '创建时间',
-    `update_time` datetime                                               NULL DEFAULT NULL COMMENT '创建时间',
+    `id`           bigint UNSIGNED                                        NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
+    `channel`      varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '渠道',
+    `target_code`  varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '目标编号',
+    `target_filed` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '目标字段',
+    `target_name`  varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '目标名称',
+    `target_desc`  varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '目标描述',
+    `creator`      varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '创建用户',
+    `updater`      varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin  NULL DEFAULT NULL COMMENT '更新用户',
+    `create_time`  datetime                                               NULL DEFAULT NULL COMMENT '创建时间',
+    `update_time`  datetime                                               NULL DEFAULT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE INDEX `uk_target_code` (`target_code` ASC) USING BTREE
 ) ENGINE = InnoDB
