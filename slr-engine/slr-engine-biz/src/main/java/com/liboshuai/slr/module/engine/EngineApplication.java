@@ -7,7 +7,10 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
 import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
-import com.liboshuai.slr.module.engine.function.*;
+import com.liboshuai.slr.module.engine.function.CoreFunction;
+import com.liboshuai.slr.module.engine.function.DorisEventProcessFunction;
+import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
+import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -41,13 +44,14 @@ public class EngineApplication {
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
-                // 转换string为eventKafkaDTO对象，并设置处理时间
-                .process(new KafkaEventProcessFunction()).uid("kafkaEventDTO-process-function")
+                // 转换string为eventKafkaDTO对象
+                .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process-function")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
-                .map(new DorisEventMapFunction()).uid("toDoris-map-function");
+                // kafka事件数据结构转doris事件数据结构，并设置事件时间
+                .process(new DorisEventProcessFunction()).uid("toDoris-process-function");
         FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
