@@ -1,10 +1,10 @@
 FROM eclipse-temurin:8-jre
 
 ## 创建目录，并使用它作为工作目录
-RUN mkdir -p /slr-admin/{logs,data}
-WORKDIR /slr-admin
+RUN mkdir -p /slr-server/{logs,data}
+WORKDIR /slr-server
 ## 将后端项目的 Jar 文件，复制到镜像中
-COPY ./target/slr-admin-biz-1.0.jar app.jar
+COPY ./target/slr-server-1.0.jar app.jar
 
 ## 设置 TZ 时区
 ENV TZ=Asia/Shanghai
@@ -18,8 +18,8 @@ ENV ARGS=""
 EXPOSE 48888
 
 ## 挂载目录
-VOLUME /slr-admin/logs/
-VOLUME /slr-admin/data/
+VOLUME /slr-server/logs/
+VOLUME /slr-server/data/
 
 ## 启动后端项目
 CMD java ${JAVA_OPTS} -jar app.jar $ARGS
