@@ -87,13 +87,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                                Collector<AlertMessageDTO> out) throws Exception {
         // 等待所有运算机初始化完成
         waitForInitAllProcessor();
+        // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
+        long currentProcessingTime = ctx.timerService().currentProcessingTime();
+        kafkaEventDTO.setEventTime(currentProcessingTime);
         // 将事件放入缓存列表中
         recentEventMapState.put(kafkaEventDTO, null);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        // 获取当前事件时间戳
-        long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        kafkaEventDTO.setEventTime(currentProcessingTime);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();

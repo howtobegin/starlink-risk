@@ -21,6 +21,7 @@ import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  * 运算机one
  */
@@ -120,7 +121,7 @@ class ProcessorOne implements Processor {
             }
         }
         // 计算规则条件值
-        processRuleCondValue(condGroupList, kafkaEventDTO)
+        processRuleCondValue(currentEventTimestamp, condGroupList, kafkaEventDTO)
     }
 
     /**
@@ -133,7 +134,7 @@ class ProcessorOne implements Processor {
      * @param ruleCondDtoGroup 规则条件DTO列表
      * @param kafkaEventDTO Kafka事件DTO
      */
-    private void processRuleCondValue(List<RuleCondDTO> ruleCondDtoGroup, KafkaEventDTO kafkaEventDTO) {
+    private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup, KafkaEventDTO kafkaEventDTO) {
         for (RuleCondDTO ruleCondDTO : ruleCondDtoGroup) {
             // 进行事件编号匹配
             if (!Objects.equals(kafkaEventDTO.getEventCode(), ruleCondDTO.getEventCode())) {
@@ -151,9 +152,45 @@ class ProcessorOne implements Processor {
             if (smallMapState.get(kafkaEventDTO.getEventCode()) == null) {
                 smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(0L, kafkaEventDTO))
             }
-            Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventCode())
-            Long newValue = currentTuple.f0 + Long.parseLong(kafkaEventDTO.getEventValue())
-            smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
+            if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
+                String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline()
+                // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
+                // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
+                if (kafkaEventDTO.getEventTime()
+                        <= DateUtil.convertString2Timestamp(crossHistoryTimeline)) {
+                    continue
+                }
+                // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
+                // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
+                if (!smallInitMapState.contains(kafkaEventDTO.getEventCode())) {
+                    // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
+                    // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
+                    String redisKey = buildRedisKey(ruleCondDTO)
+                    String redisHashKey = buildRedisHashKey(kafkaEventDTO)
+                    // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
+                    String initValue = RedisUtil.hget(redisKey, redisHashKey)
+                    if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
+                        throw new BusinessException(
+                                StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
+                        )
+                    }
+                    smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO))
+                    smallInitMapState.put(kafkaEventDTO.getEventCode(), true)
+                }
+                // 从redis初始化值后，正常处理数据
+                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventCode())
+                Long newValue = currentTuple.f0 + Long.parseLong(kafkaEventDTO.getEventValue())
+                smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
+            } else { // 非跨历史时间段
+                // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
+                // FIXME: 注意第一条数据的事件时间即使使用了处理时间来设置，也会不相同，待解决
+                if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
+                    continue
+                }
+                Tuple2<Long, KafkaEventDTO> currentTuple = smallMapState.get(kafkaEventDTO.getEventCode())
+                Long newValue = currentTuple.f0 + Long.parseLong(kafkaEventDTO.getEventValue())
+                smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
+            }
         }
     }
 
@@ -312,18 +349,18 @@ class ProcessorOne implements Processor {
         lastWarningTimeState.clear()
     }
 /**
-     * 判断是否触发规则事件阈值。
-     *
-     * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
-     * 的累加值与预定义的阈值进行比较。如果某个事件代码的累加值超过其阈值，则在结果映射中记录为 `true`。
-     * 最后，根据 `ruleInfoDTO` 中指定的组合条件操作符（如 AND/OR）评估所有事件代码的结果，从而确定
-     * 是否整体满足触发规则的条件。
-     *
-     * @param ruleConditionMapByEventCode 按事件代码分组的规则条件映射，每个事件代码对应一个 `RuleConditionDTO`
-     * @param ruleInfoDTO 规则信息数据传输对象，包含组合条件操作符等规则配置
-     * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
-     * @throws Exception 在评估过程中发生任何异常时抛出
-     */
+ * 判断是否触发规则事件阈值。
+ *
+ * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
+ * 的累加值与预定义的阈值进行比较。如果某个事件代码的累加值超过其阈值，则在结果映射中记录为 `true`。
+ * 最后，根据 `ruleInfoDTO` 中指定的组合条件操作符（如 AND/OR）评估所有事件代码的结果，从而确定
+ * 是否整体满足触发规则的条件。
+ *
+ * @param ruleConditionMapByEventCode 按事件代码分组的规则条件映射，每个事件代码对应一个 `RuleConditionDTO`
+ * @param ruleInfoDTO 规则信息数据传输对象，包含组合条件操作符等规则配置
+ * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
+ * @throws Exception 在评估过程中发生任何异常时抛出
+ */
     private boolean evaluateEventThresholds(Map<String, RuleCondDTO> ruleConditionMapByEventCode,
                                             RuleInfoDTO ruleInfoDTO) throws Exception {
         Map<String, Boolean> eventCodeAndWarnResult = new HashMap<>()
