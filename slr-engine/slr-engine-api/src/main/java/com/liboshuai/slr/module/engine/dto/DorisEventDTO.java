@@ -11,22 +11,22 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * 上送事件Kafka DTO
+ * 上送事件Doris DTO
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class KafkaEventDTO implements Serializable {
+public class DorisEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;
 
     /**
      * 事件时间
-     * （无需业务方传输，而是取flink处理时间）
+     * （无需业务方传输，而是取flink处理时间，格式：yyyy-MM-dd HH:mm:ss）
      */
-    private Long eventTime;
+    private String eventTime;
     /**
      * 目标编号
      * （例如：GAME_userId）

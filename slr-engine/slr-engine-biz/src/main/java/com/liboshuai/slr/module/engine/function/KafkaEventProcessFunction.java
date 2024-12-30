@@ -1,7 +1,6 @@
 package com.liboshuai.slr.module.engine.function;
 
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.utils.DateUtil;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
@@ -16,7 +15,7 @@ public class KafkaEventProcessFunction extends ProcessFunction<String, KafkaEven
         if (Objects.nonNull(kafkaEventDTO)) {
             // 获取当前处理时间
             long processingTime = context.timerService().currentProcessingTime();
-            kafkaEventDTO.setEventTime(DateUtil.convertTimestamp2String(processingTime));
+            kafkaEventDTO.setEventTime(processingTime);
         }
         collector.collect(kafkaEventDTO);
     }

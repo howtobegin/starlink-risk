@@ -4,7 +4,11 @@ import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
-import com.liboshuai.slr.module.engine.utils.*;
+import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
+import com.liboshuai.slr.module.engine.utils.JdbcUtil;
+import com.liboshuai.slr.module.engine.utils.JsonUtil;
+import com.liboshuai.slr.module.engine.utils.ParameterUtil;
+import com.liboshuai.slr.module.engine.utils.WindowUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +51,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private GroovyClassLoader groovyClassLoader;
 
     /**
-     * 最近5分钟时间事件数据缓存
+     * 最近2分钟时间事件数据缓存
      * （对于需要设置过期时间的大状态，不要使用ListState，而是使用MapState。详见：https://juejin.cn/spost/7453734359793778698）
      */
     private MapState<KafkaEventDTO, Object> recentEventMapState;
@@ -70,7 +74,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_MAP_STATE_DESC
-                .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(5)).neverReturnExpired().build());
+                .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
         recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
         // 查询在线规则数量
@@ -89,7 +93,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 获取当前事件时间戳
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        kafkaEventDTO.setEventTime(DateUtil.convertTimestamp2String(currentProcessingTime));
+        kafkaEventDTO.setEventTime(currentProcessingTime);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
@@ -137,7 +141,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         } else if (Envelope.Operation.READ.code().equals(op)) {
             // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
             loadProcessor(ruleCodeAfter, broadcastState, ruleInfoDTOAfter);
-        }else if (Envelope.Operation.UPDATE.code().equals(op)) {
+        } else if (Envelope.Operation.UPDATE.code().equals(op)) {
             // update: 因为上线规则时进行insert，下线规则时直接delete了，其他更新操作不会同步到rule_json表中，故忽略
             log.warn("规则运算机不支持在线热更新，请不要直接 update rule_json 表中的数据！");
         } else if (Envelope.Operation.DELETE.code().equals(op)) {
@@ -173,7 +177,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             return;
         }
         // 构建规则运算机
-        Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+//        Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+        Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         broadcastState.put(ruleCode, ruleInfoDTO);
         log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
@@ -212,11 +217,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     // mock运算机对象
-//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-//        Processor processor = new ProcessorOne();
-//        processor.init(runtimeContext, ruleInfoDTO);
-//        return processor;
-//    }
+    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+        Processor processor = new ProcessorOne();
+        processor.init(runtimeContext, ruleInfoDTO);
+        return processor;
+    }
 
     /**
      * 查询上线的规则数量

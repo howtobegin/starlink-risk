@@ -7,10 +7,7 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
 import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
-import com.liboshuai.slr.module.engine.function.CoreFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
-import com.liboshuai.slr.module.engine.function.KafkaEventProcessFunction;
+import com.liboshuai.slr.module.engine.function.*;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +47,7 @@ public class EngineApplication {
                 .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
-                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("toDoris-map-function");
+                .map(new DorisEventMapFunction()).uid("toDoris-map-function");
         FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
