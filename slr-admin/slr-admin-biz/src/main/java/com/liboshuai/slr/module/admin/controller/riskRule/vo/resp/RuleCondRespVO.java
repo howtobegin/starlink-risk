@@ -72,7 +72,7 @@ public class RuleCondRespVO extends BaseRespVO {
     private String eventCode;
 
     @Schema(description = "事件字段", example = "lottery")
-    private String eventFiled;
+    private String eventField;
 
     @Schema(description = "事件名称", example = "游戏抽奖")
     private String eventName;

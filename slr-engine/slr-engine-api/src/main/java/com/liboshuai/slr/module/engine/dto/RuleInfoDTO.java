@@ -83,7 +83,7 @@ public class RuleInfoDTO implements Serializable {
      * 目标字段
      * （例如：userId）
      */
-    private String targetFiled;
+    private String targetField;
 
     /**
      * 目标名称

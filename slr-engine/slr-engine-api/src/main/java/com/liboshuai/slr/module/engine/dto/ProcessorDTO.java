@@ -23,6 +23,6 @@ public class ProcessorDTO implements Serializable {
     /**
      * 事件值累计结果
      */
-    private Map<String, Long> eventCodeAndValueSumMap;
+    private Map<String, Long> eventFieldAndValueSumMap;
 
 }

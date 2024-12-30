@@ -38,10 +38,10 @@ public class RuleTargetSaveReqVO implements Serializable {
     @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetCode;
 
-    @NotBlank(message = "目标字段[targetFiled]，不能为空")
-    @Size(max = 256, message = "目标字段[targetFiled]，长度不能超过 256 个字符")
+    @NotBlank(message = "目标字段[targetField]，不能为空")
+    @Size(max = 256, message = "目标字段[targetField]，长度不能超过 256 个字符")
     @Schema(description = "目标字段", example = "userId", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String targetFiled;
+    private String targetField;
 
     @NotBlank(message = "目标名称[targetName]，不能为空")
     @Size(max = 32, message = "key名称[targetName]，长度不能超过 32 个字符")

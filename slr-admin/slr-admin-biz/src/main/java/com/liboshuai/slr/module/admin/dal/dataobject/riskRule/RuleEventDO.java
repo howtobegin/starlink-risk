@@ -27,7 +27,7 @@ public class RuleEventDO extends BaseDO {
      * 事件字段
      * （例如：lottery）
      */
-    private String eventFiled;
+    private String eventField;
     /**
      * 事件名称
      */

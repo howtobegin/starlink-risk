@@ -28,7 +28,7 @@ public class RuleEventAttrDO extends BaseDO {
      * 属性字段
      * （例如：campaignId）
      */
-    private String attrFiled;
+    private String attrField;
     /**
      * 属性名称
      * （例如：活动id）

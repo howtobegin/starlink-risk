@@ -1,23 +1,20 @@
 {
   "channel": "GAME",
-  "ruleCode": "R1873332239786446848",
   "ruleName": "游戏高频抽奖",
   "ruleDesc": "游戏高频抽奖规则",
   "ruleStatus": "OFFLINE",
   "alertIntervalValue": 4,
   "alertIntervalUnit": "分钟",
-  "alertMessage": "[异常高频抽奖]${KafkaEventDTO.eventAttrMap.GAME_userId_lottery_bankName}: ${KafkaEventDTO.eventAttrMap.GAME_userId_lottery_campaignName}(${KafkaEventDTO.eventAttrMap.GAME_userId_lottery_campaignId})中游戏用户(${KafkaEventDTO.targetValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}${RuleInfoDTO.ruleCondGroup.0.windowUnit}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_userId_lottery}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！",
+  "alertMessage": "[异常高频抽奖]${KafkaEventDTO.eventAttrMap.bankName}: ${KafkaEventDTO.eventAttrMap.campaignName}(${KafkaEventDTO.eventAttrMap.campaignId})中游戏用户(${KafkaEventDTO.targetValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}${RuleInfoDTO.ruleCondGroup.0.windowUnit}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.lottery}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！",
   "targetCode": "GAME_userId",
   "modelCode": "M1873324910378618880",
   "ruleCondGroup": [
     {
-      "condCode": "R1873332239786446848_GAME_userId_lottery",
       "condType": "CYCLE",
       "windowValue": 10,
       "windowUnit": "分钟",
       "threshold": 10,
       "crossHistory": false,
-      "ruleCode": "R1873332239786446848",
       "eventCode": "GAME_userId_lottery"
     }
   ]

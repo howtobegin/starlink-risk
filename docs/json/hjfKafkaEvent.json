@@ -2,75 +2,75 @@
   "channel": "HJF",
   "kafkaEventReqVOList": [
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "HJF_userId_orderCount",
+      "eventField": "orderCount",
       "eventValue": "3",
       "eventAttrMap": {
-        "HJF_userId_orderCount_bankName": "邮储银行",
-        "HJF_userId_orderCount_bankId": "6100",
-        "HJF_userId_orderCount_productName": "商品1",
-        "HJF_userId_orderCount_productId": "p000000001"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品1",
+        "productId": "p000000001"
       }
     },
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "HJF_userId_orderAmount",
+      "eventField": "orderAmount",
       "eventValue": "30",
       "eventAttrMap": {
-        "HJF_userId_orderAmount_bankName": "邮储银行",
-        "HJF_userId_orderAmount_bankId": "6100",
-        "HJF_userId_orderAmount_productName": "商品1",
-        "HJF_userId_orderAmount_productId": "p000000001"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品1",
+        "productId": "p000000001"
       }
     },
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000002",
-      "eventCode": "HJF_userId_orderCount",
+      "eventField": "orderCount",
       "eventValue": "5",
       "eventAttrMap": {
-        "HJF_userId_orderCount_bankName": "邮储银行",
-        "HJF_userId_orderCount_bankId": "6100",
-        "HJF_userId_orderCount_productName": "商品2",
-        "HJF_userId_orderCount_productId": "p000000002"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品2",
+        "productId": "p000000002"
       }
     },
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000002",
-      "eventCode": "HJF_userId_orderAmount",
+      "eventField": "orderAmount",
       "eventValue": "60",
       "eventAttrMap": {
-        "HJF_userId_orderAmount_bankName": "邮储银行",
-        "HJF_userId_orderAmount_bankId": "6100",
-        "HJF_userId_orderAmount_productName": "商品2",
-        "HJF_userId_orderAmount_productId": "p000000002"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品2",
+        "productId": "p000000002"
       }
     },
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "HJF_userId_orderCount",
+      "eventField": "orderCount",
       "eventValue": "3",
       "eventAttrMap": {
-        "HJF_userId_orderCount_bankName": "邮储银行",
-        "HJF_userId_orderCount_bankId": "6100",
-        "HJF_userId_orderCount_productName": "商品3",
-        "HJF_userId_orderCount_productId": "p000000003"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品3",
+        "productId": "p000000003"
       }
     },
     {
-      "targetCode": "HJF_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "HJF_userId_orderAmount",
+      "eventField": "orderAmount",
       "eventValue": "30",
       "eventAttrMap": {
-        "HJF_userId_orderAmount_bankName": "邮储银行",
-        "HJF_userId_orderAmount_bankId": "6100",
-        "HJF_userId_orderAmount_productName": "商品3",
-        "HJF_userId_orderAmount_productId": "p000000003"
+        "bankName": "邮储银行",
+        "bankId": "6100",
+        "productName": "商品3",
+        "productId": "p000000003"
       }
     }
   ]

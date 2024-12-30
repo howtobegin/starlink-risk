@@ -2,51 +2,51 @@
   "channel": "GAME",
   "kafkaEventReqVOList": [
     {
-      "targetCode": "GAME_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "GAME_userId_lottery",
+      "eventField": "lottery",
       "eventValue": "2",
       "eventAttrMap": {
-        "GAME_userId_lottery_campaignId": "C000000001",
-        "GAME_userId_lottery_campaignName": "活动1",
-        "GAME_userId_lottery_bankName": "邮储银行",
-        "GAME_userId_lottery_bankNo": "6100"
+        "campaignId": "C000000001",
+        "campaignName": "活动1",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
       }
     },
     {
-      "targetCode": "GAME_userId",
+      "targetField": "userId",
       "targetValue": "U000000002",
-      "eventCode": "GAME_userId_lottery",
+      "eventField": "lottery",
       "eventValue": "2",
       "eventAttrMap": {
-        "GAME_userId_lottery_campaignId": "C000000001",
-        "GAME_userId_lottery_campaignName": "活动1",
-        "GAME_userId_lottery_bankName": "邮储银行",
-        "GAME_userId_lottery_bankNo": "6100"
+        "campaignId": "C000000001",
+        "campaignName": "活动1",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
       }
     },
     {
-      "targetCode": "GAME_userId",
+      "targetField": "userId",
       "targetValue": "U000000001",
-      "eventCode": "GAME_userId_lottery",
+      "eventField": "lottery",
       "eventValue": "4",
       "eventAttrMap": {
-        "GAME_userId_lottery_campaignId": "C000000002",
-        "GAME_userId_lottery_campaignName": "活动2",
-        "GAME_userId_lottery_bankName": "邮储银行",
-        "GAME_userId_lottery_bankNo": "6100"
+        "campaignId": "C000000002",
+        "campaignName": "活动2",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
       }
     },
     {
-      "targetCode": "GAME_userId",
+      "targetField": "userId",
       "targetValue": "U000000002",
-      "eventCode": "GAME_userId_lottery",
+      "eventField": "lottery",
       "eventValue": "1",
       "eventAttrMap": {
-        "GAME_userId_lottery_campaignId": "C000000002",
-        "GAME_userId_lottery_campaignName": "活动2",
-        "GAME_userId_lottery_bankName": "邮储银行",
-        "GAME_userId_lottery_bankNo": "6100"
+        "campaignId": "C000000002",
+        "campaignName": "活动2",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
       }
     }
   ]

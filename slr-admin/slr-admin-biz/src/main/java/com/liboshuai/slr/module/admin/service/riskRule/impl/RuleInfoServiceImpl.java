@@ -257,7 +257,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         ruleCondGroup.forEach(ruleCondDTO -> {
             RuleEventDO ruleEventDO = eventCodeAndEventDoMap.get(ruleCondDTO.getEventCode());
             ruleCondDTO.setEventCode(ruleEventDO.getEventCode());
-            ruleCondDTO.setEventFiled(ruleEventDO.getEventFiled());
+            ruleCondDTO.setEventField(ruleEventDO.getEventField());
             ruleCondDTO.setEventName(ruleEventDO.getEventName());
         });
         // 给 条件组 设置 事件属性值
@@ -290,7 +290,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 ));
         ruleEventAttrValueGroup.forEach(ruleEventAttrValueDTO -> {
             RuleEventAttrDO ruleEventAttrDO = attrCodeAndAttrDoMap.get(ruleEventAttrValueDTO.getAttrCode());
-            ruleEventAttrValueDTO.setAttrFiled(ruleEventAttrDO.getAttrFiled());
+            ruleEventAttrValueDTO.setAttrField(ruleEventAttrDO.getAttrField());
             ruleEventAttrValueDTO.setAttrName(ruleEventAttrDO.getAttrName());
             ruleEventAttrValueDTO.setAttrType(ruleEventAttrDO.getAttrType());
         });
@@ -335,7 +335,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_NOT_EXISTS, targetCode);
         }
         ruleInfoDTO.setTargetCode(ruleTargetDO.getTargetCode());
-        ruleInfoDTO.setTargetFiled(ruleTargetDO.getTargetField());
+        ruleInfoDTO.setTargetField(ruleTargetDO.getTargetField());
         ruleInfoDTO.setTargetName(ruleTargetDO.getTargetName());
     }
 
@@ -369,7 +369,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             return;
         }
         ruleInfoRespVO.setTargetCode(ruleTargetDO.getTargetCode());
-        ruleInfoRespVO.setTargetFiled(ruleTargetDO.getTargetField());
+        ruleInfoRespVO.setTargetField(ruleTargetDO.getTargetField());
         ruleInfoRespVO.setTargetName(ruleTargetDO.getTargetName());
     }
 
@@ -422,7 +422,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         ruleCondGroup.forEach(ruleCondRespVO -> {
             RuleEventDO ruleEventDO = eventCodeAndEventDoMap.get(ruleCondRespVO.getEventCode());
             ruleCondRespVO.setEventCode(ruleEventDO.getEventCode());
-            ruleCondRespVO.setEventFiled(ruleEventDO.getEventFiled());
+            ruleCondRespVO.setEventField(ruleEventDO.getEventField());
             ruleCondRespVO.setEventName(ruleEventDO.getEventName());
         });
         // 给 条件组 设置 事件属性值
@@ -456,7 +456,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 ));
         ruleEventAttrValueGroup.forEach(ruleEventAttrValueRespVO -> {
             RuleEventAttrDO ruleEventAttrDO = attrCodeAndAttrDoMap.get(ruleEventAttrValueRespVO.getAttrCode());
-            ruleEventAttrValueRespVO.setAttrFiled(ruleEventAttrDO.getAttrFiled());
+            ruleEventAttrValueRespVO.setAttrField(ruleEventAttrDO.getAttrField());
             ruleEventAttrValueRespVO.setAttrName(ruleEventAttrDO.getAttrName());
             ruleEventAttrValueRespVO.setAttrType(ruleEventAttrDO.getAttrType());
         });

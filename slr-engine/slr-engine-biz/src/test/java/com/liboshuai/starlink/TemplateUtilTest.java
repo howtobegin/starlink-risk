@@ -53,9 +53,9 @@ public class TemplateUtilTest {
         eventAttribute.put("campaignName", "活动01");
         KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
-                .targetFiled("keyCode1")
+                .targetField("keyCode1")
                 .targetValue("keyValue1")
-                .eventFiled("eventCode1")
+                .eventField("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(eventAttribute)
                 .eventTime(System.currentTimeMillis())
@@ -63,7 +63,7 @@ public class TemplateUtilTest {
         Map<String, Long> eventCodeAndValueSumMap = new HashMap<>();
         eventCodeAndValueSumMap.put("GAME_LOTTERY", 10L);
         ProcessorDTO processorDTO = ProcessorDTO.builder()
-                .eventCodeAndValueSumMap(eventCodeAndValueSumMap)
+                .eventFieldAndValueSumMap(eventCodeAndValueSumMap)
                 .build();
 
         // 使用工具类替换模板中的占位符
@@ -87,9 +87,9 @@ public class TemplateUtilTest {
 
         KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
                 .channel("game")
-                .targetFiled("keyCode1")
+                .targetField("keyCode1")
                 .targetValue("keyValue1")
-                .eventFiled("eventCode1")
+                .eventField("eventCode1")
                 .eventValue("eventValue1")
                 .eventAttrMap(attributes)
                 .eventTime(System.currentTimeMillis())

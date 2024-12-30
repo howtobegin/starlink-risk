@@ -28,7 +28,7 @@ public class RuleTargetPageReqVO extends PageParam {
     private String targetCode;
 
     @Schema(description = "目标字段", example = "userId")
-    private String targetFiled;
+    private String targetField;
 
     @Schema(description = "目标名称", example = "用户id")
     private String targetName;

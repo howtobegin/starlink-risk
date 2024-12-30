@@ -132,9 +132,9 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             List<String> reasons = new ArrayList<>();
 
             // 效验各字段值是否非空
-            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetFiled, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetField, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetValue, reasons);
-            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventFiled, reasons);
+            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventField, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventValue, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventAttrMap, reasons);
 
