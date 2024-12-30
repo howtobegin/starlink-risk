@@ -250,7 +250,7 @@ class ProcessorOne implements Processor {
             }
             if (!kafkaEventAttrMap.containsKey(attrField)) {
                 // kafka事件属性不包含规则中事件属性，则表明不符合匹配
-                log.warn("kafka数据事件属性map并不包含规则配置的事件属性key，故直接判定为不符合规则要求！" +
+                log.warn("kafka数据事件属性map并不包含规则配置的事件属性Field，故直接判定为不符合规则要求！" +
                         "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO)
                 return false
             }
