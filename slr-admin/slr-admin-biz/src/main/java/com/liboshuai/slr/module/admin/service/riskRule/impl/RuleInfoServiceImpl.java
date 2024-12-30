@@ -94,6 +94,12 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> {
             ruleCondSaveReqVO.setRuleCode(ruleCode);
             ruleCondSaveReqVO.setCondCode(ruleCode + DefaultConstants.UNDERSCORE + ruleCondSaveReqVO.getEventCode());
+            List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup = ruleCondSaveReqVO.getRuleEventAttrValueGroup();
+            if (!CollectionUtils.isEmpty(ruleEventAttrValueGroup)) {
+                ruleEventAttrValueGroup.forEach(ruleEventAttrValueSaveReqVO -> {
+                    ruleEventAttrValueSaveReqVO.setCondCode(ruleCondSaveReqVO.getCondCode());
+                });
+            }
         }); // 条件信息设置 规则编号、条件编号
         List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
         ruleCondMapper.insertBatch(ruleCondDOList);

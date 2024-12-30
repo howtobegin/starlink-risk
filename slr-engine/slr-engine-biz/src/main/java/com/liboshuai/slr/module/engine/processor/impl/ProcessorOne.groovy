@@ -183,7 +183,6 @@ class ProcessorOne implements Processor {
                 smallMapState.put(kafkaEventDTO.getEventCode(), Tuple2.of(newValue, kafkaEventDTO))
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
-                // FIXME: 注意第一条数据的事件时间即使使用了处理时间来设置，也会不相同，待解决
                 if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
                     continue
                 }

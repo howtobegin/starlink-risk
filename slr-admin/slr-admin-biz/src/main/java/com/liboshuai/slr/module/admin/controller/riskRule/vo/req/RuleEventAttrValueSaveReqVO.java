@@ -41,7 +41,6 @@ public class RuleEventAttrValueSaveReqVO implements Serializable {
      * {@link RuleCondSaveReqVO#getCondCode()}
      */
     @Size(max = 256, message = "条件编号[condCode]，长度不能超过 256 个字符")
-    @NotEmpty(message = "条件编号[condCode]，不能为空")
     @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String condCode;
 }
