@@ -92,21 +92,24 @@ CREATE TABLE `slr_rule_event`
 
 -- ----------------------------
 -- Records of slr_rule_event
--- ----------------------------
+-- ----------------------------'',
 INSERT INTO `slr_rule_event`
-VALUES (5, 'GAME_userId_lottery', '游戏抽奖事件', '游戏平台的抽奖事件', 'GAME_userId', 'system', NULL,
+VALUES (5, 'GAME_userId_lottery', 'lottery', '游戏抽奖事件', '游戏平台的抽奖事件', 'GAME_userId', 'system', NULL,
         '2024-12-29 18:28:23', NULL);
 INSERT INTO `slr_rule_event`
-VALUES (10, 'MALL_phoneNumber_orderCount', '商城出库数量', '商城出库数量事件', 'MALL_phoneNumber', 'system', NULL,
+VALUES (10, 'MALL_phoneNumber_orderCount', 'orderCount', '商城出库数量', '商城出库数量事件', 'MALL_phoneNumber',
+        'system', NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event`
-VALUES (11, 'MALL_phoneNumber_orderAmount', '商城出库金额', '商城出库金额事件', 'MALL_phoneNumber', 'system', NULL,
+VALUES (11, 'MALL_phoneNumber_orderAmount', 'orderAmount', '商城出库金额', '商城出库金额事件', 'MALL_phoneNumber',
+        'system', NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event`
-VALUES (12, 'HJF_userId_orderAmount', '花积分订单金额', '花积分订单金额事件', 'HJF_userId', 'system', NULL,
+VALUES (12, 'HJF_userId_orderAmount', 'orderAmount', '花积分订单金额', '花积分订单金额事件', 'HJF_userId', 'system',
+        NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event`
-VALUES (13, 'HJF_userId_orderCount', '花积分订单数量', '花积分订单数量事件', 'HJF_userId', 'system', NULL,
+VALUES (13, 'HJF_userId_orderCount', 'orderCount', '花积分订单数量', '花积分订单数量事件', 'HJF_userId', 'system', NULL,
         '2024-12-30 14:04:01', NULL);
 
 -- ----------------------------
@@ -135,72 +138,87 @@ CREATE TABLE `slr_rule_event_attr`
 
 -- ----------------------------
 -- Records of slr_rule_event_attr
--- ----------------------------
+-- ----------------------------'',
 INSERT INTO `slr_rule_event_attr`
-VALUES (17, 'GAME_userId_lottery_campaignId', '活动ID', 'String', 'GAME_userId_lottery', 'system', NULL,
+VALUES (17, 'GAME_userId_lottery_campaignId', 'campaignId', '活动ID', 'String', 'GAME_userId_lottery', 'system', NULL,
         '2024-12-29 18:28:23', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (18, 'GAME_userId_lottery_campaignName', '活动名称', 'String', 'GAME_userId_lottery', 'system', NULL,
+VALUES (18, 'GAME_userId_lottery_campaignName', 'campaignName', '活动名称', 'String', 'GAME_userId_lottery', 'system',
+        NULL,
         '2024-12-29 18:28:23', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (19, 'GAME_userId_lottery_bankName', '银行名称', 'String', 'GAME_userId_lottery', 'system', NULL,
+VALUES (19, 'GAME_userId_lottery_bankName', 'bankName', '银行名称', 'String', 'GAME_userId_lottery', 'system', NULL,
         '2024-12-29 18:28:23', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (20, 'GAME_userId_lottery_bankNo', '银行号', 'String', 'GAME_userId_lottery', 'system', NULL,
+VALUES (20, 'GAME_userId_lottery_bankNo', 'bankNo', '银行号', 'String', 'GAME_userId_lottery', 'system', NULL,
         '2024-12-29 18:28:23', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (39, 'MALL_phoneNumber_orderCount_orderType', '出库类型', 'String', 'MALL_phoneNumber_orderCount', 'system',
+VALUES (39, 'MALL_phoneNumber_orderCount_orderType', 'orderType', '出库类型', 'String', 'MALL_phoneNumber_orderCount',
+        'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (40, 'MALL_phoneNumber_orderCount_orderTime', '出库时间', 'DateTime', 'MALL_phoneNumber_orderCount', 'system',
+VALUES (40, 'MALL_phoneNumber_orderCount_orderTime', 'orderTime', '出库时间', 'DateTime', 'MALL_phoneNumber_orderCount',
+        'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (41, 'MALL_phoneNumber_orderCount_bankName', '银行名称', 'String', 'MALL_phoneNumber_orderCount', 'system', NULL,
+VALUES (41, 'MALL_phoneNumber_orderCount_bankName', 'bankName', '银行名称', 'String', 'MALL_phoneNumber_orderCount',
+        'system', NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (42, 'MALL_phoneNumber_orderCount_bankNo', '银行号', 'String', 'MALL_phoneNumber_orderCount', 'system', NULL,
+VALUES (42, 'MALL_phoneNumber_orderCount_bankNo', 'bankNo', '银行号', 'String', 'MALL_phoneNumber_orderCount', 'system',
+        NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (43, 'MALL_phoneNumber_orderCount_address', '地址', 'String', 'MALL_phoneNumber_orderCount', 'system', NULL,
+VALUES (43, 'MALL_phoneNumber_orderCount_address', 'address', '地址', 'String', 'MALL_phoneNumber_orderCount', 'system',
+        NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (44, 'MALL_phoneNumber_orderAmount_orderType', '出库类型', 'String', 'MALL_phoneNumber_orderAmount', 'system',
+VALUES (44, 'MALL_phoneNumber_orderAmount_orderType', 'orderType', '出库类型', 'String', 'MALL_phoneNumber_orderAmount',
+        'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (45, 'MALL_phoneNumber_orderAmount_orderTime', '出库时间', 'DateTime', 'MALL_phoneNumber_orderAmount', 'system',
+VALUES (45, 'MALL_phoneNumber_orderAmount_orderTime', 'orderTime', '出库时间', 'DateTime',
+        'MALL_phoneNumber_orderAmount', 'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (46, 'MALL_phoneNumber_orderAmount_bankName', '银行名称', 'String', 'MALL_phoneNumber_orderAmount', 'system',
+VALUES (46, 'MALL_phoneNumber_orderAmount_bankName', 'bankName', '银行名称', 'String', 'MALL_phoneNumber_orderAmount',
+        'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (47, 'MALL_phoneNumber_orderAmount_bankNo', '银行号', 'String', 'MALL_phoneNumber_orderAmount', 'system', NULL,
+VALUES (47, 'MALL_phoneNumber_orderAmount_bankNo', 'bankNo', '银行号', 'String', 'MALL_phoneNumber_orderAmount',
+        'system', NULL,
         '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (48, 'MALL_phoneNumber_orderAmount_ipAddress', 'IP地址', 'String', 'MALL_phoneNumber_orderAmount', 'system',
+VALUES (48, 'MALL_phoneNumber_orderAmount_ipAddress', 'ipAddress', 'IP地址', 'String', 'MALL_phoneNumber_orderAmount',
+        'system',
         NULL, '2024-12-29 18:59:44', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (49, 'HJF_userId_orderAmount_bankName', '银行名称', 'String', 'HJF_userId_orderAmount', 'system', NULL,
+VALUES (49, 'HJF_userId_orderAmount_bankName', 'bankName', '银行名称', 'String', 'HJF_userId_orderAmount', 'system',
+        NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (50, 'HJF_userId_orderAmount_bankId', '银行号', 'String', 'HJF_userId_orderAmount', 'system', NULL,
+VALUES (50, 'HJF_userId_orderAmount_bankId', 'bankId', '银行号', 'String', 'HJF_userId_orderAmount', 'system', NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (51, 'HJF_userId_orderAmount_productName', '商品名称', 'String', 'HJF_userId_orderAmount', 'system', NULL,
+VALUES (51, 'HJF_userId_orderAmount_productName', 'productName', '商品名称', 'String', 'HJF_userId_orderAmount',
+        'system', NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (52, 'HJF_userId_orderAmount_productId', '商品号', 'String', 'HJF_userId_orderAmount', 'system', NULL,
+VALUES (52, 'HJF_userId_orderAmount_productId', 'productId', '商品号', 'String', 'HJF_userId_orderAmount', 'system',
+        NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (53, 'HJF_userId_orderCount_bankName', '银行名称', 'String', 'HJF_userId_orderCount', 'system', NULL,
+VALUES (53, 'HJF_userId_orderCount_bankName', 'bankName', '银行名称', 'String', 'HJF_userId_orderCount', 'system', NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (54, 'HJF_userId_orderCount_bankId', '银行号', 'String', 'HJF_userId_orderCount', 'system', NULL,
+VALUES (54, 'HJF_userId_orderCount_bankId', 'bankId', '银行号', 'String', 'HJF_userId_orderCount', 'system', NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (55, 'HJF_userId_orderCount_productName', '商品名称', 'String', 'HJF_userId_orderCount', 'system', NULL,
+VALUES (55, 'HJF_userId_orderCount_productName', 'productName', '商品名称', 'String', 'HJF_userId_orderCount', 'system',
+        NULL,
         '2024-12-30 14:04:01', NULL);
 INSERT INTO `slr_rule_event_attr`
-VALUES (56, 'HJF_userId_orderCount_productId', '商品号', 'String', 'HJF_userId_orderCount', 'system', NULL,
+VALUES (56, 'HJF_userId_orderCount_productId', 'productId', '商品号', 'String', 'HJF_userId_orderCount', 'system', NULL,
         '2024-12-30 14:04:01', NULL);
 
 -- ----------------------------
@@ -362,15 +380,17 @@ CREATE TABLE `slr_rule_target`
 
 -- ----------------------------
 -- Records of slr_rule_target
--- ----------------------------
+-- ----------------------------'',
 INSERT INTO `slr_rule_target`
-VALUES (2, 'GAME', 'GAME_userId', '游戏用户id', '游戏平台的用户ID', 'system', 'system', '2024-12-29 18:16:46',
+VALUES (2, 'GAME', 'GAME_userId', 'userId', '游戏用户id', '游戏平台的用户ID', 'system', 'system', '2024-12-29 18:16:46',
         '2024-12-29 18:28:23');
 INSERT INTO `slr_rule_target`
-VALUES (3, 'HJF', 'HJF_userId', '花积分用户id', '花积分平台的用户ID', 'system', 'system', '2024-12-29 18:43:29',
+VALUES (3, 'HJF', 'HJF_userId', 'userId', '花积分用户id', '花积分平台的用户ID', 'system', 'system',
+        '2024-12-29 18:43:29',
         '2024-12-30 14:04:01');
 INSERT INTO `slr_rule_target`
-VALUES (4, 'MALL', 'MALL_phoneNumber', '商城手机号', '商城平台的手机号', 'system', 'system', '2024-12-29 18:58:02',
+VALUES (4, 'MALL', 'MALL_phoneNumber', 'phoneNumber', '商城手机号', '商城平台的手机号', 'system', 'system',
+        '2024-12-29 18:58:02',
         '2024-12-29 18:59:44');
 
 SET FOREIGN_KEY_CHECKS = 1;
