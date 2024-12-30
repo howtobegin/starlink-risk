@@ -1,0 +1,23 @@
+version: '2.1'
+
+services:
+  slr_admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: slr-server
+    restart: always
+    ports:
+      - "48888:48888"
+    volumes:
+      - logs:/slr-server/logs
+      - data:/slr-server/data
+    extra_hosts:
+      - "one:10.0.0.30"
+      - "two:10.0.0.34"
+      - "three:10.0.0.46"
+    mem_limit: 8g
+
+volumes:
+  data:
+  logs:
