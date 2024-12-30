@@ -1,7 +1,7 @@
 version: '2.1'
 
 services:
-  slr_admin:
+  slr_server:
     build:
       context: .
       dockerfile: Dockerfile
