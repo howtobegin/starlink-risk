@@ -22,14 +22,14 @@ public class KafkaEventReqVO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    @Schema(description = "目标编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String targetCode;
+    @Schema(description = "目标字段", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String targetFiled;
 
     @Schema(description = "目标值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetValue;
 
-    @Schema(description = "事件编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String eventCode;
+    @Schema(description = "事件字段", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String eventFiled;
 
     @Schema(description = "事件值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventValue;

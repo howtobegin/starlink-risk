@@ -29,10 +29,10 @@ public class DorisEventDTO implements Serializable {
     private String eventTime;
     /**
      * 目标编号
-     * （例如：GAME_userId）
-     * {@link RuleInfoDTO#getTargetCode()}
+     * （例如：userId）
+     * {@link RuleInfoDTO#getTargetFiled()} ()}
      */
-    private String targetCode;
+    private String targetFiled;
     /**
      * 目标值
      * （例如：U127944222222）
@@ -40,10 +40,10 @@ public class DorisEventDTO implements Serializable {
     private String targetValue;
     /**
      * 事件编号
-     * （例如：GAME_userId_lottery）
-     * {@link RuleCondDTO#getEventCode()}
+     * （例如：lottery）
+     * {@link RuleCondDTO#getEventFiled()} ()}
      */
-    private String eventCode;
+    private String eventFiled;
     /**
      * 事件值
      * （例如：1）
