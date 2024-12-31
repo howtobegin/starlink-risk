@@ -2,3 +2,4 @@ com.liboshuai.slr.framework.jackson.config.SlrJacksonAutoConfiguration
 com.liboshuai.slr.framework.swagger.config.SlrSwaggerAutoConfiguration
 com.liboshuai.slr.framework.web.config.SlrWebAutoConfiguration
 com.liboshuai.slr.framework.takeTime.config.SlrTakeTimeAutoConfiguration
+com.liboshuai.slr.framework.snowflakeId.config.SnowflakeIdAutoConfiguration
