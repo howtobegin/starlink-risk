@@ -64,7 +64,7 @@ public class RuleTargetController {
         return success(true);
     }
 
-    @PostMapping("/list")
+    @GetMapping("/list")
     @Operation(summary = "列表")
     public CommonResult<List<RuleTargetRespVO>> list(@NotBlank String channel) {
         List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.list(channel);

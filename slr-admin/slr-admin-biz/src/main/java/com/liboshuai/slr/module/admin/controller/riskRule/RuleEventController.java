@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -40,7 +37,7 @@ public class RuleEventController {
         return success(true);
     }
 
-    @PostMapping("/list")
+    @GetMapping("/list")
     @Operation(summary = "列表")
     public CommonResult<List<RuleEventRespVO>> list(@NotBlank String targetCode) {
         List<RuleEventRespVO> ruleEventRespVOList = ruleEventService.list(targetCode);
