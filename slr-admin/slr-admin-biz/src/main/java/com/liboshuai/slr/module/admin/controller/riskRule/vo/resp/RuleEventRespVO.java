@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -36,6 +37,12 @@ public class RuleEventRespVO extends BaseRespVO {
 
     @Schema(description = "事件描述", example = "游戏平台的抽奖事件")
     private String eventDesc;
+
+    /**
+     * {@link CommonStatusEnum}
+     */
+    @Schema(description = "事件状态", example = "ONLINE")
+    private String eventStatus;
 
     @Schema(description = "事件属性组")
     private List<RuleEventAttrRespVO> ruleEventAttrGroup;

@@ -10,14 +10,15 @@ import com.liboshuai.slr.framework.common.exception.ErrorCode;
  */
 public interface ErrorCodeConstants {
 
-    ErrorCode RULE_CODE_NOT_BLANK = new ErrorCode(20001, "规则编号[ruleCode]不能为空");
-    ErrorCode RULE_INFO_NOT_EXISTS = new ErrorCode(20002, "编号为[{}]的规则不存在");
-    ErrorCode RULE_INFO_STATUS_NOT_DRAFT = new ErrorCode(20003, "编号为[{}]的规则状态不为[草稿/已下线]，无法进行上线操作");
-    ErrorCode RULE_INFO_STATUS_NOT_ONLINE_PENDING = new ErrorCode(20004, "编号为[{}]的规则状态不为[上线待审核]，无法进行上线审核操作");
-    ErrorCode RULE_INFO_STATUS_NOT_ONLINE = new ErrorCode(20005, "编号为[{}]的规则状态不为[已上线]，无法进行下线操作");
-    ErrorCode RULE_INFO_STATUS_NOT_OFFLINE_PENDING = new ErrorCode(20006, "编号为[{}]的规则状态不为[下线待审核]，无法进行下线审核操作");
-    ErrorCode RULE_INFO_AUDIT_OP_NOT_SUPPORT = new ErrorCode(20007, "编号为[{}]的规则进行审核操作时，审核操作符[auditOp]不能为空");
-    ErrorCode RULE_INFO_NEW_STATUS_NOT_SUPPORT = new ErrorCode(20008, "编号为[{}]的规则新状态值错误");
+    ErrorCode STATUS_NOT_DRAFT = new ErrorCode(20001, "状态不为[草稿/已下线]，无法进行上线操作");
+    ErrorCode STATUS_NOT_ONLINE_PENDING = new ErrorCode(20002, "状态不为[上线待审核]，无法进行上线审核操作");
+    ErrorCode STATUS_NOT_ONLINE = new ErrorCode(20003, "状态不为[已上线]，无法进行下线操作");
+    ErrorCode STATUS_NOT_OFFLINE_PENDING = new ErrorCode(20004, "状态不为[下线待审核]，无法进行下线审核操作");
+    ErrorCode AUDIT_OP_NOT_SUPPORT = new ErrorCode(20005, "审核操作符[auditOp]不能为空");
+    ErrorCode NEW_STATUS_NOT_SUPPORT = new ErrorCode(20006, "新状态值错误");
+    ErrorCode STATUS_NOT_OFFLINE_OR_DRAFT = new ErrorCode(20029, "状态不为[已下线/草稿]，无法进行修改");
+    ErrorCode RULE_CODE_NOT_BLANK = new ErrorCode(20007, "规则编号[ruleCode]不能为空");
+    ErrorCode RULE_INFO_NOT_EXISTS = new ErrorCode(20008, "编号为[{}]的规则不存在");
     ErrorCode RULE_TARGET_CODE_EXISTS = new ErrorCode(20009, "规则目标编号[{}]已经存在了");
     ErrorCode RULE_EVENT_CODE_EXISTS = new ErrorCode(20010, "规则事件编号[{}]已经存在了");
     ErrorCode RULE_TARGET_ID_NOT_NULL = new ErrorCode(20011, "规则目标[id]不能为空");
@@ -38,5 +39,4 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_MODEL_GROOVY_IS_NULL = new ErrorCode(20026, "规则模型编号[{}]的groovy脚本不能为空");
     ErrorCode RULE_TARGET_CODE_IS_NULL = new ErrorCode(20027, "规则目标编号不能为空");
     ErrorCode RULE_TARGET_NOT_EXISTS = new ErrorCode(20028, "规则目标编号[{}]不存在");
-    ErrorCode RULE_INFO_STATUS_NOT_OFFLINE_OR_DRAFT = new ErrorCode(20029, "规则[{}]状态不是[已下线/草稿]，无法进行修改");
 }

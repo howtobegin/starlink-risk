@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
@@ -18,7 +19,6 @@ import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,46 +153,46 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (Objects.equals(newRuleStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
             // 进行上线操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.DRAFT.getCode()) && !Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_DRAFT);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
         } else if (Objects.equals(newRuleStatus, CommonStatusEnum.ONLINE.getCode())) {
             // 进行上线审核操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE_PENDING);
             }
-            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
+            if (Objects.equals(auditOp, CommonAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
-            } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
+            } else if (Objects.equals(auditOp, CommonAuditOpEnum.REJECT.getCode())) { // 审核拒绝
                 ruleInfoDO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());
             } else {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.AUDIT_OP_NOT_SUPPORT);
             }
             // 将规则数据存入 rule_json 表
             saveToRuleJson(ruleCode);
         } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
             // 进行下线操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.ONLINE.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
 
         } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_PENDING, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_OFFLINE_PENDING);
             }
-            if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
+            if (Objects.equals(auditOp, CommonAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
-            } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
+            } else if (Objects.equals(auditOp, CommonAuditOpEnum.REJECT.getCode())) { // 审核拒绝
                 ruleInfoDO.setRuleStatus(CommonStatusEnum.ONLINE.getCode());
             } else {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
+                throw ServiceExceptionUtil.exception(ErrorCodeConstants.AUDIT_OP_NOT_SUPPORT);
             }
             // 将规则数据从 rule_json 表删除
             ruleJsonMapper.delete(RuleJsonDO::getRuleCode, ruleCode);
         } else {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NEW_STATUS_NOT_SUPPORT, ruleCode);
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.NEW_STATUS_NOT_SUPPORT);
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
     }
@@ -352,7 +352,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         if (!Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.OFFLINE.getCode())
                 && !Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.DRAFT.getCode())) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_OR_DRAFT, ruleCode);
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_OFFLINE_OR_DRAFT);
         }
     }
 

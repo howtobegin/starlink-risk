@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -36,6 +37,11 @@ public class RuleEventDO extends BaseDO {
      * 事件描述
      */
     private String eventDesc;
+    /**
+     * 事件状态
+     * {@link CommonStatusEnum}
+     */
+    private String eventStatus;
     /**
      * 目标编号
      * （例如：GAME_userId）

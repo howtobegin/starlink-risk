@@ -39,4 +39,9 @@ public interface RuleEventMapper extends BaseMapperX<RuleEventDO> {
         return selectList(new LambdaQueryWrapperX<RuleEventDO>()
                 .ne(RuleEventDO::getId, eventId));
     }
+
+    default void updateByEventCode(RuleEventDO ruleEventDO, String eventCode) {
+        update(ruleEventDO, new LambdaQueryWrapperX<RuleEventDO>()
+                .eq(RuleEventDO::getEventCode, eventCode));
+    }
 }

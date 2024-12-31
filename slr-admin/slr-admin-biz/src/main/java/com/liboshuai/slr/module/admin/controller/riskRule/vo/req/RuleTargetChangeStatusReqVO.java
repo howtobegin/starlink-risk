@@ -19,22 +19,22 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Schema(description = "管理后台 - 变更状态风控规则信息 Request VO")
-public class RuleInfoChangeStatusReqVO implements Serializable {
+@Schema(description = "管理后台 - 变更状态风控目标信息 Request VO")
+public class RuleTargetChangeStatusReqVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "规则编号[ruleCode]，不能为空")
-    @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String ruleCode;
+    @NotBlank(message = "事件编号[eventCode]，不能为空")
+    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String eventCode;
 
     /**
      * {@link CommonStatusEnum}
      */
-    @NotBlank(message = "新规则状态[newRuleStatus]，不能为空")
-    @InStringEnum(value = CommonStatusEnum.class, message = "新规则状态[newRuleStatus]，必须在指定范围 {value}")
-    @Schema(description = "新规则状态", example = "ONLINE_PENDING", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String newRuleStatus;
+    @NotBlank(message = "新事件状态[newEventStatus]，不能为空")
+    @InStringEnum(value = CommonStatusEnum.class, message = "新事件状态[newEventStatus]，必须在指定范围 {value}")
+    @Schema(description = "新事件状态", example = "ONLINE_PENDING", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String newEventStatus;
 
     /**
      * 审核操作
