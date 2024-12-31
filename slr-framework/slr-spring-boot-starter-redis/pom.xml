@@ -31,8 +31,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId> <!-- 实现对 Caches 的自动化配置 -->
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
 
         <dependency>

@@ -1,9 +1,11 @@
 package com.liboshuai.slr.module.admin.controller.mock;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
+import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
 import com.liboshuai.slr.module.admin.service.mock.MockService;
+import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,8 @@ public class MockController {
 
     @Resource
     private MockService mockService;
+    @Resource
+    private MultilevelCache multilevelCache;
     @Resource
     private SnowflakeIdGenerator snowflakeIdGenerator;
     @Resource
@@ -46,5 +50,19 @@ public class MockController {
         long id = snowflakeIdGenerator.nextId();
         log.info("snowflakeIdProperties: {}", snowflakeIdProperties);
         return CommonResult.success(id);
+    }
+
+    @GetMapping("/put/cache")
+    public void put(String eventField) {
+        KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
+                .eventField(eventField)
+                .build();
+        multilevelCache.put("test-key", kafkaEventDTO);
+    }
+
+    @GetMapping("/get/cache")
+    public void get() {
+        KafkaEventDTO kafkaEventDTO = multilevelCache.get("test-key", KafkaEventDTO.class);
+        log.info("KafkaEventDTO: {}", kafkaEventDTO);
     }
 }
