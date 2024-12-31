@@ -28,6 +28,11 @@ public class DorisEventDTO implements Serializable {
      */
     private String eventTime;
     /**
+     * 渠道
+     * {@link ChannelEnum}
+     */
+    private String channel;
+    /**
      * 目标编号
      * （例如：userId）
      * {@link RuleInfoDTO#getTargetField()}
@@ -53,9 +58,4 @@ public class DorisEventDTO implements Serializable {
      * 属性
      */
     private Map<String, String> eventAttrMap;
-    /**
-     * 渠道
-     * {@link ChannelEnum}
-     */
-    private String channel;
 }

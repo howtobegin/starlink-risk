@@ -28,6 +28,11 @@ public class KafkaEventDTO implements Serializable {
      */
     private Long eventTime;
     /**
+     * 渠道
+     * {@link ChannelEnum}
+     */
+    private String channel;
+    /**
      * 目标编号
      * （例如：userId）
      * {@link RuleInfoDTO#getTargetField()}
@@ -54,9 +59,4 @@ public class KafkaEventDTO implements Serializable {
      * key关联{@link RuleEventAttrValueDTO#getAttrField()}
      */
     private Map<String, String> eventAttrMap;
-    /**
-     * 渠道
-     * {@link ChannelEnum}
-     */
-    private String channel;
 }
