@@ -1,12 +1,13 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
-import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
-import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventSaveReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
+import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -42,14 +43,14 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     private RuleEventAttrMapper ruleEventAttrMapper;
 
     @Override
-    public PageResult<RuleTargetRespVO> list(RuleTargetPageReqVO ruleTargetPageReqVO) {
+    public PageResult<RuleTargetRespVO> page(RuleTargetPageReqVO ruleTargetPageReqVO) {
         PageResult<RuleTargetDO> ruleInfoEntityPageResult = ruleTargetMapper.selectPage(ruleTargetPageReqVO);
         return BeanUtils.toBean(ruleInfoEntityPageResult, RuleTargetRespVO.class);
     }
 
     @Override
-    public RuleTargetRespVO detail(String keyCode) {
-        RuleTargetDO ruleTargetDO = ruleTargetMapper.selectOneByTargetCode(keyCode);
+    public RuleTargetRespVO detail(String targetCode) {
+        RuleTargetDO ruleTargetDO = ruleTargetMapper.selectOneByTargetCode(targetCode);
         if (Objects.isNull(ruleTargetDO)) {
             return new RuleTargetRespVO();
         }
@@ -115,56 +116,9 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     }
 
     @Override
-    public void changeStatus(RuleTargetChangeStatusReqVO ruleTargetChangeStatusReqVO) {
-        String eventCode = ruleTargetChangeStatusReqVO.getEventCode();
-        String auditOp = ruleTargetChangeStatusReqVO.getAuditOp();
-        RuleEventDO ruleEventDO = ruleEventMapper.selectOneByEventCode(eventCode);
-        if (Objects.isNull(ruleEventDO)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_EXISTS, eventCode);
-        }
-        String eventStatus = ruleEventDO.getEventStatus();
-        String newEventStatus = ruleTargetChangeStatusReqVO.getNewEventStatus();
-        if (Objects.equals(newEventStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
-            // 进行上线操作
-            if (!Objects.equals(eventStatus, CommonStatusEnum.DRAFT.getCode())
-                    && !Objects.equals(eventStatus, CommonStatusEnum.OFFLINE.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_DRAFT);
-            }
-            ruleEventDO.setEventStatus(newEventStatus);
-        } else if (Objects.equals(newEventStatus, CommonStatusEnum.ONLINE.getCode())) {
-            // 进行上线审核操作
-            if (!Objects.equals(eventStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE_PENDING);
-            }
-            if (Objects.equals(auditOp, CommonAuditOpEnum.APPROVE.getCode())) { // 审核通过
-                ruleEventDO.setEventStatus(newEventStatus);
-            } else if (Objects.equals(auditOp, CommonAuditOpEnum.REJECT.getCode())) { // 审核拒绝
-                ruleEventDO.setEventStatus(CommonStatusEnum.DRAFT.getCode());
-            } else {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.AUDIT_OP_NOT_SUPPORT);
-            }
-        } else if (Objects.equals(newEventStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-            // 进行下线操作
-            if (!Objects.equals(eventStatus, CommonStatusEnum.ONLINE.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE);
-            }
-            ruleEventDO.setEventStatus(newEventStatus);
-        } else if (Objects.equals(newEventStatus, CommonStatusEnum.OFFLINE.getCode())) {
-            // 进行下线审核操作
-            if (!Objects.equals(eventStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_OFFLINE_PENDING);
-            }
-            if (Objects.equals(auditOp, CommonAuditOpEnum.APPROVE.getCode())) { // 审核通过
-                ruleEventDO.setEventStatus(newEventStatus);
-            } else if (Objects.equals(auditOp, CommonAuditOpEnum.REJECT.getCode())) { // 审核拒绝
-                ruleEventDO.setEventStatus(CommonStatusEnum.ONLINE.getCode());
-            } else {
-                throw ServiceExceptionUtil.exception(ErrorCodeConstants.AUDIT_OP_NOT_SUPPORT);
-            }
-        } else {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.NEW_STATUS_NOT_SUPPORT);
-        }
-        ruleEventMapper.updateByEventCode(ruleEventDO, eventCode);
+    public List<RuleTargetRespVO> list(String channel) {
+        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectListByChannel(channel);
+        return BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
     }
 
     /**

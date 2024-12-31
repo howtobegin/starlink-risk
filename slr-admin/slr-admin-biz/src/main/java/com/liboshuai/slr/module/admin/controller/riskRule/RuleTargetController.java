@@ -2,7 +2,6 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetChangeStatusReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
@@ -30,12 +30,12 @@ public class RuleTargetController {
     @Resource
     private RuleTargetService ruleTargetService;
 
-    @PostMapping("/list")
-    @Operation(summary = "列表")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标列表请求", required = true,
+    @PostMapping("/page")
+    @Operation(summary = "分页")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标分页请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleTargetPageReqVO.class)))
-    public CommonResult<PageResult<RuleTargetRespVO>> list(@RequestBody @Valid RuleTargetPageReqVO ruleTargetPageReqVO) {
-        PageResult<RuleTargetRespVO> ruleKeyRespVOPageResult = ruleTargetService.list(ruleTargetPageReqVO);
+    public CommonResult<PageResult<RuleTargetRespVO>> page(@RequestBody @Valid RuleTargetPageReqVO ruleTargetPageReqVO) {
+        PageResult<RuleTargetRespVO> ruleKeyRespVOPageResult = ruleTargetService.page(ruleTargetPageReqVO);
         return success(ruleKeyRespVOPageResult);
     }
 
@@ -64,12 +64,10 @@ public class RuleTargetController {
         return success(true);
     }
 
-    @PostMapping(value = "/changeStatus")
-    @Operation(summary = "变更状态")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则目标变更状态请求", required = true,
-            content = @Content(schema = @Schema(implementation = RuleTargetChangeStatusReqVO.class)))
-    public CommonResult<Boolean> changeStatus(@RequestBody @Valid RuleTargetChangeStatusReqVO ruleTargetChangeStatusReqVO) {
-        ruleTargetService.changeStatus(ruleTargetChangeStatusReqVO);
-        return success(true);
+    @PostMapping("/list")
+    @Operation(summary = "列表")
+    public CommonResult<List<RuleTargetRespVO>> list(@NotBlank String channel) {
+        List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.list(channel);
+        return success(ruleTargetRespVOList);
     }
 }

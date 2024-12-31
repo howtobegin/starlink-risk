@@ -31,12 +31,12 @@ public class RuleInfoController {
     @Resource
     private RuleInfoService ruleInfoService;
 
-    @PostMapping("/list")
-    @Operation(summary = "列表")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息列表请求", required = true,
+    @PostMapping("/page")
+    @Operation(summary = "分页")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则分页列表请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleInfoPageReqVO.class)))
-    public CommonResult<PageResult<RuleInfoRespVO>> list(@RequestBody @Valid RuleInfoPageReqVO ruleInfoPageReqVO) {
-        PageResult<RuleInfoRespVO> ruleInfoPage = ruleInfoService.list(ruleInfoPageReqVO);
+    public CommonResult<PageResult<RuleInfoRespVO>> page(@RequestBody @Valid RuleInfoPageReqVO ruleInfoPageReqVO) {
+        PageResult<RuleInfoRespVO> ruleInfoPage = ruleInfoService.page(ruleInfoPageReqVO);
         return success(ruleInfoPage);
     }
 

@@ -19,8 +19,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Schema(description = "管理后台 - 变更状态风控目标信息 Request VO")
-public class RuleTargetChangeStatusReqVO implements Serializable {
+@Schema(description = "管理后台 - 变更状态风控事件信息 Request VO")
+public class RuleEventChangeStatusReqVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 
 public interface RuleInfoService {
 
-    PageResult<RuleInfoRespVO> list(@Valid RuleInfoPageReqVO ruleInfoPageReqVO);
+    PageResult<RuleInfoRespVO> page(@Valid RuleInfoPageReqVO ruleInfoPageReqVO);
 
     RuleInfoRespVO detail(@NotBlank String ruleCode);
 

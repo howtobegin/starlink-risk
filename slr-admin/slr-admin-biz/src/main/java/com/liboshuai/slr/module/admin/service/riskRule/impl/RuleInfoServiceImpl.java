@@ -57,7 +57,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
-    public PageResult<RuleInfoRespVO> list(RuleInfoPageReqVO ruleInfoPageReqVO) {
+    public PageResult<RuleInfoRespVO> page(RuleInfoPageReqVO ruleInfoPageReqVO) {
         PageResult<RuleInfoDO> ruleInfoEntityPageResult = ruleInfoMapper.selectPage(ruleInfoPageReqVO);
         return BeanUtils.toBean(ruleInfoEntityPageResult, RuleInfoRespVO.class);
     }

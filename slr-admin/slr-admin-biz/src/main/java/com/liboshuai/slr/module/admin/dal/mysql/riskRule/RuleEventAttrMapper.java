@@ -23,4 +23,9 @@ public interface RuleEventAttrMapper extends BaseMapperX<RuleEventAttrDO> {
         delete(new LambdaQueryWrapperX<RuleEventAttrDO>()
                 .in(RuleEventAttrDO::getEventCode, ruleEventCodeList));
     }
+
+    default List<RuleEventAttrDO> selectListByEventCode(String eventCode) {
+        return selectList(new LambdaQueryWrapperX<RuleEventAttrDO>()
+                .eq(RuleEventAttrDO::getEventCode, eventCode));
+    }
 }
