@@ -1,10 +1,10 @@
 package com.liboshuai.slr.module.admin.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -43,7 +43,7 @@ public class RuleInfoDO extends BaseDO {
     private String ruleDesc;
     /**
      * 规则状态
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
     private String ruleStatus;
     /**

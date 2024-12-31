@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
@@ -18,7 +19,6 @@ import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +85,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 保存 规则信息
         String ruleCode = RULE_CODE_PREFIX + snowflakeIdGenerator.nextIdStr(); // 生成 规则编号
         ruleInfoSaveReqVO.setRuleCode(ruleCode);
-        ruleInfoSaveReqVO.setRuleStatus(RuleStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
+        ruleInfoSaveReqVO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class); // 对象转换
         ruleInfoMapper.insert(ruleInfoDO);
 
@@ -150,42 +150,42 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         String ruleStatus = ruleInfoDO.getRuleStatus();
         String newRuleStatus = ruleInfoChangeStatusReqVO.getNewRuleStatus();
-        if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+        if (Objects.equals(newRuleStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
             // 进行上线操作
-            if (!Objects.equals(ruleStatus, RuleStatusEnum.DRAFT.getCode()) && !Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE.getCode())) {
+            if (!Objects.equals(ruleStatus, CommonStatusEnum.DRAFT.getCode()) && !Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_DRAFT, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
-        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.ONLINE.getCode())) {
+        } else if (Objects.equals(newRuleStatus, CommonStatusEnum.ONLINE.getCode())) {
             // 进行上线审核操作
-            if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE_PENDING.getCode())) {
+            if (!Objects.equals(ruleStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE_PENDING, ruleCode);
             }
             if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
             } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
-                ruleInfoDO.setRuleStatus(RuleStatusEnum.DRAFT.getCode());
+                ruleInfoDO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());
             } else {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
             // 将规则数据存入 rule_json 表
             saveToRuleJson(ruleCode);
-        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+        } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
             // 进行下线操作
-            if (!Objects.equals(ruleStatus, RuleStatusEnum.ONLINE.getCode())) {
+            if (!Objects.equals(ruleStatus, CommonStatusEnum.ONLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_ONLINE, ruleCode);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
 
-        } else if (Objects.equals(newRuleStatus, RuleStatusEnum.OFFLINE.getCode())) {
+        } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
-            if (!Objects.equals(ruleStatus, RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+            if (!Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_PENDING, ruleCode);
             }
             if (Objects.equals(auditOp, RuleAuditOpEnum.APPROVE.getCode())) { // 审核通过
                 ruleInfoDO.setRuleStatus(newRuleStatus);
             } else if (Objects.equals(auditOp, RuleAuditOpEnum.REJECT.getCode())) { // 审核拒绝
-                ruleInfoDO.setRuleStatus(RuleStatusEnum.ONLINE.getCode());
+                ruleInfoDO.setRuleStatus(CommonStatusEnum.ONLINE.getCode());
             } else {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_AUDIT_OP_NOT_SUPPORT, ruleCode);
             }
@@ -350,8 +350,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (Objects.isNull(ruleInfoDO)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
         }
-        if (!Objects.equals(ruleInfoDO.getRuleStatus(), RuleStatusEnum.OFFLINE.getCode())
-                && !Objects.equals(ruleInfoDO.getRuleStatus(), RuleStatusEnum.DRAFT.getCode())) {
+        if (!Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.OFFLINE.getCode())
+                && !Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.DRAFT.getCode())) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_STATUS_NOT_OFFLINE_OR_DRAFT, ruleCode);
         }
     }

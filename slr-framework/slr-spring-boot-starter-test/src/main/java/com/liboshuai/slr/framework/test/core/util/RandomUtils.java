@@ -4,7 +4,7 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
+import com.liboshuai.slr.framework.common.enums.BaseStatusEnum;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
@@ -43,7 +43,7 @@ public class RandomUtils {
         PODAM_FACTORY.getStrategy().addOrReplaceTypeManufacturer(Integer.class, (dataProviderStrategy, attributeMetadata, map) -> {
             // 如果是 status 的字段，返回 0 或 1
             if ("status".equals(attributeMetadata.getAttributeName())) {
-                return RandomUtil.randomEle(CommonStatusEnum.values()).getStatus();
+                return RandomUtil.randomEle(BaseStatusEnum.values()).getStatus();
             }
             // 如果是 type、status 结尾的字段，返回 tinyint 范围
             if (StrUtil.endWithAnyIgnoreCase(attributeMetadata.getAttributeName(),
@@ -96,7 +96,7 @@ public class RandomUtils {
     }
 
     public static Integer randomCommonStatus() {
-        return RandomUtil.randomEle(CommonStatusEnum.values()).getStatus();
+        return RandomUtil.randomEle(BaseStatusEnum.values()).getStatus();
     }
 
     public static String randomEmail() {

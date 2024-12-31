@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.engine.dto;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,7 +51,7 @@ public class RuleInfoDTO implements Serializable {
 
     /**
      * 规则状态
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
     private String ruleStatus;
 

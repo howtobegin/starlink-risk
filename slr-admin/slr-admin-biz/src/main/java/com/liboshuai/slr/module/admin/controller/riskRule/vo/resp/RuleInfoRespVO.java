@@ -1,9 +1,9 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -40,7 +40,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     private String ruleDesc;
 
     /**
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
     @Schema(description = "规则状态", example = "ONLINE")
     private String ruleStatus;

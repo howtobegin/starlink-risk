@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.pojo.PageParam;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -32,7 +32,7 @@ public class RuleInfoPageReqVO extends PageParam {
     private String ruleName;
 
     /**
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
     @Schema(description = "规则状态", example = "ONLINE")
     private String ruleStatus;

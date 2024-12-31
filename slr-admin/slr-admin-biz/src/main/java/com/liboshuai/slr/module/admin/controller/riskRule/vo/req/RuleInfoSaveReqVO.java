@@ -1,9 +1,9 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -53,9 +53,9 @@ public class RuleInfoSaveReqVO implements Serializable {
     private String ruleDesc;
 
     /**
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
-    @InStringEnum(value = RuleStatusEnum.class, message = "规则状态[ruleStatus]，必须在指定范围 {value}")
+    @InStringEnum(value = CommonStatusEnum.class, message = "规则状态[ruleStatus]，必须在指定范围 {value}")
     @Schema(description = "规则状态", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleStatus;
 

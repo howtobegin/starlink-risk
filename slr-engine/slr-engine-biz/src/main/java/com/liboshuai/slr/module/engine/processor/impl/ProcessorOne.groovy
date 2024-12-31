@@ -1,11 +1,11 @@
 package com.liboshuai.slr.module.engine.processor.impl
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum
 import com.liboshuai.slr.module.engine.constants.RedisKeyConstants
 import com.liboshuai.slr.module.engine.dto.*
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException
 import com.liboshuai.slr.module.engine.processor.Processor
@@ -92,8 +92,8 @@ class ProcessorOne implements Processor {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
-        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.ONLINE.getCode())
-                && !Objects.equals(ruleInfoDTO.getRuleStatus(), RuleStatusEnum.OFFLINE_PENDING.getCode())) {
+        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.ONLINE.getCode())
+                && !Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.OFFLINE_PENDING.getCode())) {
             log.warn("加载到运算机池中的规则状态必须为'已上线'或'下线待审核'！规则编号：{}", ruleInfoDTO.getRuleCode())
             return
         }

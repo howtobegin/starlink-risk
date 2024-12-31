@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
 import com.liboshuai.slr.module.engine.enums.RuleAuditOpEnum;
-import com.liboshuai.slr.module.engine.enums.RuleStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,10 +29,10 @@ public class RuleInfoChangeStatusReqVO implements Serializable {
     private String ruleCode;
 
     /**
-     * {@link RuleStatusEnum}
+     * {@link CommonStatusEnum}
      */
     @NotBlank(message = "新规则状态[newRuleStatus]，不能为空")
-    @InStringEnum(value = RuleStatusEnum.class, message = "新规则状态[newRuleStatus]，必须在指定范围 {value}")
+    @InStringEnum(value = CommonStatusEnum.class, message = "新规则状态[newRuleStatus]，必须在指定范围 {value}")
     @Schema(description = "新规则状态", example = "ONLINE_PENDING", requiredMode = Schema.RequiredMode.REQUIRED)
     private String newRuleStatus;
 
