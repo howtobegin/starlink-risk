@@ -8,7 +8,7 @@
       "eventValue": "3",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品1",
         "productId": "p000000001"
       }
@@ -20,7 +20,7 @@
       "eventValue": "30",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品1",
         "productId": "p000000001"
       }
@@ -32,7 +32,7 @@
       "eventValue": "5",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品2",
         "productId": "p000000002"
       }
@@ -44,7 +44,7 @@
       "eventValue": "60",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品2",
         "productId": "p000000002"
       }
@@ -56,7 +56,7 @@
       "eventValue": "3",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品3",
         "productId": "p000000003"
       }
@@ -68,7 +68,7 @@
       "eventValue": "30",
       "eventAttrMap": {
         "bankName": "邮储银行",
-        "bankId": "6100",
+        "bankNo": "6100",
         "productName": "商品3",
         "productId": "p000000003"
       }
