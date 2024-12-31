@@ -126,7 +126,8 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         String newEventStatus = ruleTargetChangeStatusReqVO.getNewEventStatus();
         if (Objects.equals(newEventStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
             // 进行上线操作
-            if (!Objects.equals(eventStatus, CommonStatusEnum.DRAFT.getCode()) && !Objects.equals(eventStatus, CommonStatusEnum.OFFLINE.getCode())) {
+            if (!Objects.equals(eventStatus, CommonStatusEnum.DRAFT.getCode())
+                    && !Objects.equals(eventStatus, CommonStatusEnum.OFFLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_DRAFT);
             }
             ruleEventDO.setEventStatus(newEventStatus);
@@ -148,7 +149,6 @@ public class RuleTargetServiceImpl implements RuleTargetService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE);
             }
             ruleEventDO.setEventStatus(newEventStatus);
-
         } else if (Objects.equals(newEventStatus, CommonStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
             if (!Objects.equals(eventStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {

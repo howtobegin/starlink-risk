@@ -152,7 +152,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         String newRuleStatus = ruleInfoChangeStatusReqVO.getNewRuleStatus();
         if (Objects.equals(newRuleStatus, CommonStatusEnum.ONLINE_PENDING.getCode())) {
             // 进行上线操作
-            if (!Objects.equals(ruleStatus, CommonStatusEnum.DRAFT.getCode()) && !Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE.getCode())) {
+            if (!Objects.equals(ruleStatus, CommonStatusEnum.DRAFT.getCode())
+                    && !Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE.getCode())) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_DRAFT);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
@@ -176,7 +177,6 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.STATUS_NOT_ONLINE);
             }
             ruleInfoDO.setRuleStatus(newRuleStatus);
-
         } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE.getCode())) {
             // 进行下线审核操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
