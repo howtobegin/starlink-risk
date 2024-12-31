@@ -7,6 +7,7 @@ import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleCondRespVO;
@@ -14,7 +15,6 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrV
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;

@@ -3,6 +3,7 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelCreateReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelPageReqVO;
@@ -10,7 +11,6 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelUpdate
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleModelRespVO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleModelDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleModelMapper;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleModelService;
 import org.springframework.stereotype.Service;
 

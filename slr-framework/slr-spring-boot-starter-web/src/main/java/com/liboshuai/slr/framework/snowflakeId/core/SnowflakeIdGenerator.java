@@ -1,15 +1,15 @@
-package com.liboshuai.slr.module.admin.framework.component.snowflake;
+package com.liboshuai.slr.framework.snowflakeId.core;
+
 
 import cn.hutool.core.util.IdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * 根据hutool封装的雪花算法ID生成器
+ * 基于 Hutool 封装的雪花算法 ID 生成器
  */
 @Component
 public class SnowflakeIdGenerator {
-
 
     private final cn.hutool.core.lang.Snowflake snowflake;
 
@@ -20,10 +20,20 @@ public class SnowflakeIdGenerator {
         snowflake = IdUtil.getSnowflake(workerIdLong, datacenterIdLong);
     }
 
+    /**
+     * 生成下一个 ID
+     *
+     * @return long 类型的 ID
+     */
     public long nextId() {
         return snowflake.nextId();
     }
 
+    /**
+     * 生成下一个 ID 的字符串表示
+     *
+     * @return String 类型的 ID
+     */
     public String nextIdStr() {
         return snowflake.nextIdStr();
     }

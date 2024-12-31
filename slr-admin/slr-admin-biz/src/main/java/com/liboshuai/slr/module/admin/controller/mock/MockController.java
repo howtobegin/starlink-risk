@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.admin.controller.mock;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdGenerator;
-import com.liboshuai.slr.module.admin.framework.component.snowflake.SnowflakeIdProperties;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
 import com.liboshuai.slr.module.admin.service.mock.MockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
