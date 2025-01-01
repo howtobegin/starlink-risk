@@ -2,18 +2,16 @@
 
 ```
 docker-compose exec fe bash
-mysql -h ${宿主机IP} -P 9030 -uroot
+
+mysql -h 192.168.6.186 -P 9030 -uroot
+
 SET PASSWORD FOR 'root' = PASSWORD('Rongshu@2024');
-```
-
-# 浏览器打开`http://localhost:8030/` ，选择任意数据库，执行语句
-
-```
-ALTER SYSTEM ADD BACKEND "${宿主机IP}:9050";
+use mysql;
+ALTER SYSTEM ADD BACKEND "192.168.6.186:9050";
 SHOW PROC '/backends';
-
 CREATE DATABASE IF NOT EXISTS `starlink_risk`;
-# 手动选择新建的数据库
+use starlink_risk;
+
 CREATE TABLE IF NOT EXISTS slr_event
 (
     `EVENT_TIME`    DATETIME    NOT NULL COMMENT '事件时间',

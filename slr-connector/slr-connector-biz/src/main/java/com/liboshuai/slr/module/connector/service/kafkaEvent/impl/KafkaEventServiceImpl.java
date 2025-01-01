@@ -133,7 +133,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         // 获取对应 channel 的规则
         Map<String, RuleTargetDTO> targetFieldMap = ruleMap.get(channel);
         if (targetFieldMap == null) {
-            String message = String.format("Channel '%s' 不存在于规则库中", channel);
+            String message = String.format("渠道 [%s] 在规则库中不存在或未上线", channel);
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
@@ -159,16 +159,21 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             // 查找对应的目标规则
             RuleTargetDTO ruleTarget = targetFieldMap.get(targetField);
             if (ruleTarget == null) {
-                String message = String.format("TargetField '%s' 在 Channel '%s' 中不存在于规则库中", targetField, channel);
+                String message = String.format("渠道 [%s] 中的目标 [%s] 在规则库中不存在或未上线", channel, targetField);
                 reasons.add(message);
             } else {
                 // 查找对应的事件规则
-                Optional<RuleEventDTO> matchingRuleEventOpt = ruleTarget.getRuleEventGroup().stream()
+                List<RuleEventDTO> ruleEventGroup = ruleTarget.getRuleEventGroup();
+                if (CollectionUtils.isEmpty(ruleEventGroup)) {
+                    throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_GROUP_NULL, targetField);
+                }
+                Optional<RuleEventDTO> matchingRuleEventOpt = ruleEventGroup.stream()
                         .filter(ruleEventDTO -> ruleEventDTO.getEventField().equals(eventField))
                         .findFirst();
 
                 if (!matchingRuleEventOpt.isPresent()) {
-                    String message = String.format("EventField '%s' 在 TargetField '%s' 中不存在于规则库中", eventField, targetField);
+                    String message = String.format("渠道 [%s] 目标 [%s] 中的事件 [%s] 在规则库中不存在或未上线",
+                            channel, targetField, eventField);
                     reasons.add(message);
                 } else {
                     RuleEventDTO ruleEvent = matchingRuleEventOpt.get();
@@ -189,7 +194,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                     Set<String> extraAttrs = new HashSet<>(requestAttrFields);
                     extraAttrs.removeAll(ruleAttrFields);
                     if (!extraAttrs.isEmpty()) {
-                        String message = String.format("EventAttrMap 中存在未在规则库中定义的属性字段: %s", extraAttrs);
+                        String message = String.format("渠道 [%s] 目标 [%s] 事件 [%s] 中的事件属性中存在规则库中未定义的属性字段 [%s]",
+                                channel, targetField, eventField, extraAttrs);
                         reasons.add(message);
                     }
                 }

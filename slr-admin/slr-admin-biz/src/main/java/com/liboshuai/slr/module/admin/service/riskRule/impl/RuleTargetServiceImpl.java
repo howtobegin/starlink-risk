@@ -6,6 +6,8 @@ import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
@@ -63,7 +65,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         }
         RuleTargetRespVO ruletargetRespVO = BeanUtils.toBean(ruleTargetDO, RuleTargetRespVO.class);
         // 设置 规则事件组
-        detailSetRuleEventList(ruletargetRespVO, null);
+        detailSetRuleEventList(ruletargetRespVO);
         return ruletargetRespVO;
     }
 
@@ -139,12 +141,10 @@ public class RuleTargetServiceImpl implements RuleTargetService {
             // 放入空数组，防止缓存击穿
             multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, new ArrayList<>());
         }
-        List<RuleTargetRespVO> ruleTargetRespVOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
-        // 设置 规则事件组
-        ruleTargetRespVOList.forEach(ruleTargetRespVO -> detailSetRuleEventList(ruleTargetRespVO, CommonStatusEnum.ONLINE));
         List<RuleTargetDTO> ruleTargetDTOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetDTO.class);
+        // 设置 规则事件组
+        ruleTargetDTOList.forEach(this::detailSetRuleEventList);
         multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, ruleTargetDTOList);
-        log.info("putCacheDetailList-查询MySQL数据库更新缓存");
         return ruleTargetDTOList;
     }
 
@@ -161,18 +161,12 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     /**
      * 设置 规则事件组
      */
-    private void detailSetRuleEventList(RuleTargetRespVO ruletargetRespVO, CommonStatusEnum statusEnum) {
-        String keyCode = ruletargetRespVO.getTargetCode();
-        if (!StringUtils.hasText(keyCode)) {
+    private void detailSetRuleEventList(RuleTargetRespVO ruletargetRespVO) {
+        String targetCode = ruletargetRespVO.getTargetCode();
+        if (!StringUtils.hasText(targetCode)) {
             return;
         }
-        List<RuleEventDO> ruleEventDOList;
-        if (Objects.isNull(statusEnum)) {
-            // 查询 规则事件组
-            ruleEventDOList = ruleEventMapper.selectListByTargetCode(keyCode);
-        } else {
-            ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(keyCode, statusEnum.getCode());
-        }
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCode(targetCode);
         if (CollectionUtils.isEmpty(ruleEventDOList)) {
             return;
         }
@@ -196,5 +190,36 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         ruletargetRespVO.setRuleEventGroup(ruleEventRespVOS);
     }
 
+    /**
+     * 设置 规则事件组
+     */
+    private void detailSetRuleEventList(RuleTargetDTO ruleTargetDTO) {
+        String targetCode = ruleTargetDTO.getTargetCode();
+        if (!StringUtils.hasText(targetCode)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_NOT_EXISTS);
+        }
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(targetCode, CommonStatusEnum.ONLINE.getCode());
+        if (CollectionUtils.isEmpty(ruleEventDOList)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_EXISTS);
+        }
+        List<RuleEventDTO> ruleEventDTOList = BeanUtils.toBean(ruleEventDOList, RuleEventDTO.class);
+        List<String> ruleEventCodeList = ruleEventDTOList.stream().map(RuleEventDTO::getEventCode).collect(Collectors.toList());
+        // 查询 事件属性组
+        List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByEventCodes(ruleEventCodeList);
+        if (CollectionUtils.isEmpty(ruleEventAttrDOList)) {
+            ruleTargetDTO.setRuleEventGroup(ruleEventDTOList);
+            return;
+        }
+        List<RuleEventAttrDTO> ruleEventAttrDTOList = BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrDTO.class);
+        Map<String, List<RuleEventAttrDTO>> eventCodeAndEventAttrDtoMap = ruleEventAttrDTOList.stream()
+                .collect(Collectors.groupingBy(RuleEventAttrDTO::getEventCode));
+        // 给 事件 设置 属性
+        ruleEventDTOList.forEach(
+                ruleEventDTO ->
+                        ruleEventDTO.setRuleEventAttrGroup(eventCodeAndEventAttrDtoMap.get(ruleEventDTO.getEventCode()))
+        );
+        // 给 目标 设置 事件
+        ruleTargetDTO.setRuleEventGroup(ruleEventDTOList);
+    }
 
 }
