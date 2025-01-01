@@ -31,10 +31,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -198,9 +195,10 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         if (!StringUtils.hasText(targetCode)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_NOT_EXISTS);
         }
-        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(targetCode, CommonStatusEnum.ONLINE.getCode());
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(targetCode,
+                Arrays.asList(CommonStatusEnum.ONLINE.getCode(), CommonStatusEnum.OFFLINE_PENDING.getCode()));
         if (CollectionUtils.isEmpty(ruleEventDOList)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_EXISTS);
+            return;
         }
         List<RuleEventDTO> ruleEventDTOList = BeanUtils.toBean(ruleEventDOList, RuleEventDTO.class);
         List<String> ruleEventCodeList = ruleEventDTOList.stream().map(RuleEventDTO::getEventCode).collect(Collectors.toList());

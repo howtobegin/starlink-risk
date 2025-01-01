@@ -147,9 +147,11 @@ public class KafkaEventServiceImpl implements KafkaEventService {
 
         List<KafkaEventReqVO> eventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
 
-        // 遍历 KafkaEventReqVO 列表
-        for (int index = 0; index < eventReqVOList.size(); index++) {
-            KafkaEventReqVO eventReqVO = eventReqVOList.get(index);
+        // 使用 Iterator 安全地遍历并修改列表
+        Iterator<KafkaEventReqVO> iterator = eventReqVOList.iterator();
+        int index = 0;
+        while (iterator.hasNext()) {
+            KafkaEventReqVO eventReqVO = iterator.next();
             List<String> reasons = new ArrayList<>();
 
             String targetField = eventReqVO.getTargetField();
@@ -165,8 +167,23 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                 // 查找对应的事件规则
                 List<RuleEventDTO> ruleEventGroup = ruleTarget.getRuleEventGroup();
                 if (CollectionUtils.isEmpty(ruleEventGroup)) {
-                    throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_GROUP_NULL, targetField);
+                    // 记录错误原因
+                    String message = String.format("渠道 [%s] 目标 [%s] 的规则事件组在规则库中不存在或未上线，无法处理事件字段 [%s]",
+                            channel, targetField, eventField);
+                    reasons.add(message);
+                    // 移除当前事件
+                    iterator.remove();
+                    // 记录错误响应
+                    KafkaEventErrorRespVO errorRespVO = KafkaEventErrorRespVO.builder()
+                            .index(index)
+                            .reasons(Collections.singletonList(message))
+                            .kafkaEventReqVO(eventReqVO)
+                            .build();
+                    kafkaEventErrorRespVOList.add(errorRespVO);
+                    index++;
+                    continue;
                 }
+
                 Optional<RuleEventDTO> matchingRuleEventOpt = ruleEventGroup.stream()
                         .filter(ruleEventDTO -> ruleEventDTO.getEventField().equals(eventField))
                         .findFirst();
@@ -181,6 +198,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                     // 获取规则中的属性字段
                     List<RuleEventAttrDTO> ruleEventAttrGroup = ruleEvent.getRuleEventAttrGroup();
                     if (CollectionUtils.isEmpty(ruleEventAttrGroup)) {
+                        // 如果规则中没有属性字段，继续下一个事件
+                        index++;
                         continue;
                     }
                     Set<String> ruleAttrFields = ruleEventAttrGroup.stream()
@@ -201,7 +220,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                 }
             }
 
-            // 如果存在不合法的原因，记录错误响应
+            // 如果存在不合法的原因，记录错误响应并移除事件
             if (!reasons.isEmpty()) {
                 KafkaEventErrorRespVO errorRespVO = KafkaEventErrorRespVO.builder()
                         .index(index)
@@ -209,7 +228,11 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                         .kafkaEventReqVO(eventReqVO)
                         .build();
                 kafkaEventErrorRespVOList.add(errorRespVO);
+                // 移除当前事件
+                iterator.remove();
             }
+
+            index++;
         }
     }
 
