@@ -6,6 +6,8 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
 import com.liboshuai.slr.module.admin.api.riskRule.RuleTargetApi;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
 import com.liboshuai.slr.module.connector.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventErrorRespVO;
@@ -71,8 +73,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         validateAndAbortPush(kafkaEventGroupReqVO);
         // 只过滤掉非法数据继续推荐，并给出非法数据错误原因
         List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList = validateAndFilterInvalidData(kafkaEventReqVOList);
-        // 过滤没有上线的目标、事件、事件属性 数据
-        validateRuleTargetEvent(kafkaEventGroupReqVO);
+        // 验证 KafkaEventGroupReqVO 是否符合规则库中的规则
+        validateKafkaEventGroupReqVO(kafkaEventGroupReqVO, kafkaEventErrorRespVOList);
         // req转dto
         List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
                 .map(kafkaEventReqVO -> kafkaEventConvert.convertReq2Dto(kafkaEventReqVO)) // 转换为DTO
@@ -98,50 +100,113 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         }
     }
 
-    private void validateRuleTargetEvent(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
+    /**
+     * 验证 KafkaEventGroupReqVO 是否符合规则库中的规则
+     *
+     * @param kafkaEventGroupReqVO 业务平台上送的 KafkaEventGroupReqVO
+     */
+    public void validateKafkaEventGroupReqVO(KafkaEventGroupReqVO kafkaEventGroupReqVO,
+                                             List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList) {
         String channel = kafkaEventGroupReqVO.getChannel();
         List<RuleTargetDTO> ruleTargetDTOList = ruleTargetApi.getCacheDetailList();
-        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
-            // 构建错误数据对象，并存入 mongodb
-            String message = "因上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据";
-            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
-                    .channel(channel)
-                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
-                    .cause(message)
-                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
-                    .time(LocalDateTime.now())
-                    .build();
-            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
-            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
-        }
-        ruleTargetDTOList = ruleTargetDTOList.stream()
-                .filter(ruleTargetDTO -> Objects.equals(channel, ruleTargetDTO.getChannel()))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
-            // 构建错误数据对象，并存入 mongodb
-            String message = String.format("因 [%s] 渠道上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据", channel);
-            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
-                    .channel(channel)
-                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
-                    .cause(message)
-                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
-                    .time(LocalDateTime.now())
-                    .build();
-            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
-            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
-        }
-        for (RuleTargetDTO ruleTargetDTO : ruleTargetDTOList) {
-            String ruleTargetField = ruleTargetDTO.getTargetField();
-            List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
-            for (KafkaEventReqVO kafkaEventReqVO : kafkaEventReqVOList) {
-                String kafkaTargetField = kafkaEventReqVO.getTargetField();
-                if (!Objects.equals(ruleTargetField, kafkaTargetField)) {
-                    continue;
-                }
 
+        // 如果规则库为空，记录错误并抛出异常
+        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
+            String message = "因上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据";
+            log.error(message);
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
+            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+        }
+
+        // 根据 channel 和 targetField 组织规则库，便于快速查找
+        Map<String, Map<String, RuleTargetDTO>> ruleMap = ruleTargetDTOList.stream()
+                .collect(Collectors.groupingBy(RuleTargetDTO::getChannel,
+                        Collectors.toMap(RuleTargetDTO::getTargetField, ruleTargetDTO -> ruleTargetDTO)));
+
+        // 获取对应 channel 的规则
+        Map<String, RuleTargetDTO> targetFieldMap = ruleMap.get(channel);
+        if (targetFieldMap == null) {
+            String message = String.format("Channel '%s' 不存在于规则库中", channel);
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
+            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+        }
+
+        List<KafkaEventReqVO> eventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
+
+        // 遍历 KafkaEventReqVO 列表
+        for (int index = 0; index < eventReqVOList.size(); index++) {
+            KafkaEventReqVO eventReqVO = eventReqVOList.get(index);
+            List<String> reasons = new ArrayList<>();
+
+            String targetField = eventReqVO.getTargetField();
+            String eventField = eventReqVO.getEventField();
+            Map<String, String> eventAttrMap = eventReqVO.getEventAttrMap();
+
+            // 查找对应的目标规则
+            RuleTargetDTO ruleTarget = targetFieldMap.get(targetField);
+            if (ruleTarget == null) {
+                String message = String.format("TargetField '%s' 在 Channel '%s' 中不存在于规则库中", targetField, channel);
+                reasons.add(message);
+            } else {
+                // 查找对应的事件规则
+                Optional<RuleEventDTO> matchingRuleEventOpt = ruleTarget.getRuleEventGroup().stream()
+                        .filter(ruleEventDTO -> ruleEventDTO.getEventField().equals(eventField))
+                        .findFirst();
+
+                if (!matchingRuleEventOpt.isPresent()) {
+                    String message = String.format("EventField '%s' 在 TargetField '%s' 中不存在于规则库中", eventField, targetField);
+                    reasons.add(message);
+                } else {
+                    RuleEventDTO ruleEvent = matchingRuleEventOpt.get();
+
+                    // 获取规则中的属性字段
+                    List<RuleEventAttrDTO> ruleEventAttrGroup = ruleEvent.getRuleEventAttrGroup();
+                    if (CollectionUtils.isEmpty(ruleEventAttrGroup)) {
+                        continue;
+                    }
+                    Set<String> ruleAttrFields = ruleEventAttrGroup.stream()
+                            .map(RuleEventAttrDTO::getAttrField)
+                            .collect(Collectors.toSet());
+
+                    // 获取上送的属性字段
+                    Set<String> requestAttrFields = eventAttrMap.keySet();
+
+                    // 检查是否存在未在规则库中定义的属性字段
+                    Set<String> extraAttrs = new HashSet<>(requestAttrFields);
+                    extraAttrs.removeAll(ruleAttrFields);
+                    if (!extraAttrs.isEmpty()) {
+                        String message = String.format("EventAttrMap 中存在未在规则库中定义的属性字段: %s", extraAttrs);
+                        reasons.add(message);
+                    }
+                }
+            }
+
+            // 如果存在不合法的原因，记录错误响应
+            if (!reasons.isEmpty()) {
+                KafkaEventErrorRespVO errorRespVO = KafkaEventErrorRespVO.builder()
+                        .index(index)
+                        .reasons(reasons)
+                        .kafkaEventReqVO(eventReqVO)
+                        .build();
+                kafkaEventErrorRespVOList.add(errorRespVO);
             }
         }
     }
+
 
     /**
      * 验证并中止推送Kafka事件组请求
