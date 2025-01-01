@@ -1,5 +1,6 @@
 package com.liboshuai.slr.framework.redis.core.prop;
 
+import com.liboshuai.slr.framework.redis.core.listener.CacheMessage;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,6 +24,7 @@ public class MultilevelCacheProperties {
 
     /**
      * 消息主题
+     * 在{@link CacheMessage#getChannel()}中设置
      */
 //    private String topic = "multilevel-cache-topic";
 
@@ -39,7 +41,7 @@ public class MultilevelCacheProperties {
     /**
      * 二级缓存名称
      */
-    private String redisName = "multilevel-redis-cache";
+    private String redisName = "starlink_risk::multilevel-redis-cache";
 
     /**
      * 一级本地缓存过期时间

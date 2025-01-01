@@ -20,6 +20,6 @@ public class CacheMessage extends AbstractChannelMessage implements Serializable
 
     @Override
     public String getChannel() {
-        return "multilevel-cache-topic";
+        return "starlink_risk::multilevel-cache-topic";
     }
 }
