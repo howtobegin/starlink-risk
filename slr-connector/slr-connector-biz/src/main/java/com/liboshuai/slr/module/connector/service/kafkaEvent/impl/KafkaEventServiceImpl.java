@@ -206,6 +206,11 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                             .map(RuleEventAttrDTO::getAttrField)
                             .collect(Collectors.toSet());
 
+                    if (CollectionUtils.isEmpty(eventAttrMap)) {
+                        // 如果事件中没有属性字段，继续下一个事件
+                        index++;
+                        continue;
+                    }
                     // 获取上送的属性字段
                     Set<String> requestAttrFields = eventAttrMap.keySet();
 
@@ -326,7 +331,6 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetValue, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventField, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventValue, reasons);
-            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventAttrMap, reasons);
 
             if (!reasons.isEmpty()) {
                 KafkaEventErrorRespVO kafkaEventErrorRespVO = KafkaEventErrorRespVO.builder()
