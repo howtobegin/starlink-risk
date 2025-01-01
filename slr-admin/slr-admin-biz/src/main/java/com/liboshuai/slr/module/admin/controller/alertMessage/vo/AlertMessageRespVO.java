@@ -1,10 +1,14 @@
-package com.liboshuai.slr.module.connector.controller.alertMessage.vo;
+package com.liboshuai.slr.module.admin.controller.alertMessage.vo;
 
-import com.liboshuai.slr.framework.common.pojo.PageParam;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -15,8 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class AlertMessageReqVO extends PageParam {
+public class AlertMessageRespVO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
@@ -29,9 +32,7 @@ public class AlertMessageReqVO extends PageParam {
     @Schema(description = "预警消息", example = "触发了xxx预警")
     private String alertMessage;
 
-    @Schema(description = "预警时间开始", example = "2025-01-01 00:01:01")
-    private LocalDateTime alertTimeStart;
-
-    @Schema(description = "预警时间结束", example = "2025-01-02 00:01:01")
-    private LocalDateTime alertTimeEnd;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Schema(description = "预警时间", example = "2025-01-01 00:01:01")
+    private LocalDateTime alertTime;
 }
