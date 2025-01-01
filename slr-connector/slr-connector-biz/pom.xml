@@ -45,6 +45,11 @@
             <groupId>com.liboshuai.starlink</groupId>
             <artifactId>slr-spring-boot-starter-protection</artifactId>
         </dependency>
+        <!-- slr-admin-aip 管理平台项目api -->
+        <dependency>
+            <groupId>com.liboshuai.starlink</groupId>
+            <artifactId>slr-admin-api</artifactId>
+        </dependency>
         <!-- slr-connector-aip 数据连接器项目api -->
         <dependency>
             <groupId>com.liboshuai.starlink</groupId>

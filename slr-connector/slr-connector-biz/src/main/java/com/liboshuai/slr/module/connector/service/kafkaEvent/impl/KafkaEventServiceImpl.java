@@ -2,15 +2,21 @@ package com.liboshuai.slr.module.connector.service.kafkaEvent.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
+import com.liboshuai.slr.module.admin.api.riskRule.RuleTargetApi;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
 import com.liboshuai.slr.module.connector.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventErrorRespVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.convert.KafkaEventConvert;
+import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.KafkaEventErrorDO;
 import com.liboshuai.slr.module.connector.dal.kafka.provider.KafkaEventProvider;
+import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventErrorRepository;
+import com.liboshuai.slr.module.connector.enums.KafkaEventErrorLevelEnum;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategy;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
@@ -26,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -43,6 +50,12 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     @Resource
     private KafkaEventStrategyHolder kafkaEventStrategyHolder;
 
+    @Resource
+    private RuleTargetApi ruleTargetApi;
+
+    @Resource
+    private KafkaEventErrorRepository kafkaEventErrorRepository;
+
     @Value("${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -58,6 +71,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         validateAndAbortPush(kafkaEventGroupReqVO);
         // 只过滤掉非法数据继续推荐，并给出非法数据错误原因
         List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList = validateAndFilterInvalidData(kafkaEventReqVOList);
+        // 过滤没有上线的目标、事件、事件属性 数据
+        validateRuleTargetEvent(kafkaEventGroupReqVO);
         // req转dto
         List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
                 .map(kafkaEventReqVO -> kafkaEventConvert.convertReq2Dto(kafkaEventReqVO)) // 转换为DTO
@@ -70,7 +85,61 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         kafkaEventProvider.batchSend(kafkaEventDTOList);
         // 存在非法数据错误原因，则抛出异常
         if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
+            // 构建错误数据对象，并存入 mongodb
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(JsonUtils.toJsonString(kafkaEventErrorRespVOList))
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
             throw ServiceExceptionUtil.exception(kafkaEventErrorRespVOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
+        }
+    }
+
+    private void validateRuleTargetEvent(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
+        String channel = kafkaEventGroupReqVO.getChannel();
+        List<RuleTargetDTO> ruleTargetDTOList = ruleTargetApi.getCacheDetailList();
+        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
+            // 构建错误数据对象，并存入 mongodb
+            String message = "因上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据";
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
+            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+        }
+        ruleTargetDTOList = ruleTargetDTOList.stream()
+                .filter(ruleTargetDTO -> Objects.equals(channel, ruleTargetDTO.getChannel()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
+            // 构建错误数据对象，并存入 mongodb
+            String message = String.format("因 [%s] 渠道上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据", channel);
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
+            throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
+        }
+        for (RuleTargetDTO ruleTargetDTO : ruleTargetDTOList) {
+            String ruleTargetField = ruleTargetDTO.getTargetField();
+            List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
+            for (KafkaEventReqVO kafkaEventReqVO : kafkaEventReqVOList) {
+                String kafkaTargetField = kafkaEventReqVO.getTargetField();
+                if (!Objects.equals(ruleTargetField, kafkaTargetField)) {
+                    continue;
+                }
+
+            }
         }
     }
 
@@ -90,6 +159,15 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         if (!validChannels.contains(channel)) {
             String fieldName = ReflectUtils.getFieldName(KafkaEventDTO::getChannel);
             String message = String.format("字段 [%s]: 无效的渠道 [%s]", fieldName, channel);
+            // 构建错误数据对象，并存入 mongodb
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -99,6 +177,15 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         if (CollUtil.isEmpty(kafkaEventReqVOList)) {
             String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
             String message = String.format("字段 [%s]: 事件数据集合不能为空", fieldName);
+            // 构建错误数据对象，并存入 mongodb
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -107,6 +194,15 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         if (kafkaEventReqVOList.size() > maxSize) {
             String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
             String message = String.format("字段 [%s]: 元素个数必须小于等于 [%d]", fieldName, maxSize);
+            // 构建错误数据对象，并存入 mongodb
+            KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
+                    .channel(channel)
+                    .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
+                    .cause(message)
+                    .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
+                    .time(LocalDateTime.now())
+                    .build();
+            kafkaEventErrorRepository.insert(kafkaEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
     }
