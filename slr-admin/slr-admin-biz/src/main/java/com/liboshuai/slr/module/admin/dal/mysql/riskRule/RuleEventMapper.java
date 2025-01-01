@@ -20,11 +20,6 @@ public interface RuleEventMapper extends BaseMapperX<RuleEventDO> {
                 .eq(RuleEventDO::getEventCode, eventCode));
     }
 
-    default List<RuleEventDO> selectListByKeyCode(String keyCode) {
-        return selectList(new LambdaQueryWrapperX<RuleEventDO>()
-                .eq(RuleEventDO::getTargetCode, keyCode));
-    }
-
     default List<RuleEventDO> selectListByNotInIds(List<Long> ruleEventIdList) {
         return selectList(new LambdaQueryWrapperX<RuleEventDO>()
                 .notIn(RuleEventDO::getId, ruleEventIdList));
@@ -48,5 +43,11 @@ public interface RuleEventMapper extends BaseMapperX<RuleEventDO> {
     default List<RuleEventDO> selectListByTargetCode(String targetCode) {
         return selectList(new LambdaQueryWrapperX<RuleEventDO>()
                 .eq(RuleEventDO::getTargetCode, targetCode));
+    }
+
+    default List<RuleEventDO> selectListByTargetCodeAndStatus(String keyCode, String code) {
+        return selectList(new LambdaQueryWrapperX<RuleEventDO>()
+                .eq(RuleEventDO::getTargetCode, keyCode)
+                .eq(RuleEventDO::getEventStatus, code));
     }
 }

@@ -10,6 +10,7 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespV
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleEventService;
+import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,6 +22,8 @@ public class RuleEventServiceImpl implements RuleEventService {
 
     @Resource
     private RuleEventMapper ruleEventMapper;
+    @Resource
+    private RuleTargetService ruleTargetService;
 
     @Override
     public void changeStatus(RuleEventChangeStatusReqVO ruleEventChangeStatusReqVO) {
@@ -73,6 +76,8 @@ public class RuleEventServiceImpl implements RuleEventService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.NEW_STATUS_NOT_SUPPORT);
         }
         ruleEventMapper.updateByEventCode(ruleEventDO, eventCode);
+        // 更新缓存
+        ruleTargetService.putCacheDetailList();
     }
 
     @Override

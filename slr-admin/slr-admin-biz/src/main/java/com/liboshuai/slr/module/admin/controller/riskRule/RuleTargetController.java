@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.admin.controller.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -69,5 +70,12 @@ public class RuleTargetController {
     public CommonResult<List<RuleTargetRespVO>> list(@NotBlank String channel) {
         List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.list(channel);
         return success(ruleTargetRespVOList);
+    }
+
+    @GetMapping("/listDetail")
+    @Operation(summary = "详情列表")
+    public CommonResult<List<RuleTargetDTO>> listDetail() {
+        List<RuleTargetDTO> ruleTargetDTOList = ruleTargetService.getCacheDetailList();
+        return success(ruleTargetDTOList);
     }
 }

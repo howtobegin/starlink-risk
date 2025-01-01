@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.engine.processor.impl
 
-import com.liboshuai.slr.framework.common.constants.DefaultConstants
+
+import com.liboshuai.slr.framework.common.constants.RedisKeyConstants
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum
-import com.liboshuai.slr.module.engine.constants.RedisKeyConstants
 import com.liboshuai.slr.module.engine.dto.*
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum
@@ -21,7 +21,6 @@ import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
 /**
  * 运算机one
  */
@@ -200,7 +199,7 @@ class ProcessorOne implements Processor {
         String targetValue = kafkaEventDTO.getTargetValue()
         return new StringBuilder()
                 .append(targetField)
-                .append(DefaultConstants.COLON)
+                .append(RedisKeyConstants.REDIS_KEY_SPLIT)
                 .append(targetValue).toString()
     }
 
@@ -209,12 +208,12 @@ class ProcessorOne implements Processor {
      */
     private String buildRedisKey(RuleCondDTO ruleCondDTO) {
         return new StringBuilder()
-                .append(DefaultConstants.SYSTEM_NAME)
-                .append(DefaultConstants.COLON)
-                .append(RedisKeyConstants.DORIS)
-                .append(DefaultConstants.COLON)
+                .append(RedisKeyConstants.REDIS_KEY_PREFIX)
+                .append(RedisKeyConstants.REDIS_KEY_SPLIT)
+                .append(RedisKeyConstants.DORIS_EVENT_HISTORY_VALUE)
+                .append(RedisKeyConstants.REDIS_KEY_SPLIT)
                 .append(ruleCondDTO.getRuleCode())
-                .append(DefaultConstants.COLON)
+                .append(RedisKeyConstants.REDIS_KEY_SPLIT)
                 .append(ruleCondDTO.getEventField())
     }
 

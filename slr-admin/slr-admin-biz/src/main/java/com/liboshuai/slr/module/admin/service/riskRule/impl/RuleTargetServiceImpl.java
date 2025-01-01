@@ -1,8 +1,12 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
+import com.liboshuai.slr.framework.common.constants.CacheKeyConstants;
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventSaveReqVO;
@@ -25,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +46,8 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     private RuleEventMapper ruleEventMapper;
     @Resource
     private RuleEventAttrMapper ruleEventAttrMapper;
+    @Resource
+    private MultilevelCache multilevelCache;
 
     @Override
     public PageResult<RuleTargetRespVO> page(RuleTargetPageReqVO ruleTargetPageReqVO) {
@@ -56,7 +63,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         }
         RuleTargetRespVO ruletargetRespVO = BeanUtils.toBean(ruleTargetDO, RuleTargetRespVO.class);
         // 设置 规则事件组
-        detailSetRuleEventList(ruletargetRespVO);
+        detailSetRuleEventList(ruletargetRespVO, null);
         return ruletargetRespVO;
     }
 
@@ -88,6 +95,8 @@ public class RuleTargetServiceImpl implements RuleTargetService {
                 .collect(Collectors.toList());
         List<RuleEventAttrDO> ruleEventAttrDOList = BeanUtils.toBean(ruleEventAttrSaveGroup, RuleEventAttrDO.class);
         ruleEventAttrMapper.insertBatch(ruleEventAttrDOList);
+        // 更新缓存
+        putCacheDetailList();
     }
 
     @Override
@@ -102,7 +111,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
-        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByKeyCode(targetCode);
+        List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByTargetCode(targetCode);
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
         ruleEventMapper.deleteByKeyCode(targetCode);
         ruleEventMapper.insertBatch(BeanUtils.toBean(ruleEventSaveReqVOList, RuleEventDO.class));
@@ -113,6 +122,8 @@ public class RuleTargetServiceImpl implements RuleTargetService {
                 .collect(Collectors.toList());
         ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
         ruleEventAttrMapper.insertBatch(BeanUtils.toBean(ruleEventAttrGroup, RuleEventAttrDO.class));
+        // 更新缓存
+        putCacheDetailList();
     }
 
     @Override
@@ -121,16 +132,47 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         return BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
     }
 
+    @Override
+    public List<RuleTargetDTO> putCacheDetailList() {
+        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectList();
+        if (CollectionUtils.isEmpty(ruleTargetDOList)) {
+            // 放入空数组，防止缓存击穿
+            multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, new ArrayList<>());
+        }
+        List<RuleTargetRespVO> ruleTargetRespVOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
+        // 设置 规则事件组
+        ruleTargetRespVOList.forEach(ruleTargetRespVO -> detailSetRuleEventList(ruleTargetRespVO, CommonStatusEnum.ONLINE));
+        List<RuleTargetDTO> ruleTargetDTOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetDTO.class);
+        multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, ruleTargetDTOList);
+        log.info("putCacheDetailList-查询MySQL数据库更新缓存");
+        return ruleTargetDTOList;
+    }
+
+    @Override
+    public List<RuleTargetDTO> getCacheDetailList() {
+        List<RuleTargetDTO> list = multilevelCache.get(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, List.class);
+        // 只需要判断是否为null，不要判断list元素是否为空，防止缓存击穿
+        if (Objects.nonNull(list)) {
+            return list;
+        }
+        return putCacheDetailList();
+    }
+
     /**
      * 设置 规则事件组
      */
-    private void detailSetRuleEventList(RuleTargetRespVO ruletargetRespVO) {
+    private void detailSetRuleEventList(RuleTargetRespVO ruletargetRespVO, CommonStatusEnum statusEnum) {
         String keyCode = ruletargetRespVO.getTargetCode();
         if (!StringUtils.hasText(keyCode)) {
             return;
         }
-        // 查询 规则事件组
-        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByKeyCode(keyCode);
+        List<RuleEventDO> ruleEventDOList;
+        if (Objects.isNull(statusEnum)) {
+            // 查询 规则事件组
+            ruleEventDOList = ruleEventMapper.selectListByTargetCode(keyCode);
+        } else {
+            ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(keyCode, statusEnum.getCode());
+        }
         if (CollectionUtils.isEmpty(ruleEventDOList)) {
             return;
         }
