@@ -157,6 +157,11 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         return putCacheDetailList();
     }
 
+    @Override
+    public void refreshCache() {
+        this.putCacheDetailList();
+    }
+
     /**
      * 设置 规则事件组
      */

@@ -25,4 +25,6 @@ public interface RuleTargetService {
     List<RuleTargetDTO> putCacheDetailList();
 
     List<RuleTargetDTO> getCacheDetailList();
+
+    void refreshCache();
 }

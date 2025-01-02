@@ -78,4 +78,11 @@ public class RuleTargetController {
         List<RuleTargetDTO> ruleTargetDTOList = ruleTargetService.getCacheDetailList();
         return success(ruleTargetDTOList);
     }
+
+    @GetMapping("/refreshCache")
+    @Operation(summary = "刷新缓存")
+    public CommonResult<?> refreshCache() {
+        ruleTargetService.refreshCache();
+        return success();
+    }
 }
