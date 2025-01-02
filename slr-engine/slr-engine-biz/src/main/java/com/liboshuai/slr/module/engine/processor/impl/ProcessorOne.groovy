@@ -323,7 +323,7 @@ class ProcessorOne implements Processor {
                     .alertMessage(finalWarnMessage)
                     .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build()
-            log.warn("最终推送的预警信息内容：{}", alertMessageDTO)
+            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO)
             out.collect(alertMessageDTO)
         }
         // 调试使用，待删除

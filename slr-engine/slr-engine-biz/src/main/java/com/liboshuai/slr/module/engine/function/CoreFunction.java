@@ -84,11 +84,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
                                Collector<AlertMessageDTO> out) throws Exception {
+        // 等待所有运算机初始化完成
+        waitForInitAllProcessor();
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         if (!kafkaEventDTO.isHeartbeat()) {
-            // 等待所有运算机初始化完成
-            waitForInitAllProcessor();
             kafkaEventDTO.setEventTime(currentProcessingTime);
             // 将事件放入缓存列表中
             recentEventMapState.put(kafkaEventDTO, null);
