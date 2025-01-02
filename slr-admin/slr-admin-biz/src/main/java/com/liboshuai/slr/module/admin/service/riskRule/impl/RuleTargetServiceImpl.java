@@ -85,6 +85,8 @@ public class RuleTargetServiceImpl implements RuleTargetService {
             if (Objects.nonNull(ruleEventMapper.selectOneByEventCode(eventCode))) {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_CODE_EXISTS, eventCode);
             }
+            // 设置 事件状态 为草稿
+            ruleEventDO.setEventStatus(CommonStatusEnum.DRAFT.getCode());
         });
         ruleEventMapper.insertBatch(ruleEventDOList);
         // 保存 规则事件属性信息
