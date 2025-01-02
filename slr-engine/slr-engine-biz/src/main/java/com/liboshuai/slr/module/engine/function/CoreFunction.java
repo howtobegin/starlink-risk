@@ -184,7 +184,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
         // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-        ctx.timerService().registerEventTimeTimer(timestamp + 60 * 1000);
+        ctx.timerService().registerProcessingTimeTimer(timestamp + 60 * 1000);
     }
 
     /**
