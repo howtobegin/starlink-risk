@@ -325,6 +325,7 @@ class ProcessorOne implements Processor {
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO)
             out.collect(alertMessageDTO)
         }
+        // TODO: 添加清除无用的定时器，防止定时器一直增加
         // 调试使用，待删除
         logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
     }
