@@ -1,12 +1,9 @@
 package com.liboshuai.slr.module.engine.function;
 
-import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
-import com.liboshuai.slr.module.engine.utils.JdbcUtil;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
-import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import com.liboshuai.slr.module.engine.utils.WindowUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
@@ -24,10 +21,7 @@ import org.apache.flink.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer.*;
 
@@ -61,11 +55,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private MapState<String, Object> oldRuleListState;
 
     /**
-     * 在线规则数量
-     */
-    private AtomicLong onlineRuleCount;
-
-    /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
      */
     @Override
@@ -76,44 +65,38 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
         recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
-        // 查询在线规则数量
-//        onlineRuleCount = queryOnlineRuleCount();
     }
 
+    // TODO: 待解决广播流延迟问题，阻塞当代方法不可用，需其他办法解决
     @Override
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
                                Collector<AlertMessageDTO> out) throws Exception {
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        if (!kafkaEventDTO.isHeartbeat()) {
-            // TODO: 待解决广播流延迟问题，阻塞当代方法不可用，需其他办法解决
-//            waitForInitAllProcessor();
-            kafkaEventDTO.setEventTime(currentProcessingTime);
-            // 将事件放入缓存列表中
-            recentEventMapState.put(kafkaEventDTO, null);
-            // 从广播流中获取规则信息
-            ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-            // 数据遍历经过每个规则运算机
-            for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
-                String ruleCode = stringProcessorEntry.getKey();
-                Processor processor = stringProcessorEntry.getValue();
-                if (!oldRuleListState.contains(ruleCode)) {
-                    // 新规则需要先将缓存的最近历史事件数据处理一遍
-                    for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
-                        processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
-                    }
-                    oldRuleListState.put(ruleCode, null);
-                } else {
-                    // 否则直接处理当前一条事件数据即可
-                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
+        kafkaEventDTO.setEventTime(currentProcessingTime);
+        // 将事件放入缓存列表中
+        recentEventMapState.put(kafkaEventDTO, null);
+        // 从广播流中获取规则信息
+        ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
+        // 数据遍历经过每个规则运算机
+        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
+            String ruleCode = stringProcessorEntry.getKey();
+            Processor processor = stringProcessorEntry.getValue();
+            if (!oldRuleListState.contains(ruleCode)) {
+                // 新规则需要先将缓存的最近历史事件数据处理一遍
+                for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
+                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
                 }
+                oldRuleListState.put(ruleCode, null);
+            } else {
+                // 否则直接处理当前一条事件数据即可
+                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
             }
-        } else {
-            // 注册定时器（窗口大小1分钟）
-            long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
-            ctx.timerService().registerProcessingTimeTimer(fireTime);
         }
+        // 注册定时器（窗口大小1分钟）
+        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
+        ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
     @Override
@@ -200,6 +183,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             // 调用定时器
             processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
+        // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
+        ctx.timerService().registerEventTimeTimer(timestamp + 60 * 1000);
     }
 
     /**
@@ -223,41 +208,4 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 //        return processor;
 //    }
 
-    /**
-     * 查询上线的规则数量
-     */
-    private AtomicLong queryOnlineRuleCount() {
-        // 获取规则表名
-        String tableName = ParameterUtil.getParameters().get(ParameterConstants.MYSQL_TABLE_RULE_JSON);
-        // 查询规则数据
-        String sql = String.format("select count(*) from %s", tableName);
-        Long ruleOnlineCount = JdbcUtil.queryForObject(
-                sql, new JdbcUtil.SingleColumnRowMapper<>(Long.class), null);
-        if (Objects.isNull(ruleOnlineCount)) {
-            throw new BusinessException("Mysql Jdbc 查询上线的规则数量为 null！");
-        }
-        log.warn("Mysql Jdbc 查询上线的规则数量: {}", ruleOnlineCount);
-        return new AtomicLong(ruleOnlineCount);
-    }
-
-    /**
-     * 等待所有运算机初始化完成
-     */
-    private void waitForInitAllProcessor() throws InterruptedException {
-        long currentOnlineRuleCount = getCurrentOnlineRuleCount();
-        while (onlineRuleCount.get() != currentOnlineRuleCount) {
-            log.warn("等待所有运算机初始化完成: MySQL库中上线规则数量={}, 运算机池中上线的规则数量={}", onlineRuleCount, currentOnlineRuleCount);
-            TimeUnit.SECONDS.sleep(1);
-            onlineRuleCount = queryOnlineRuleCount();
-            currentOnlineRuleCount = getCurrentOnlineRuleCount();
-        }
-    }
-
-    /**
-     * 获取当前在线规则的数量
-     */
-    private long getCurrentOnlineRuleCount() {
-        Set<String> ruleCodeCount = ruleProcessorPool.keySet();
-        return ruleCodeCount.size();
-    }
 }

@@ -59,8 +59,4 @@ public class KafkaEventDTO implements Serializable {
      * key关联{@link RuleEventAttrValueDTO#getAttrField()}
      */
     private Map<String, String> eventAttrMap;
-    /**
-     * 标识为心跳数据
-     */
-    private boolean heartbeat;
 }
