@@ -4,6 +4,8 @@ import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 使用 RichParallelSourceFunction 实现并行定时触发事件的 SourceFunction
  */
@@ -21,7 +23,7 @@ public class HeartbeatSource extends RichParallelSourceFunction<KafkaEventDTO> {
             ctx.collect(kafkaEventDTO);
             log.debug("触发器心跳数据......");
             // 休眠指定的时间间隔
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
