@@ -1,0 +1,46 @@
+{
+  "channel": "GAME",
+  "targetCode": "GAME_userId",
+  "targetField": "userId",
+  "targetName": "游戏用户id",
+  "targetDesc": "游戏平台的用户ID",
+  "ruleEventGroup": [
+    {
+      "eventCode": "GAME_userId_lottery",
+      "eventField": "lottery",
+      "eventName": "游戏抽奖",
+      "eventDesc": "游戏平台的抽奖事件",
+      "targetCode": "GAME_userId",
+      "ruleEventAttrGroup": [
+        {
+          "attrCode": "GAME_userId_lottery_campaignId",
+          "attrField": "campaignId",
+          "attrName": "活动ID",
+          "attrType": "String",
+          "eventCode": "GAME_userId_lottery"
+        },
+        {
+          "attrCode": "GAME_userId_lottery_campaignName",
+          "attrField": "campaignName",
+          "attrName": "活动名称",
+          "attrType": "String",
+          "eventCode": "GAME_userId_lottery"
+        },
+        {
+          "attrCode": "GAME_userId_lottery_bankNo",
+          "attrField": "bankNo",
+          "attrName": "银行号",
+          "attrType": "String",
+          "eventCode": "GAME_userId_lottery"
+        },
+        {
+          "attrCode": "GAME_userId_lottery_bankName",
+          "attrField": "bankName",
+          "attrName": "银行名称",
+          "attrType": "String",
+          "eventCode": "GAME_userId_lottery"
+        }
+      ]
+    }
+  ]
+}

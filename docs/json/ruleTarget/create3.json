@@ -1,0 +1,97 @@
+{
+  "channel": "HJF",
+  "targetCode": "HJF_userId",
+  "targetField": "userId",
+  "targetName": "花积分用户id",
+  "targetDesc": "花积分平台的用户ID",
+  "ruleEventGroup": [
+    {
+      "eventCode": "HJF_userId_orderCount",
+      "eventField": "orderCount",
+      "eventName": "花积分下单数量",
+      "eventDesc": "花积分平台的下单数量事件",
+      "targetCode": "HJF_userId",
+      "ruleEventAttrGroup": [
+        {
+          "attrCode": "HJF_userId_orderCount_productId",
+          "attrField": "productId",
+          "attrName": "产品ID",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderCount"
+        },
+        {
+          "attrCode": "HJF_userId_orderCount_productName",
+          "attrField": "productName",
+          "attrName": "产品名称",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderCount"
+        },
+        {
+          "attrCode": "HJF_userId_orderCount_bankNo",
+          "attrField": "bankNo",
+          "attrName": "银行号",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderCount"
+        },
+        {
+          "attrCode": "HJF_userId_orderCount_bankName",
+          "attrField": "bankName",
+          "attrName": "银行名称",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderCount"
+        },
+        {
+          "attrCode": "HJF_userId_orderCount_age",
+          "attrField": "age",
+          "attrName": "年龄",
+          "attrType": "int",
+          "eventCode": "HJF_userId_orderCount"
+        }
+      ]
+    },
+    {
+      "eventCode": "HJF_userId_orderAmount",
+      "eventField": "orderAmount",
+      "eventName": "花积分下单数量",
+      "eventDesc": "花积分平台的下单数量事件",
+      "targetCode": "HJF_userId",
+      "ruleEventAttrGroup": [
+        {
+          "attrCode": "HJF_userId_orderAmount_productId",
+          "attrField": "productId",
+          "attrName": "产品ID",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderAmount"
+        },
+        {
+          "attrCode": "HJF_userId_orderAmount_productName",
+          "attrField": "productName",
+          "attrName": "产品名称",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderAmount"
+        },
+        {
+          "attrCode": "HJF_userId_orderAmount_bankNo",
+          "attrField": "bankNo",
+          "attrName": "银行号",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderAmount"
+        },
+        {
+          "attrCode": "HJF_userId_orderAmount_bankName",
+          "attrField": "bankName",
+          "attrName": "银行名称",
+          "attrType": "String",
+          "eventCode": "HJF_userId_orderAmount"
+        },
+        {
+          "attrCode": "HJF_userId_orderAmount_age",
+          "attrField": "age",
+          "attrName": "年龄",
+          "attrType": "int",
+          "eventCode": "HJF_userId_orderAmount"
+        }
+      ]
+    }
+  ]
+}
