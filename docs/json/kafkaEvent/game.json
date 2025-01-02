@@ -1,0 +1,65 @@
+{
+  "channel": "GAME",
+  "kafkaEventReqVOList": [
+    {
+      "targetField": "userId",
+      "targetValue": "U000000001",
+      "eventField": "lottery",
+      "eventValue": "2",
+      "eventAttrMap": {
+        "campaignId": "C000000001",
+        "campaignName": "活动1",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
+      }
+    },
+    {
+      "targetField": "userId",
+      "targetValue": "U000000002",
+      "eventField": "lottery",
+      "eventValue": "2",
+      "eventAttrMap": {
+        "campaignId": "C000000003",
+        "campaignName": "活动3",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
+      }
+    },
+    {
+      "targetField": "userId",
+      "targetValue": "U000000001",
+      "eventField": "lottery",
+      "eventValue": "4",
+      "eventAttrMap": {
+        "campaignId": "C000000002",
+        "campaignName": "活动2",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
+      }
+    },
+    {
+      "targetField": "userId",
+      "targetValue": "U000000003",
+      "eventField": "lottery",
+      "eventValue": "5",
+      "eventAttrMap": {
+        "campaignId": "C000000006",
+        "campaignName": "活动6",
+        "bankName": "南京银行",
+        "bankNo": "4417"
+      }
+    },
+    {
+      "targetField": "userId",
+      "targetValue": "U000000002",
+      "eventField": "lottery",
+      "eventValue": "1",
+      "eventAttrMap": {
+        "campaignId": "C000000004",
+        "campaignName": "活动4",
+        "bankName": "邮储银行",
+        "bankNo": "6100"
+      }
+    }
+  ]
+}
