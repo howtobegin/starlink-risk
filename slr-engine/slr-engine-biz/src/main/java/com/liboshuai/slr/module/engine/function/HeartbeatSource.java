@@ -19,7 +19,7 @@ public class HeartbeatSource extends RichParallelSourceFunction<KafkaEventDTO> {
         while (isRunning) {
             KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder().heartbeat(true).build();
             ctx.collect(kafkaEventDTO);
-            log.warn("发送触发事件：TRIGGER");
+            log.debug("触发器心跳数据......");
             // 休眠指定的时间间隔
             Thread.sleep(1000);
         }
