@@ -280,7 +280,8 @@ class ProcessorOne implements Processor {
     @Override
     void onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
-            throw new BusinessException("运算机 ruleInfoDTO 必须非空")
+            log.warn("没有规则上线，跳过计算。当前Key: {}", currentKey)
+            return
         }
         // 获取规则条件
         List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondGroup()
