@@ -32,7 +32,7 @@ public class HeartbeatSource extends RichParallelSourceFunction<KafkaEventDTO> {
     @Override
     public void cancel() {
         isRunning = false;
-        log.warn("PeriodicTriggerSource 已取消");
+        log.warn("HeartbeatSource 已取消");
     }
 }
 
