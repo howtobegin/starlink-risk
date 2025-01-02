@@ -77,18 +77,18 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
         // 查询在线规则数量
-        onlineRuleCount = queryOnlineRuleCount();
+//        onlineRuleCount = queryOnlineRuleCount();
     }
 
     @Override
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
                                Collector<AlertMessageDTO> out) throws Exception {
-        // 等待所有运算机初始化完成
-        waitForInitAllProcessor();
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         if (!kafkaEventDTO.isHeartbeat()) {
+            // TODO: 待解决广播流延迟问题，阻塞当代方法不可用，需其他办法解决
+//            waitForInitAllProcessor();
             kafkaEventDTO.setEventTime(currentProcessingTime);
             // 将事件放入缓存列表中
             recentEventMapState.put(kafkaEventDTO, null);
