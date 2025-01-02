@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 public interface RuleModelService {
-    PageResult<RuleModelRespVO> list(@Valid RuleModelPageReqVO ruleModelPageReqVO);
+    PageResult<RuleModelRespVO> page(@Valid RuleModelPageReqVO ruleModelPageReqVO);
 
     RuleModelRespVO detail(@NotBlank String modelCode);
 

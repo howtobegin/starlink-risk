@@ -31,12 +31,12 @@ public class RuleModelController {
     @Resource
     private RuleModelService ruleModelService;
 
-    @PostMapping("/list")
-    @Operation(summary = "列表")
+    @PostMapping("/page")
+    @Operation(summary = "分页")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则模型列表请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleModelPageReqVO.class)))
-    public CommonResult<PageResult<RuleModelRespVO>> list(@RequestBody @Valid RuleModelPageReqVO ruleModelPageReqVO) {
-        PageResult<RuleModelRespVO> ruleModelRespVOPageResult = ruleModelService.list(ruleModelPageReqVO);
+    public CommonResult<PageResult<RuleModelRespVO>> page(@RequestBody @Valid RuleModelPageReqVO ruleModelPageReqVO) {
+        PageResult<RuleModelRespVO> ruleModelRespVOPageResult = ruleModelService.page(ruleModelPageReqVO);
         return success(ruleModelRespVOPageResult);
     }
 

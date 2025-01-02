@@ -27,7 +27,7 @@ public class RuleModelServiceImpl implements RuleModelService {
     private SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
-    public PageResult<RuleModelRespVO> list(RuleModelPageReqVO ruleModelPageReqVO) {
+    public PageResult<RuleModelRespVO> page(RuleModelPageReqVO ruleModelPageReqVO) {
         PageResult<RuleModelDO> ruleModelEntityPageResult = ruleModelMapper.selectPage(ruleModelPageReqVO);
         return BeanUtils.toBean(ruleModelEntityPageResult, RuleModelRespVO.class);
     }
