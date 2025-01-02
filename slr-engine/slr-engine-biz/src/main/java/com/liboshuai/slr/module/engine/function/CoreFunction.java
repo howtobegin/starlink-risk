@@ -84,34 +84,36 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
                                Collector<AlertMessageDTO> out) throws Exception {
-        // 等待所有运算机初始化完成
-        waitForInitAllProcessor();
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        kafkaEventDTO.setEventTime(currentProcessingTime);
-        // 将事件放入缓存列表中
-        recentEventMapState.put(kafkaEventDTO, null);
-        // 从广播流中获取规则信息
-        ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        // 数据遍历经过每个规则运算机
-        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
-            String ruleCode = stringProcessorEntry.getKey();
-            Processor processor = stringProcessorEntry.getValue();
-            if (!oldRuleListState.contains(ruleCode)) {
-                // 新规则需要先将缓存的最近历史事件数据处理一遍
-                for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
-                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
+        if (!kafkaEventDTO.isHeartbeat()) {
+            // 等待所有运算机初始化完成
+            waitForInitAllProcessor();
+            kafkaEventDTO.setEventTime(currentProcessingTime);
+            // 将事件放入缓存列表中
+            recentEventMapState.put(kafkaEventDTO, null);
+            // 从广播流中获取规则信息
+            ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
+            // 数据遍历经过每个规则运算机
+            for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
+                String ruleCode = stringProcessorEntry.getKey();
+                Processor processor = stringProcessorEntry.getValue();
+                if (!oldRuleListState.contains(ruleCode)) {
+                    // 新规则需要先将缓存的最近历史事件数据处理一遍
+                    for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
+                        processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
+                    }
+                    oldRuleListState.put(ruleCode, null);
+                } else {
+                    // 否则直接处理当前一条事件数据即可
+                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
                 }
-                oldRuleListState.put(ruleCode, null);
-            } else {
-                // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
             }
+        } else {
+            // 注册定时器（窗口大小1分钟）
+            long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
+            ctx.timerService().registerProcessingTimeTimer(fireTime);
         }
-        // 注册定时器（窗口大小1分钟）
-        // long fireTime = Long.parseLong(currentProcessingTime) - Long.parseLong(currentProcessingTime) % 60000 + 60000; （简化写法）
-        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
-        ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
     @Override

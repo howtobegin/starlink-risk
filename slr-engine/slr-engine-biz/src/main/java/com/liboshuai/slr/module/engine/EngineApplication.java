@@ -7,10 +7,7 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
 import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
-import com.liboshuai.slr.module.engine.function.CoreFunction;
-import com.liboshuai.slr.module.engine.function.DorisEventProcessFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
+import com.liboshuai.slr.module.engine.function.*;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +39,8 @@ public class EngineApplication {
         DataStream<RuleCdcDTO> ruleSource = FlinkMysqlConnector.read(env, parameterTool);
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
+        // 获取自定义心跳数据流，用于触发定时器
+        SingleOutputStreamOperator<KafkaEventDTO> heartbeatSource = env.addSource(new HeartbeatSource()).name("heartbeatSource");
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象
@@ -57,6 +56,7 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
+                .union(heartbeatSource) // 合并心跳数据流
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function")
