@@ -185,13 +185,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             // 调用定时器
             hasPendingTimers = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
-        // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-        long nextTimerTime = timestamp + 60 * 1000;
-        ctx.timerService().registerProcessingTimeTimer(nextTimerTime);
-        if (!hasPendingTimers) {
-            // 如果当前key所有运算机中没有待处理的定时器，则删除下一次flink定时器
-            ctx.timerService().deleteProcessingTimeTimer(nextTimerTime);
-            log.warn("Key [{}]: 没有待处理的运算机定时器，故删除flink定时器 [Timestamp: {}]", ctx.getCurrentKey(), nextTimerTime);
+        // 如果运算机中有待处理的定时器，则注册下一次flink定时器。
+        if (hasPendingTimers) {
+            // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
+            long nextTimerTime = timestamp + 60 * 1000;
+            ctx.timerService().registerProcessingTimeTimer(nextTimerTime);
         }
     }
 
