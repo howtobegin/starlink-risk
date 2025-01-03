@@ -38,6 +38,11 @@ public class RuleInfoDTO implements Serializable {
     private String ruleCode;
 
     /**
+     * 版本
+     */
+    private Long version;
+
+    /**
      * 规则名称
      * （例如：游戏高频抽奖）
      */
