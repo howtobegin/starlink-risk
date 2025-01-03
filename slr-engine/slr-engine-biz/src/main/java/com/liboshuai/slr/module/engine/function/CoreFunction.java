@@ -97,6 +97,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
+        log.warn("----------key:{}, processElement中注册定时器----------", ctx.getCurrentKey());
     }
 
     @Override
@@ -176,15 +177,22 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                         Collector<AlertMessageDTO> out) throws Exception {
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
+        boolean notStop = false;
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
-            processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
+            notStop = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
         // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-        ctx.timerService().registerProcessingTimeTimer(timestamp + 60 * 1000);
+        long timerTime = timestamp + 60 * 1000;
+        ctx.timerService().registerProcessingTimeTimer(timerTime);
+        log.warn("----------key:{}, onTimer中注册定时器----------", ctx.getCurrentKey());
+        if (!notStop) {
+            ctx.timerService().deleteProcessingTimeTimer(timerTime);
+            log.warn("----------key:{}, onTimer中删除定时器----------", ctx.getCurrentKey());
+        }
     }
 
     /**

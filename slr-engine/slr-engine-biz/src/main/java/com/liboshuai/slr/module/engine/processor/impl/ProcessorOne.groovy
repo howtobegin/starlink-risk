@@ -278,7 +278,7 @@ class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    void onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
+    boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -325,9 +325,16 @@ class ProcessorOne implements Processor {
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO)
             out.collect(alertMessageDTO)
         }
-        // TODO: 添加清除无用的定时器，防止定时器一直增加
+        boolean notEmpty = false
+        for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
+            Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueMap = bigMapEntry.getValue()
+            if (!CollectionUtil.isEmpty(timestampAndEventValueMap)) {
+                notEmpty = true
+            }
+        }
         // 调试使用，待删除
         logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
+        return notEmpty
     }
 
     /**
