@@ -86,6 +86,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         String ruleCode = RULE_CODE_PREFIX + snowflakeIdGenerator.nextIdStr(); // 生成 规则编号
         ruleInfoSaveReqVO.setRuleCode(ruleCode);
         ruleInfoSaveReqVO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
+        ruleInfoSaveReqVO.setVersion(0L);
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class); // 对象转换
         ruleInfoMapper.insert(ruleInfoDO);
 
@@ -170,7 +171,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 throw ServiceExceptionUtil.exception(ErrorCodeConstants.AUDIT_OP_NOT_SUPPORT);
             }
             // 将规则数据存入 rule_json 表
-            saveToRuleJson(ruleCode);
+            saveToRuleJson(ruleCode, ruleInfoDO);
         } else if (Objects.equals(newRuleStatus, CommonStatusEnum.OFFLINE_PENDING.getCode())) {
             // 进行下线操作
             if (!Objects.equals(ruleStatus, CommonStatusEnum.ONLINE.getCode())) {
@@ -200,7 +201,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 将规则数据存入 rule_json 表
      */
-    private void saveToRuleJson(String ruleCode) {
+    private void saveToRuleJson(String ruleCode, RuleInfoDO ruleInfoDO) {
         Long count = ruleJsonMapper.selectCount(RuleJsonDO::getRuleCode, ruleCode);
         if (Objects.isNull(count)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_COUNT_SELECT_ERROR, ruleCode);
@@ -208,6 +209,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (count > 0) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_EXISTS, ruleCode);
         }
+        // 版本号+1
+        ruleInfoDO.setVersion(ruleInfoDO.getVersion() + 1);
         // 构建规则信息DTO
         RuleInfoDTO ruleInfoDTO = buildRuleInfoDTO(ruleCode);
         RuleJsonDO ruleJsonDO = RuleJsonDO.builder().ruleCode(ruleCode).ruleJson(JSON.toJSONString(ruleInfoDTO)).build();

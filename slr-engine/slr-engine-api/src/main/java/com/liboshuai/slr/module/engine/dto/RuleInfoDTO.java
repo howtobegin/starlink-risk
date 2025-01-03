@@ -56,6 +56,11 @@ public class RuleInfoDTO implements Serializable {
     private String ruleStatus;
 
     /**
+     * 版本
+     */
+    private Long version;
+
+    /**
      * 预警间隔值
      * （例如：10）
      */

@@ -32,17 +32,14 @@ class ProcessorOne implements Processor {
      * smallValue（窗口步长）: key为eventField,value为eventValue和最新的EventKafkaDTO
      */
     private MapState<String, Tuple2<Long, KafkaEventDTO>> smallMapState
-
     /**
      * 记录对应eventField是否已经初始化过（注意不要使用ListState，它查找指定元素的性能很差）
      */
     private MapState<String, Boolean> smallInitMapState
-
     /**
      * bigValue（窗口大小）: key为eventField，小map的key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
      */
     private MapState<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapState
-
     /**
      * 对应 keyCode + keyValue 最近一次预警时间
      */
@@ -58,22 +55,23 @@ class ProcessorOne implements Processor {
     @Override
     void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleCode = ruleInfoDTO.getRuleCode()
+        Long version = ruleInfoDTO.getVersion()
         // 状态变量注册使用 ruleCode 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(
-                        "smallMapState_${ruleCode}", Types.STRING,
+                        "smallMapState_${ruleCode}_${version}", Types.STRING,
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
                 )
         )
         smallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("smallInitMapState_${ruleCode}", Types.STRING, Types.BOOLEAN)
+                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${version}", Types.STRING, Types.BOOLEAN)
         )
         bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("bigMapState_${ruleCode}", Types.STRING,
+                new MapStateDescriptor<>("bigMapState_${ruleCode}_${version}", Types.STRING,
                         Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
         )
         lastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}", Types.LONG)
+                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${version}", Types.LONG)
         )
     }
 
@@ -349,33 +347,18 @@ class ProcessorOne implements Processor {
     }
 
     /**
-     * 清理资源和状态
+     * 判断是否触发规则事件阈值。
      *
-     * 该方法重写了父类的close方法，主要用于清理当前对象占用的资源和状态
-     * 通过清空所有MapState对象，确保没有不必要的内存泄漏或状态残留
+     * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
+     * 的累加值与预定义的阈值进行比较。如果某个事件代码的累加值超过其阈值，则在结果映射中记录为 `true`。
+     * 最后，根据 `ruleInfoDTO` 中指定的组合条件操作符（如 AND/OR）评估所有事件代码的结果，从而确定
+     * 是否整体满足触发规则的条件。
      *
-     * @throws Exception 如果清理过程中发生错误
+     * @param ruleConditionMapByEventField 按事件代码分组的规则条件映射，每个事件代码对应一个 `RuleConditionDTO`
+     * @param ruleInfoDTO 规则信息数据传输对象，包含组合条件操作符等规则配置
+     * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
+     * @throws Exception 在评估过程中发生任何异常时抛出
      */
-    @Override
-    void close() throws Exception {
-        smallMapState.clear()
-        smallInitMapState.clear()
-        bigMapState.clear()
-        lastWarningTimeState.clear()
-    }
-/**
- * 判断是否触发规则事件阈值。
- *
- * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
- * 的累加值与预定义的阈值进行比较。如果某个事件代码的累加值超过其阈值，则在结果映射中记录为 `true`。
- * 最后，根据 `ruleInfoDTO` 中指定的组合条件操作符（如 AND/OR）评估所有事件代码的结果，从而确定
- * 是否整体满足触发规则的条件。
- *
- * @param ruleConditionMapByEventField 按事件代码分组的规则条件映射，每个事件代码对应一个 `RuleConditionDTO`
- * @param ruleInfoDTO 规则信息数据传输对象，包含组合条件操作符等规则配置
- * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
- * @throws Exception 在评估过程中发生任何异常时抛出
- */
     private boolean evaluateEventThresholds(Map<String, RuleCondDTO> ruleConditionMapByEventField,
                                             RuleInfoDTO ruleInfoDTO) throws Exception {
         Map<String, Boolean> eventFieldAndWarnResult = new HashMap<>()

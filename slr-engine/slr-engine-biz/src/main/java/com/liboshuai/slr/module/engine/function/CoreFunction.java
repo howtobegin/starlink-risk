@@ -145,7 +145,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             log.warn("规则运算机不存在，无需移除，规则编号为: {}", ruleCode);
             return;
         }
-        processor.close(); // 释放资源、清理旧状态值
         ruleProcessorPool.remove(ruleCode);
         broadcastState.remove(ruleCode);
         log.warn("下线一个规则运算机，规则编号为: {}", ruleCode);

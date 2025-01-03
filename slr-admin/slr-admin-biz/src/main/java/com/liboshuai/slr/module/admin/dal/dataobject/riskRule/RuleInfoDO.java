@@ -47,6 +47,10 @@ public class RuleInfoDO extends BaseDO {
      */
     private String ruleStatus;
     /**
+     * 版本
+     */
+    private Long version;
+    /**
      * 预警间隔值
      */
     private Long alertIntervalValue;

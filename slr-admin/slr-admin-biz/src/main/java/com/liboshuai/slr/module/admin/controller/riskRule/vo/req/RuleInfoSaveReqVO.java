@@ -59,6 +59,9 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "规则状态", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleStatus;
 
+    @Schema(description = "版本", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long version;
+
     @NotNull(message = "预警间隔值[alertIntervalValue]，不能为空")
     @Schema(description = "预警间隔值", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long alertIntervalValue;
