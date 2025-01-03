@@ -325,16 +325,27 @@ class ProcessorOne implements Processor {
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO)
             out.collect(alertMessageDTO)
         }
-        boolean notEmpty = false
+        // 调试使用，待删除
+        logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
+        return hasActiveEvents()
+    }
+
+    /**
+     * 检查是否存在活跃的事件
+     * 该方法用于遍历一个大的状态映射，以确定其中是否包含活跃的Kafka事件
+     *
+     * @return boolean - 如果存在活跃的事件，则返回true；否则返回false
+     */
+    private boolean hasActiveEvents() {
+        boolean result = false
         for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
             Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueMap = bigMapEntry.getValue()
             if (!CollectionUtil.isEmpty(timestampAndEventValueMap)) {
-                notEmpty = true
+                result = true
+                break
             }
         }
-        // 调试使用，待删除
-        logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
-        return notEmpty
+        result
     }
 
     /**

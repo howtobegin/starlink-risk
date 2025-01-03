@@ -177,21 +177,23 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                         Collector<AlertMessageDTO> out) throws Exception {
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
-        boolean notStop = false;
+        // 判断当前key所有运算机中是否有待处理的定时器
+        boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
-            notStop = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
+            hasPendingTimers = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
         }
         // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-        long timerTime = timestamp + 60 * 1000;
-        ctx.timerService().registerProcessingTimeTimer(timerTime);
-        log.warn("----------key:{}, onTimer中注册定时器----------", ctx.getCurrentKey());
-        if (!notStop) {
-            ctx.timerService().deleteProcessingTimeTimer(timerTime);
-            log.warn("----------key:{}, onTimer中删除定时器----------", ctx.getCurrentKey());
+        long nextTimerTime = timestamp + 60 * 1000;
+        ctx.timerService().registerProcessingTimeTimer(nextTimerTime);
+        log.warn("Key [{}]: onTimer 注册下一次定时器 [Timestamp: {}]", ctx.getCurrentKey(), nextTimerTime);
+        if (!hasPendingTimers) {
+            // 如果当前key所有运算机中没有待处理的定时器，则删除下一次flink定时器
+            ctx.timerService().deleteProcessingTimeTimer(nextTimerTime);
+            log.warn("Key [{}]: onTimer 没有待处理的定时器，已删除定时器 [Timestamp: {}]", ctx.getCurrentKey(), nextTimerTime);
         }
     }
 
