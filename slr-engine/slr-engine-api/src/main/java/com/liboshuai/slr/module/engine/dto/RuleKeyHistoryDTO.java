@@ -9,20 +9,35 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 
+/**
+ * 记录规则状态的key历史记录
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class KeyDTO implements Serializable {
+public class RuleKeyHistoryDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
+    /**
+     * 规则编号
+     */
     private Long ruleCode;
 
-    private Long version;
+    /**
+     * 规则版本
+     */
+    private Long ruleVersion;
 
+    /**
+     * 目标字段
+     */
     private String targetField;
 
+    /**
+     * 目标值
+     */
     private String targetValue;
 }

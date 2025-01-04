@@ -46,7 +46,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     private String ruleStatus;
 
     @Schema(description = "版本", example = "1")
-    private Long version;
+    private Long ruleVersion;
 
     @Schema(description = "预警间隔值", example = "10")
     private Long alertIntervalValue;

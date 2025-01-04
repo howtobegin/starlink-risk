@@ -61,41 +61,41 @@ class ProcessorOne implements Processor {
     @Override
     void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleCode = ruleInfoDTO.getRuleCode()
-        Long version = ruleInfoDTO.getVersion()
-        // 状态变量注册使用 ruleCode + version 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+        Long ruleVersion = ruleInfoDTO.getRuleVersion()
+        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(
-                        "smallMapState_${ruleCode}_${version}", Types.STRING,
+                        "smallMapState_${ruleCode}_${ruleVersion}", Types.STRING,
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
                 )
         )
         smallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${version}", Types.STRING, Types.BOOLEAN)
+                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${ruleVersion}", Types.STRING, Types.BOOLEAN)
         )
         bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("bigMapState_${ruleCode}_${version}", Types.STRING,
+                new MapStateDescriptor<>("bigMapState_${ruleCode}_${ruleVersion}", Types.STRING,
                         Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
         )
         lastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${version}", Types.LONG)
+                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${ruleVersion}", Types.LONG)
         )
         // 旧状态值
-        Long oldVersion = version - 1
+        Long oldRuleVersion = ruleVersion - 1
         oldSmallMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(
-                        "smallMapState_${ruleCode}_${oldVersion}", Types.STRING,
+                        "smallMapState_${ruleCode}_${oldRuleVersion}", Types.STRING,
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
                 )
         )
         oldSmallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${oldVersion}", Types.STRING, Types.BOOLEAN)
+                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${oldRuleVersion}", Types.STRING, Types.BOOLEAN)
         )
         oldBigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("bigMapState_${ruleCode}_${oldVersion}", Types.STRING,
+                new MapStateDescriptor<>("bigMapState_${ruleCode}_${oldRuleVersion}", Types.STRING,
                         Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
         )
         oldLastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${oldVersion}", Types.LONG)
+                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${oldRuleVersion}", Types.LONG)
         )
     }
 
@@ -170,14 +170,14 @@ class ProcessorOne implements Processor {
                 // 事件属性匹配不上，则直接跳过
                 continue
             }
-            // 记录有状态值记录的key
-            KeyDTO keyDTO = KeyDTO.builder()
+            // 规则状态的key历史记录
+            RuleKeyHistoryDTO keyDTO = RuleKeyHistoryDTO.builder()
                     .ruleCode(ruleInfoDTO.getRuleCode())
-                    .version(ruleInfoDTO.getVersion())
+                    .ruleVersion(ruleInfoDTO.getRuleVersion())
                     .targetField(kafkaEventDTO.getTargetField())
                     .targetValue(kafkaEventDTO.getTargetValue())
                     .build()
-            out.collect(ResultDTO.builder().keyDTO(keyDTO).build())
+            out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build())
             // 状态值防空
             if (smallMapState.get(kafkaEventDTO.getEventField()) == null) {
                 smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO))

@@ -84,7 +84,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         long ruleCode = snowflakeIdGenerator.nextId();
         ruleInfoSaveReqVO.setRuleCode(ruleCode); // 生成 规则编号
         ruleInfoSaveReqVO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
-        ruleInfoSaveReqVO.setVersion(0L);
+        ruleInfoSaveReqVO.setRuleVersion(0L);
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class); // 对象转换
         ruleInfoMapper.insert(ruleInfoDO);
 
@@ -208,7 +208,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_EXISTS, ruleCode);
         }
         // 版本号+1
-        ruleInfoDO.setVersion(ruleInfoDO.getVersion() + 1);
+        ruleInfoDO.setRuleVersion(ruleInfoDO.getRuleVersion() + 1);
         // 构建规则信息DTO
         RuleInfoDTO ruleInfoDTO = buildRuleInfoDTO(ruleCode);
         RuleJsonDO ruleJsonDO = RuleJsonDO.builder().ruleCode(ruleCode).ruleJson(JSON.toJSONString(ruleInfoDTO)).build();

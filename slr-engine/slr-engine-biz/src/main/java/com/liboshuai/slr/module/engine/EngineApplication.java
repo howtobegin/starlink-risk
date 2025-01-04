@@ -49,13 +49,13 @@ public class EngineApplication {
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象
-                .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process-function")
+                .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process")
                 // 过滤掉非法的事件
-                .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter-function");
+                .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter");
         // 将kafka中的事件数据同步往 doris 中留存一份
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
                 // kafka事件数据结构转doris事件数据结构，并设置事件时间
-                .process(new DorisEventProcessFunction()).uid("toDoris-process-function");
+                .process(new DorisEventProcessFunction()).uid("toDoris-process");
         FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT), toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDTOOperator
@@ -65,15 +65,16 @@ public class EngineApplication {
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");
         // 获取key数据流
-        SingleOutputStreamOperator<String> keyDtoStreamOperator = resultDtoStreamOperator
-                .filter(resultDTO -> Objects.nonNull(resultDTO.getKeyDTO())).uid("key-filter")
-                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("key-map-function");
-        // 将key数据写入doris
-        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_KEY), keyDtoStreamOperator, parameterTool);
+        SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
+                // TODO: 进过布隆过滤器初步过滤掉重复数据，减少与doris的IO交互
+                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("rule-key-history-map");
+        // 将规则状态的历史key记录数据写入doris
+        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_KEY), ruleKeyHistoryDtoStreamOperator, parameterTool);
         // 获取告警数据流
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
-                .map(JsonUtil::toJsonString).uid("alert-message-map-function");
+                .map(JsonUtil::toJsonString).uid("alert-message-map");
         // 将告警信息写入kafka
         FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
         env.execute();

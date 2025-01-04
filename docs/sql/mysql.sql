@@ -231,7 +231,7 @@ CREATE TABLE `slr_rule_info`
     `rule_name`            varchar(32)     NULL DEFAULT NULL COMMENT '规则名称',
     `rule_desc`            varchar(64)     NULL DEFAULT NULL COMMENT '规则描述',
     `rule_status`          varchar(32)     NULL DEFAULT NULL COMMENT '规则状态',
-    `version`              bigint UNSIGNED NULL DEFAULT NULL COMMENT '版本',
+    `rule_version` bigint UNSIGNED NULL DEFAULT NULL COMMENT '版本',
     `alert_interval_value` bigint UNSIGNED NULL DEFAULT NULL COMMENT '预警间隔值',
     `alert_interval_unit`  varchar(32)     NULL DEFAULT NULL COMMENT '预警间隔单位',
     `alert_message`        text            NULL COMMENT '预警消息',
