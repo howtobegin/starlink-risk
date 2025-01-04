@@ -45,6 +45,12 @@ class ProcessorOne implements Processor {
      */
     private ValueState<Long> lastWarningTimeState
 
+    // 旧状态值
+    private MapState<String, Tuple2<Long, KafkaEventDTO>> oldSmallMapState
+    private MapState<String, Boolean> oldSmallInitMapState
+    private MapState<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> oldBigMapState
+    private ValueState<Long> oldLastWarningTimeState
+
     /**
      * 初始化方法，用于在运行时上下文中注册各种状态
      *
@@ -56,7 +62,7 @@ class ProcessorOne implements Processor {
     void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleCode = ruleInfoDTO.getRuleCode()
         Long version = ruleInfoDTO.getVersion()
-        // 状态变量注册使用 ruleCode 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+        // 状态变量注册使用 ruleCode + version 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(
                         "smallMapState_${ruleCode}_${version}", Types.STRING,
@@ -72,6 +78,24 @@ class ProcessorOne implements Processor {
         )
         lastWarningTimeState = runtimeContext.getState(
                 new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${version}", Types.LONG)
+        )
+        // 旧状态值
+        Long oldVersion = version - 1
+        oldSmallMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>(
+                        "smallMapState_${ruleCode}_${oldVersion}", Types.STRING,
+                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
+                )
+        )
+        oldSmallInitMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${oldVersion}", Types.STRING, Types.BOOLEAN)
+        )
+        oldBigMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>("bigMapState_${ruleCode}_${oldVersion}", Types.STRING,
+                        Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
+        )
+        oldLastWarningTimeState = runtimeContext.getState(
+                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${oldVersion}", Types.LONG)
         )
     }
 
@@ -277,6 +301,7 @@ class ProcessorOne implements Processor {
      */
     @Override
     boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
+        logOldState()
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -490,6 +515,41 @@ class ProcessorOne implements Processor {
             }
             bigMapState.put(eventField, timestampAndEventValueMap)
         }
+    }
+
+    /**
+     * 打印老状态值
+     */
+    private void logOldState() throws Exception {
+        Map<String, Tuple2<Long, KafkaEventDTO>> oldSmallMap = new HashMap<>()
+        Iterator<Map.Entry<String, Tuple2<Long, KafkaEventDTO>>> oldSmallMapIterator = oldSmallMapState.iterator()
+        while (oldSmallMapIterator.hasNext()) {
+            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldSmallMapIterator.next()
+            oldSmallMap.put(next.getKey(), next.getValue())
+        }
+
+        Map<String, Boolean> oldSmallInitMap = new HashMap<>()
+        Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = oldSmallInitMapState.iterator()
+        while (oldSmallInitMapIterator.hasNext()) {
+            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldSmallInitMapIterator.next()
+            oldSmallInitMap.put(next.getKey(), next.getValue())
+        }
+
+        Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> oldBigMap = new HashMap<>()
+        Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> oldBigMapStateIterator = oldBigMapState.iterator()
+        while (oldBigMapStateIterator.hasNext()) {
+            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldBigMapStateIterator.next()
+            oldBigMap.put(next.getKey(), next.getValue())
+        }
+
+        Long oldLastWarningTime = oldLastWarningTimeState.value()
+
+        log.warn("========================================旧状态值========================================")
+        log.warn("oldSmallInitMap: {}", JsonUtil.toJsonString(oldSmallInitMap))
+        log.warn("oldSmallMap: {}", JsonUtil.toJsonString(oldSmallMap))
+        log.warn("oldBigMap: {}", JsonUtil.toJsonString(oldBigMap))
+        log.warn("oldLastWarningTime: {}", JsonUtil.toJsonString(oldLastWarningTime))
+        log.warn("========================================旧状态值========================================")
     }
 
     /**

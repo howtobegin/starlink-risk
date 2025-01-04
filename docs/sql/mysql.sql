@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 04/01/2025 18:20:55
+ Date: 04/01/2025 18:49:34
 */
 
 -- CREATE database `starlink_risk` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
@@ -57,7 +57,7 @@ CREATE TABLE `slr_rule_cond`
 -- Records of slr_rule_cond
 -- ----------------------------
 INSERT INTO `slr_rule_cond`
-VALUES (61, 'R1873910811026657280_GAME_userId_lottery', 'CYCLE', 10, '分钟', NULL, NULL, 10, b'0', NULL,
+VALUES (61, 'R1873910811026657280_GAME_userId_lottery', 'CYCLE', 20, '分钟', NULL, NULL, 10, b'0', NULL,
         'R1873910811026657280', 'GAME_userId_lottery', 'system', NULL, '2024-12-31 09:55:28', NULL);
 INSERT INTO `slr_rule_cond`
 VALUES (62, 'R1873910842395856896_HJF_userId_orderAmount', 'CYCLE', 3, '分钟', NULL, NULL, 100, b'0', NULL,
