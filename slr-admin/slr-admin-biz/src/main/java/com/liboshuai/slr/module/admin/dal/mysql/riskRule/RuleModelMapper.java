@@ -26,12 +26,12 @@ public interface RuleModelMapper extends BaseMapperX<RuleModelDO> {
                 .in(RuleModelDO::getModelCode, modelCodeList));
     }
 
-    default RuleModelDO selectOneByModelCode(String modelCode) {
+    default RuleModelDO selectOneByModelCode(Long modelCode) {
         return selectOne(new LambdaQueryWrapperX<RuleModelDO>()
                 .eq(RuleModelDO::getModelCode, modelCode));
     }
 
-    default void updateByModelCode(RuleModelDO ruleModelDO, String modelCode) {
+    default void updateByModelCode(RuleModelDO ruleModelDO, Long modelCode) {
         update(ruleModelDO, new LambdaQueryWrapperX<RuleModelDO>()
                 .eq(RuleModelDO::getModelCode, modelCode));
     }

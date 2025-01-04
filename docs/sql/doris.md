@@ -36,4 +36,25 @@ PROPERTIES
     "replication_num" =
     "1" -- 设置副本数为1，集群模式要设置为3
 );
+
+CREATE TABLE IF NOT EXISTS slr_key
+(
+    `RULE_CDOE`     VARCHAR(20) NOT NULL COMMENT '规则编号',
+    `TARGET_FIELD`  VARCHAR(64) NOT NULL COMMENT '目标编号',
+    `TARGET_VALUE`  VARCHAR(64) NOT NULL COMMENT '目标值'
+)
+ENGINE = OLAP
+DUPLICATE KEY(`RULE_CDOE`, `TARGET_FIELD`, `TARGET_VALUE`)
+PARTITION BY RANGE(`RULE_CDOE`) ()
+DISTRIBUTED BY HASH(`RULE_CDOE`, `TARGET_FIELD`, `TARGET_VALUE`) BUCKETS AUTO
+PROPERTIES
+(
+    "dynamic_partition.enable" = "true",
+    "dynamic_partition.time_unit" = "MONTH",
+    "dynamic_partition.start" = "-6",
+    "dynamic_partition.end" = "1",
+    "dynamic_partition.prefix" = "p",
+    "replication_num" =
+    "1" -- 设置副本数为1，集群模式要设置为3
+);
 ```

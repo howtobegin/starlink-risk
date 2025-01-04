@@ -76,10 +76,10 @@ public class RuleCondDTO implements Serializable {
 
     /**
      * 规则编号
-     * （例如：R1553673459123456000）
+     * （例如：1553673459123456000）
      * {@link RuleInfoDTO#getRuleCode()}
      */
-    private String ruleCode;
+    private Long ruleCode;
 
     /**
      * 事件编号

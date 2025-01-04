@@ -39,8 +39,8 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
-    @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String ruleCode;
+    @Schema(description = "规则编号", example = "175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long ruleCode;
 
     @Size(max = 32, message = "规则名称[ruleName]，长度不能超过 32 个字符")
     @NotBlank(message = "规则名称[ruleName]，不能为空")
@@ -85,9 +85,9 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetCode;
 
-    @NotBlank(message = "模型编号[modelCode]，不能为空")
-    @Schema(description = "模型编号", example = "M1553673459123456001", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String modelCode;
+    @NotNull(message = "模型编号[modelCode]，不能为空")
+    @Schema(description = "模型编号", example = "1553673459123456001", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long modelCode;
 
     /**
      * {@link RuleCondCombOpEnum}

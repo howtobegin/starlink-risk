@@ -18,7 +18,9 @@ public class KeyDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    private String ruleCode;
+    private Long ruleCode;
+
+    private Long version;
 
     private String targetField;
 

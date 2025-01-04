@@ -71,7 +71,7 @@ public class RuleCondDO extends BaseDO {
      * （例如：R1553673459123456000）
      * {@link RuleInfoDO#getRuleCode()}
      */
-    private String ruleCode;
+    private Long ruleCode;
     /**
      * 事件编号
      * （例如：GAME_userId_lottery）

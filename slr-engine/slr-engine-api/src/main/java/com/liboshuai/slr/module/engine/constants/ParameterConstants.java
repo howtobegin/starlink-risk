@@ -49,9 +49,10 @@ public interface ParameterConstants {
      */
 
     String DORIS_FE_NODES = "doris.fe.nodes";
-    String DORIS_TABLE_IDENTIFIER = "doris.table.identifier";
     String DORIS_USERNAME = "doris.username";
     String DORIS_PASSWORD = "doris.password";
+    String DORIS_TABLE_EVENT = "doris.table.event";
+    String DORIS_TABLE_KEY = "doris.table.key";
 
 
     /* **********************

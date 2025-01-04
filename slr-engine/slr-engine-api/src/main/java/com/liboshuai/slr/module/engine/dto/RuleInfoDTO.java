@@ -33,9 +33,9 @@ public class RuleInfoDTO implements Serializable {
 
     /**
      * 规则编号
-     * （例如：R1553673459123456000）
+     * （例如：1553673459123456000）
      */
-    private String ruleCode;
+    private Long ruleCode;
 
     /**
      * 规则名称
@@ -99,7 +99,7 @@ public class RuleInfoDTO implements Serializable {
     /**
      * 模型编号
      */
-    private String modelCode;
+    private Long modelCode;
 
     /**
      * 模型groovy代码

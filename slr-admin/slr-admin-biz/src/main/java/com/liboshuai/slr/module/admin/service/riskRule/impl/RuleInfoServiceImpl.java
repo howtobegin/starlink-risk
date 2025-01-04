@@ -32,8 +32,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.RULE_CODE_PREFIX;
-
 @Slf4j
 @Service
 public class RuleInfoServiceImpl implements RuleInfoService {
@@ -63,7 +61,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     }
 
     @Override
-    public RuleInfoRespVO detail(String ruleCode) {
+    public RuleInfoRespVO detail(Long ruleCode) {
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
         if (Objects.isNull(ruleInfoDO)) {
             return new RuleInfoRespVO();
@@ -80,11 +78,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String create(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+    public Long create(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
 
         // 保存 规则信息
-        String ruleCode = RULE_CODE_PREFIX + snowflakeIdGenerator.nextIdStr(); // 生成 规则编号
-        ruleInfoSaveReqVO.setRuleCode(ruleCode);
+        long ruleCode = snowflakeIdGenerator.nextId();
+        ruleInfoSaveReqVO.setRuleCode(ruleCode); // 生成 规则编号
         ruleInfoSaveReqVO.setRuleStatus(CommonStatusEnum.DRAFT.getCode());  // 设置 初始规则状态
         ruleInfoSaveReqVO.setVersion(0L);
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class); // 对象转换
@@ -118,7 +116,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(RuleInfoSaveReqVO ruleInfoSaveReqVO) {
-        String ruleCode = ruleInfoSaveReqVO.getRuleCode();
+        Long ruleCode = ruleInfoSaveReqVO.getRuleCode();
         // 效验
         validate(ruleCode);
         // 更新 规则信息
@@ -143,7 +141,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeStatus(RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
-        String ruleCode = ruleInfoChangeStatusReqVO.getRuleCode();
+        Long ruleCode = ruleInfoChangeStatusReqVO.getRuleCode();
         String auditOp = ruleInfoChangeStatusReqVO.getAuditOp();
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
         if (Objects.isNull(ruleInfoDO)) {
@@ -201,7 +199,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 将规则数据存入 rule_json 表
      */
-    private void saveToRuleJson(String ruleCode, RuleInfoDO ruleInfoDO) {
+    private void saveToRuleJson(Long ruleCode, RuleInfoDO ruleInfoDO) {
         Long count = ruleJsonMapper.selectCount(RuleJsonDO::getRuleCode, ruleCode);
         if (Objects.isNull(count)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_JSON_COUNT_SELECT_ERROR, ruleCode);
@@ -220,7 +218,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 构建规则信息DTO
      */
-    private RuleInfoDTO buildRuleInfoDTO(String ruleCode) {
+    private RuleInfoDTO buildRuleInfoDTO(Long ruleCode) {
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
         if (Objects.isNull(ruleInfoDO)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
@@ -236,7 +234,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         return ruleInfoDTO;
     }
 
-    private RuleInfoDTO setRuleCodeGroup(String ruleCode, RuleInfoDTO ruleInfoDTO) {
+    private RuleInfoDTO setRuleCodeGroup(Long ruleCode, RuleInfoDTO ruleInfoDTO) {
         List<RuleCondDO> ruleCondDOList = ruleCondMapper.selectListByRuleCode(ruleCode);
         if (CollectionUtils.isEmpty(ruleCondDOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_COND_NOT_EXISTS, ruleCode);
@@ -308,9 +306,9 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         return null;
     }
 
-    private void setRuleModel(String ruleCode, RuleInfoDO ruleInfoDO, RuleInfoDTO ruleInfoDTO) {
-        String modelCode = ruleInfoDO.getModelCode();
-        if (!StringUtils.hasText(modelCode)) {
+    private void setRuleModel(Long ruleCode, RuleInfoDO ruleInfoDO, RuleInfoDTO ruleInfoDTO) {
+        Long modelCode = ruleInfoDO.getModelCode();
+        if (Objects.isNull(modelCode)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_MODEL_CODE_IS_NULL, ruleCode);
         }
         RuleModelDO ruleModelDO = ruleModelMapper.selectOneByModelCode(modelCode);
@@ -345,8 +343,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 参数效验
      */
-    private void validate(String ruleCode) {
-        if (!StringUtils.hasText(ruleCode)) {
+    private void validate(Long ruleCode) {
+        if (Objects.isNull(ruleCode)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CODE_NOT_BLANK);
         }
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
@@ -380,8 +378,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
      * 设置模型信息
      */
     private void detailSetRuleModel(RuleInfoRespVO ruleInfoRespVO) {
-        String modelCode = ruleInfoRespVO.getModelCode();
-        if (!StringUtils.hasText(modelCode)) {
+        Long modelCode = ruleInfoRespVO.getModelCode();
+        if (Objects.isNull(modelCode)) {
             return;
         }
         RuleModelDO ruleModelDO = ruleModelMapper.selectOneByModelCode(modelCode);
@@ -396,8 +394,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
      * 设置条件组
      */
     private void detailSetRuleCondGroup(RuleInfoRespVO ruleInfoRespVO) {
-        String ruleCode = ruleInfoRespVO.getRuleCode();
-        if (!StringUtils.hasText(ruleCode)) {
+        Long ruleCode = ruleInfoRespVO.getRuleCode();
+        if (Objects.isNull(ruleCode)) {
             return;
         }
         List<RuleCondDO> ruleCondDOList = ruleCondMapper.selectListByRuleCode(ruleCode);

@@ -13,9 +13,9 @@ public interface RuleInfoService {
 
     PageResult<RuleInfoRespVO> page(@Valid RuleInfoPageReqVO ruleInfoPageReqVO);
 
-    RuleInfoRespVO detail(@NotBlank String ruleCode);
+    RuleInfoRespVO detail(@NotBlank Long ruleCode);
 
-    String create(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
+    Long create(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 
     void update(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 

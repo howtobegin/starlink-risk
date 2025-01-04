@@ -23,17 +23,16 @@ public class FlinkDorisConnector {
      * @param dataStream    数据流
      * @param parameterTool 参数工具
      */
-    public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {
+    public static void writer(String tableName, DataStream<String> dataStream, ParameterTool parameterTool) {
         // 从参数中获取 Doris 配置
         String feNodes = parameterTool.get(ParameterConstants.DORIS_FE_NODES);
-        String table = parameterTool.get(ParameterConstants.DORIS_TABLE_IDENTIFIER);
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
         String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
 
         DorisSink.Builder<String> builder = DorisSink.builder();
         DorisOptions.Builder dorisBuilder = DorisOptions.builder();
         dorisBuilder.setFenodes(feNodes)
-                .setTableIdentifier(table)
+                .setTableIdentifier(tableName)
                 .setUsername(username)
                 .setPassword(password);
 

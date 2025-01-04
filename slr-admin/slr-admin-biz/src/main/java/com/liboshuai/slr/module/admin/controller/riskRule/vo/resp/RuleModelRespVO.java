@@ -17,8 +17,8 @@ import lombok.experimental.Accessors;
 public class RuleModelRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "模型编号", example = "M1553673459123456001")
-    private String modelCode;
+    @Schema(description = "模型编号", example = "1553673459123456001")
+    private Long modelCode;
 
     @Schema(description = "模型名称", example = "模型运算机一")
     private String modelName;

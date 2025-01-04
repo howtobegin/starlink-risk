@@ -30,9 +30,9 @@ public class RuleInfoDO extends BaseDO {
     private String channel;
     /**
      * 规则编号
-     * （例如：R1553673459123456000）
+     * （例如：1553673459123456000）
      */
-    private String ruleCode;
+    private Long ruleCode;
     /**
      * 规则名称
      */
@@ -79,6 +79,6 @@ public class RuleInfoDO extends BaseDO {
      * （例如：M1553673459123456001）
      * {@link RuleModelDO#getModelCode()}
      */
-    private String modelCode;
+    private Long modelCode;
 
 }

@@ -12,9 +12,9 @@ import javax.validation.constraints.NotBlank;
 public interface RuleModelService {
     PageResult<RuleModelRespVO> page(@Valid RuleModelPageReqVO ruleModelPageReqVO);
 
-    RuleModelRespVO detail(@NotBlank String modelCode);
+    RuleModelRespVO detail(@NotBlank Long modelCode);
 
-    String create(@Valid RuleModelCreateReqVO ruleModelCreateReqVO);
+    Long create(@Valid RuleModelCreateReqVO ruleModelCreateReqVO);
 
     void update(@Valid RuleModelUpdateReqVO ruleModelUpdateReqVO);
 }

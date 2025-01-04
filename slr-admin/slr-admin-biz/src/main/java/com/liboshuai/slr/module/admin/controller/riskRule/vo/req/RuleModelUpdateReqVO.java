@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -21,9 +22,9 @@ import java.io.Serializable;
 public class RuleModelUpdateReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "模型编号[modelCode]，不能为空")
-    @Schema(description = "模型编号", example = "M175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String modelCode;
+    @NotNull(message = "模型编号[modelCode]，不能为空")
+    @Schema(description = "模型编号", example = "175928847299117065", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long modelCode;
 
     @NotBlank(message = "模型名称[modelName]，不能为空")
     @Schema(description = "模型名称", example = "模型运算机一", requiredMode = Schema.RequiredMode.REQUIRED)

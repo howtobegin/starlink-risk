@@ -21,13 +21,13 @@ public interface RuleInfoMapper extends BaseMapperX<RuleInfoDO> {
         );
     }
 
-    default RuleInfoDO selectOneByRuleCode(String ruleCode) {
+    default RuleInfoDO selectOneByRuleCode(Long ruleCode) {
         return selectOne(new LambdaQueryWrapperX<RuleInfoDO>()
                 .eq(RuleInfoDO::getRuleCode, ruleCode)
         );
     }
 
-    default void updateByRuleCode(RuleInfoDO ruleInfoDO, String ruleCode) {
+    default void updateByRuleCode(RuleInfoDO ruleInfoDO, Long ruleCode) {
         update(ruleInfoDO, new LambdaUpdateWrapper<RuleInfoDO>().eq(RuleInfoDO::getRuleCode, ruleCode));
     }
 }

@@ -62,8 +62,8 @@ public class RuleCondRespVO extends BaseRespVO {
     /**
      * {@link RuleInfoRespVO#getRuleCode()}
      */
-    @Schema(description = "规则编号", example = "R1553673459123456000")
-    private String ruleCode;
+    @Schema(description = "规则编号", example = "1553673459123456000")
+    private Long ruleCode;
 
     /**
      * {@link RuleEventRespVO#getEventCode()}

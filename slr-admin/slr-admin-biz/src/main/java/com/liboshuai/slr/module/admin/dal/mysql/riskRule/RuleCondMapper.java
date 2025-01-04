@@ -11,12 +11,12 @@ import java.util.List;
 @Mapper
 public interface RuleCondMapper extends BaseMapperX<RuleCondDO> {
 
-    default List<RuleCondDO> selectListByRuleCode(String ruleCode) {
+    default List<RuleCondDO> selectListByRuleCode(Long ruleCode) {
         return selectList(new LambdaQueryWrapperX<RuleCondDO>()
                 .eq(RuleCondDO::getRuleCode, ruleCode));
     }
 
-    default void deleteByRuleCode(String ruleCode) {
+    default void deleteByRuleCode(Long ruleCode) {
         delete(new LambdaQueryWrapperX<RuleCondDO>()
                 .eq(RuleCondDO::getRuleCode, ruleCode));
     }

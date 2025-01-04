@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 
@@ -24,9 +25,9 @@ public class RuleInfoChangeStatusReqVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "规则编号[ruleCode]，不能为空")
-    @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String ruleCode;
+    @NotNull(message = "规则编号[ruleCode]，不能为空")
+    @Schema(description = "规则编号", example = "175928847299117063", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long ruleCode;
 
     /**
      * {@link CommonStatusEnum}

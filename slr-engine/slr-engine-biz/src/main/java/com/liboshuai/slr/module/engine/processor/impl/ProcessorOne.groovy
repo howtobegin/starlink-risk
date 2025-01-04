@@ -154,9 +154,10 @@ class ProcessorOne implements Processor {
      * @param ruleCondDtoGroup 规则条件DTO列表
      * @param kafkaEventDTO Kafka事件DTO
      */
-    private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup,
+    private void processRuleCondValue(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
                                       KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) {
-        for (RuleCondDTO ruleCondDTO : ruleCondDtoGroup) {
+        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup()
+        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
             // 事件与规则中的事件编号匹配不上，则直接跳过
             if (!Objects.equals(kafkaEventDTO.getEventField(), ruleCondDTO.getEventField())) {
                 // 事件编号匹配不上，则直接跳过
@@ -171,7 +172,8 @@ class ProcessorOne implements Processor {
             }
             // 记录有状态值记录的key
             KeyDTO keyDTO = KeyDTO.builder()
-                    .ruleCode(ruleCondDTO.getRuleCode())
+                    .ruleCode(ruleInfoDTO.getRuleCode())
+                    .version(ruleInfoDTO.getVersion())
                     .targetField(kafkaEventDTO.getTargetField())
                     .targetValue(kafkaEventDTO.getTargetValue())
                     .build()

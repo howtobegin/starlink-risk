@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-import static com.liboshuai.slr.module.engine.constants.SnowflakeIdPrefixConstants.MODEL_CODE_PREFIX;
-
 @Service
 public class RuleModelServiceImpl implements RuleModelService {
 
@@ -33,15 +31,15 @@ public class RuleModelServiceImpl implements RuleModelService {
     }
 
     @Override
-    public RuleModelRespVO detail(String modelCode) {
+    public RuleModelRespVO detail(Long modelCode) {
         RuleModelDO ruleModelDO = ruleModelMapper.selectOneByModelCode(modelCode);
         return BeanUtils.toBean(ruleModelDO, RuleModelRespVO.class);
     }
 
     @Override
-    public String create(RuleModelCreateReqVO ruleModelCreateReqVO) {
+    public Long create(RuleModelCreateReqVO ruleModelCreateReqVO) {
         RuleModelDO ruleModelDO = BeanUtils.toBean(ruleModelCreateReqVO, RuleModelDO.class);
-        String modelCode = MODEL_CODE_PREFIX + snowflakeIdGenerator.nextIdStr();
+        long modelCode = snowflakeIdGenerator.nextId();
         ruleModelDO.setModelCode(modelCode);
         ruleModelMapper.insert(ruleModelDO);
         return modelCode;
@@ -49,7 +47,7 @@ public class RuleModelServiceImpl implements RuleModelService {
 
     @Override
     public void update(RuleModelUpdateReqVO ruleModelUpdateReqVO) {
-        String modelCode = ruleModelUpdateReqVO.getModelCode();
+        Long modelCode = ruleModelUpdateReqVO.getModelCode();
         Long count = ruleModelMapper.selectCount(RuleModelDO::getModelCode, modelCode);
         if (count == 0) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_MODEL_NOT_EXISTS, modelCode);

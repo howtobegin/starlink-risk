@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
@@ -42,7 +42,7 @@ public class RuleInfoController {
 
     @GetMapping("/detail")
     @Operation(summary = "详情")
-    public CommonResult<RuleInfoRespVO> detail(@NotBlank String ruleCode) {
+    public CommonResult<RuleInfoRespVO> detail(@NotNull Long ruleCode) {
         RuleInfoRespVO ruleInfoRespVO = ruleInfoService.detail(ruleCode);
         return success(ruleInfoRespVO);
     }
@@ -51,8 +51,8 @@ public class RuleInfoController {
     @Operation(summary = "新增")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则信息保存请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleInfoSaveReqVO.class)))
-    public CommonResult<String> create(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
-        String ruleCode = ruleInfoService.create(ruleInfoSaveReqVO);
+    public CommonResult<Long> create(@RequestBody @Valid RuleInfoSaveReqVO ruleInfoSaveReqVO) {
+        Long ruleCode = ruleInfoService.create(ruleInfoSaveReqVO);
         return success(ruleCode);
     }
 

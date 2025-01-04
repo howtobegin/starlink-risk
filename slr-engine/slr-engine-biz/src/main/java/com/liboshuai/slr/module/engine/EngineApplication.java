@@ -1,7 +1,9 @@
 package com.liboshuai.slr.module.engine;
 
 
+import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.dto.ResultDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
@@ -21,6 +23,8 @@ import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
+import java.util.Objects;
 
 
 @Slf4j
@@ -52,17 +56,26 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
                 // kafka事件数据结构转doris事件数据结构，并设置事件时间
                 .process(new DorisEventProcessFunction()).uid("toDoris-process-function");
-        FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
+        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT), toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
-        SingleOutputStreamOperator<String> resultDtoStreamOperator = kafkaEventDTOOperator
+        SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDTOOperator
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
-                .process(new CoreFunction()).uid("core-function")
-                .map(JsonUtil::toJsonString).uid("resultDto-streamOperator");
+                .process(new CoreFunction()).uid("core-function");
+        // 获取key数据流
+        SingleOutputStreamOperator<String> keyDtoStreamOperator = resultDtoStreamOperator
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getKeyDTO())).uid("key-filter")
+                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("key-map-function");
+        // 将key数据写入doris
+        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_KEY), keyDtoStreamOperator, parameterTool);
+        // 获取告警数据流
+        SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
+                .map(JsonUtil::toJsonString).uid("alert-message-map-function");
         // 将告警信息写入kafka
-        FlinkKafkaConnector.writer(resultDtoStreamOperator, parameterTool);
+        FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
         env.execute();
     }
 

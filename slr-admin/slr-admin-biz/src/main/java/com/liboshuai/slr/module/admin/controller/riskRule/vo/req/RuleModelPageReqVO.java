@@ -17,8 +17,8 @@ import lombok.experimental.Accessors;
 public class RuleModelPageReqVO extends PageParam {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "模型编号", example = "M175928847299117065")
-    private String modelCode;
+    @Schema(description = "模型编号", example = "175928847299117065")
+    private Long modelCode;
 
     @Schema(description = "模型名称", example = "模型运算机一")
     private String modelName;
