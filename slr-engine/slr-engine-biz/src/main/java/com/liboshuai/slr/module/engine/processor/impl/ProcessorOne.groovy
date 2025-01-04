@@ -141,7 +141,7 @@ class ProcessorOne implements Processor {
             }
         }
         // 计算规则条件值
-        processRuleCondValue(currentEventTimestamp, condGroupList, kafkaEventDTO, out)
+        processRuleCondValue(currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out)
     }
 
     /**
@@ -567,7 +567,7 @@ class ProcessorOne implements Processor {
     /**
      * 日志打印
      */
-    private void logBigMapState(String currentKey, String ruleCode, Set<String> eventFieldList, MapState<String,
+    private void logBigMapState(String currentKey, Long ruleCode, Set<String> eventFieldList, MapState<String,
             Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapState) throws Exception {
         Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMap = new HashMap<>()
         Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> iterator = bigMapState.iterator()

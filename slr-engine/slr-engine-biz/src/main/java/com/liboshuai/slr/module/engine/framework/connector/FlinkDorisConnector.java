@@ -53,7 +53,7 @@ public class FlinkDorisConnector {
                 .setSerializer(new SimpleStringSerializer()) //serialize according to string
                 .setDorisOptions(dorisBuilder.build());
 
-        dataStream.sinkTo(builder.build()).uid("doris-sink");
+        dataStream.sinkTo(builder.build()).uid("doris-sink" + "-" + tableName);
     }
 
 }

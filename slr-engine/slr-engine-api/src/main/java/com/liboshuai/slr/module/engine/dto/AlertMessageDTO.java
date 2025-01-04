@@ -31,7 +31,7 @@ public class AlertMessageDTO implements Serializable {
      * 规则编号
      * {@link RuleInfoDTO#getRuleCode()}
      */
-    private String ruleCode;
+    private Long ruleCode;
     /**
      * 预警消息
      */

@@ -132,8 +132,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
             removeProcessor(ruleCodeBefore, broadcastState);
         }
-        log.warn("当前规则运算机数量: {}", ruleProcessorPool.size());
-        log.warn("当前规则运算机规则编号列表: {}", ruleProcessorPool.keySet());
+        log.warn("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
 
     /**

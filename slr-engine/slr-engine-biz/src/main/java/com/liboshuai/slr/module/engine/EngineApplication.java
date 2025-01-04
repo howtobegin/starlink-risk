@@ -68,13 +68,14 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
                 // TODO: 进过布隆过滤器初步过滤掉重复数据，减少与doris的IO交互
-                .map(JsonUtil::toJsonStringWithUpperSnakeCaseKeys).uid("rule-key-history-map");
+                .map(resultDTO -> JsonUtil.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
+                .uid("rule-key-history-map");
         // 将规则状态的历史key记录数据写入doris
         FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_KEY), ruleKeyHistoryDtoStreamOperator, parameterTool);
         // 获取告警数据流
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
-                .map(JsonUtil::toJsonString).uid("alert-message-map");
+                .map(resultDTO -> JsonUtil.toJsonString(resultDTO.getAlertMessageDTO())).uid("alert-message-map");
         // 将告警信息写入kafka
         FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
         env.execute();
