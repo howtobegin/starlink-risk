@@ -29,7 +29,7 @@ import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO> {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO> {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -70,8 +70,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     // TODO: 待解决广播流延迟问题，阻塞当代方法不可用，需其他办法解决
     @Override
     public void processElement(KafkaEventDTO kafkaEventDTO,
-                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.ReadOnlyContext ctx,
-                               Collector<AlertMessageDTO> out) throws Exception {
+                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.ReadOnlyContext ctx,
+                               Collector<ResultDTO> out) throws Exception {
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
@@ -86,12 +86,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
-                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO);
+                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO);
+                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -101,8 +101,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     @Override
     public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.Context ctx,
-                                        Collector<AlertMessageDTO> out) throws Exception {
+                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.Context ctx,
+                                        Collector<ResultDTO> out) throws Exception {
         if (ruleCdcDTO == null) {
             throw new BusinessException("Mysql Cdc 广播流 ruleCdcDTO 必须非空");
         }
@@ -171,8 +171,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, AlertMessageDTO>.OnTimerContext ctx,
-                        Collector<AlertMessageDTO> out) throws Exception {
+                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.OnTimerContext ctx,
+                        Collector<ResultDTO> out) throws Exception {
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 判断当前key所有运算机中是否有待处理的定时器

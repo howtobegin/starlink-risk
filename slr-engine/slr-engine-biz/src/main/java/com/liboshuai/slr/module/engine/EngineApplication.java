@@ -54,15 +54,15 @@ public class EngineApplication {
                 .process(new DorisEventProcessFunction()).uid("toDoris-process-function");
         FlinkDorisConnector.writer(toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
-        SingleOutputStreamOperator<String> warnMessageStream = kafkaEventDTOOperator
+        SingleOutputStreamOperator<String> resultDtoStreamOperator = kafkaEventDTOOperator
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function")
-                .map(JsonUtil::toJsonString).uid("warnMessage-map-function");
+                .map(JsonUtil::toJsonString).uid("resultDto-streamOperator");
         // 将告警信息写入kafka
-        FlinkKafkaConnector.writer(warnMessageStream, parameterTool);
+        FlinkKafkaConnector.writer(resultDtoStreamOperator, parameterTool);
         env.execute();
     }
 

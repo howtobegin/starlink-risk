@@ -109,7 +109,8 @@ class ProcessorOne implements Processor {
      * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
      */
     @Override
-    void processElement(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO) throws Exception {
+    void processElement(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO,
+                        Collector<ResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -140,7 +141,7 @@ class ProcessorOne implements Processor {
             }
         }
         // 计算规则条件值
-        processRuleCondValue(currentEventTimestamp, condGroupList, kafkaEventDTO)
+        processRuleCondValue(currentEventTimestamp, condGroupList, kafkaEventDTO, out)
     }
 
     /**
@@ -153,7 +154,8 @@ class ProcessorOne implements Processor {
      * @param ruleCondDtoGroup 规则条件DTO列表
      * @param kafkaEventDTO Kafka事件DTO
      */
-    private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup, KafkaEventDTO kafkaEventDTO) {
+    private void processRuleCondValue(long currentEventTimestamp, List<RuleCondDTO> ruleCondDtoGroup,
+                                      KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) {
         for (RuleCondDTO ruleCondDTO : ruleCondDtoGroup) {
             // 事件与规则中的事件编号匹配不上，则直接跳过
             if (!Objects.equals(kafkaEventDTO.getEventField(), ruleCondDTO.getEventField())) {
@@ -167,6 +169,13 @@ class ProcessorOne implements Processor {
                 // 事件属性匹配不上，则直接跳过
                 continue
             }
+            // 记录有状态值记录的key
+            KeyDTO keyDTO = KeyDTO.builder()
+                    .ruleCode(ruleCondDTO.getRuleCode())
+                    .targetField(kafkaEventDTO.getTargetField())
+                    .targetValue(kafkaEventDTO.getTargetValue())
+                    .build()
+            out.collect(ResultDTO.builder().keyDTO(keyDTO).build())
             // 状态值防空
             if (smallMapState.get(kafkaEventDTO.getEventField()) == null) {
                 smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO))
@@ -300,7 +309,7 @@ class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<AlertMessageDTO> out) throws Exception {
+    boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
         logOldState()
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
@@ -346,7 +355,8 @@ class ProcessorOne implements Processor {
                     .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build()
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO)
-            out.collect(alertMessageDTO)
+            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build()
+            out.collect(resultDTO)
         }
         // 调试使用，待删除
         logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
