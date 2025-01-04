@@ -59,4 +59,6 @@ public class KafkaEventDTO implements Serializable {
      * key关联{@link RuleEventAttrValueDTO#getAttrField()}
      */
     private Map<String, String> eventAttrMap;
+
+    private RuleKeyHistoryDTO ruleKeyHistoryDTO;
 }

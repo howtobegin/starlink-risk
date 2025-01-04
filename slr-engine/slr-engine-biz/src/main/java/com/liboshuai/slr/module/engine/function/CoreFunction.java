@@ -9,16 +9,17 @@ import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.RuntimeContext;
-import org.apache.flink.api.common.state.BroadcastState;
-import org.apache.flink.api.common.state.MapState;
-import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
-import org.apache.flink.api.common.state.StateTtlConfig;
+import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.common.time.Time;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +55,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     private MapState<String, Object> oldRuleListState;
 
+    private MapState<String, Tuple2<Long, KafkaEventDTO>> smallMapState;
+    private MapState<String, Boolean> smallInitMapState;
+    private MapState<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapState;
+    private ValueState<Long> lastWarningTimeState;
+
     /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
      */
@@ -72,6 +78,40 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.ReadOnlyContext ctx,
                                Collector<ResultDTO> out) throws Exception {
+        RuleKeyHistoryDTO ruleKeyHistoryDTO = kafkaEventDTO.getRuleKeyHistoryDTO();
+        if (Objects.nonNull(ruleKeyHistoryDTO)) {
+            // FIXME: 获取状态值失败
+            Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
+            Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
+            String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
+            smallMapState = getRuntimeContext().getMapState(
+                    new MapStateDescriptor<>(
+                            smallMapStateName, Types.STRING,
+                            Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
+                    )
+            );
+            String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
+            smallInitMapState = getRuntimeContext().getMapState(
+                    new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
+            );
+            String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
+            bigMapState = getRuntimeContext().getMapState(
+                    new MapStateDescriptor<>(bigMapStateName, Types.STRING,
+                            Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
+            );
+            String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
+            lastWarningTimeState = getRuntimeContext().getState(
+                    new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
+            );
+            logState("之前");
+            smallMapState.clear();
+            smallInitMapState.clear();
+            bigMapState.clear();
+            lastWarningTimeState.clear();
+            logState("之后");
+            return;
+        }
+
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
@@ -97,6 +137,41 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
+    }
+
+    /**
+     * 打印状态值
+     */
+    private void logState(String status) throws Exception {
+        Map<String, Tuple2<Long, KafkaEventDTO>> smallMap = new HashMap<>();
+        Iterator<Map.Entry<String, Tuple2<Long, KafkaEventDTO>>> oldSmallMapIterator = smallMapState.iterator();
+        while (oldSmallMapIterator.hasNext()) {
+            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldSmallMapIterator.next();
+            smallMap.put(next.getKey(), next.getValue());
+        }
+
+        Map<String, Boolean> smallInitMap = new HashMap<>();
+        Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = smallInitMapState.iterator();
+        while (oldSmallInitMapIterator.hasNext()) {
+            Map.Entry<String, Boolean> next = oldSmallInitMapIterator.next();
+            smallInitMap.put(next.getKey(), next.getValue());
+        }
+
+        Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMap = new HashMap<>();
+        Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> oldBigMapStateIterator = bigMapState.iterator();
+        while (oldBigMapStateIterator.hasNext()) {
+            Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> next = oldBigMapStateIterator.next();
+            bigMap.put(next.getKey(), next.getValue());
+        }
+
+        Long lastWarningTime = lastWarningTimeState.value();
+
+        log.warn("========================================清理状态值-{}========================================", status);
+        log.warn("smallInitMap: {}", JsonUtil.toJsonString(smallInitMap));
+        log.warn("smallMap: {}", JsonUtil.toJsonString(smallMap));
+        log.warn("bigMap: {}", JsonUtil.toJsonString(bigMap));
+        log.warn("lastWarningTime: {}", JsonUtil.toJsonString(lastWarningTime));
+        log.warn("========================================清理状态值-{}========================================", status);
     }
 
     @Override

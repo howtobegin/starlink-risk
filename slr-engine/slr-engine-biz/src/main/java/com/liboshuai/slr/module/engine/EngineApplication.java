@@ -21,8 +21,10 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.util.StringUtils;
 
 import java.util.Objects;
 
@@ -42,25 +44,36 @@ public class EngineApplication {
         // 配置上下文环境
         ParameterUtil.envWithConfig(env, parameterTool);
 
+        // 获取规则状态的历史key值，用于清除旧状态
+        DataStreamSource<String> keyDS = env.socketTextStream("localhost", 9999);
+        SingleOutputStreamOperator<KafkaEventDTO> keyKafkaEventDS = keyDS
+                .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class))
+                .filter(Objects::nonNull)
+                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO()))
+                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO().getRuleCode()))
+                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO().getRuleVersion()))
+                .filter(kafkaEventDTO -> !StringUtils.isNullOrWhitespaceOnly(kafkaEventDTO.getRuleKeyHistoryDTO().getTargetField()))
+                .filter(kafkaEventDTO -> !StringUtils.isNullOrWhitespaceOnly(kafkaEventDTO.getRuleKeyHistoryDTO().getTargetValue()));
         // 获取规则配置数据流
-        DataStream<RuleCdcDTO> ruleSource = FlinkMysqlConnector.read(env, parameterTool);
+        DataStream<RuleCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
         // 获取规则广播流
-        BroadcastStream<RuleCdcDTO> broadcastStream = ruleSource.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
+        BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
-        SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDTOOperator = FlinkKafkaConnector.read(env, parameterTool)
+        SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象
                 .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter");
         // 将kafka中的事件数据同步往 doris 中留存一份
-        SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDTOOperator
+        SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
                 // kafka事件数据结构转doris事件数据结构，并设置事件时间
                 .process(new DorisEventProcessFunction()).uid("toDoris-process");
         FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT), toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
-        SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDTOOperator
+        SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
+                .union(keyKafkaEventDS)
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");

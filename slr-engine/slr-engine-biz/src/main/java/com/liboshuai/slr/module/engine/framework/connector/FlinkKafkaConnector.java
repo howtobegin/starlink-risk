@@ -27,14 +27,12 @@ public class FlinkKafkaConnector {
      * description: 添加Source
      *
      * @param env: Flink上下文环境
-     * @return void
      */
-    public static DataStream<String> read(
-            StreamExecutionEnvironment env,
-            ParameterTool parameterTool) {
+    public static DataStream<String> read(StreamExecutionEnvironment env,
+                                          ParameterTool parameterTool) {
 
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SOURCE_BROKERS);
-        String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC);
+        String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC_EVENT);
         String group = parameterTool.get(ParameterConstants.KAFKA_SOURCE_GROUP);
 
         KafkaSource<String> KAFKA_SOURCE = KafkaSource.<String>builder()
@@ -48,13 +46,13 @@ public class FlinkKafkaConnector {
         return env.fromSource(
                 KAFKA_SOURCE,
                 WatermarkStrategy.noWatermarks(),
-                "Kafka Source"
-        ).uid("kafka-source");
+                "kafka-source-" + topic
+        ).uid("kafka-source-" + topic);
     }
 
     public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SINK_BROKERS);
-        String topic = parameterTool.get(ParameterConstants.KAFKA_SINK_TOPIC);
+        String topic = parameterTool.get(ParameterConstants.KAFKA_SINK_TOPIC_ALERT);
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 10 * 60 * 1000 + "");
         KafkaSink<String> kafkaSink = KafkaSink.<String>builder()
@@ -66,11 +64,11 @@ public class FlinkKafkaConnector {
                                 .setValueSerializationSchema(new SimpleStringSchema()) //设置value的序列化器
                                 .build())
                 //设置事务超时时间
-                .setTransactionalIdPrefix("njstar-risk-rule")
+                .setTransactionalIdPrefix("starlink-risk-" + topic)
                 //设置交付保证-至少一次
                 .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();
-        dataStream.sinkTo(kafkaSink).uid("kafka-skin");
+        dataStream.sinkTo(kafkaSink).uid("kafka-skin-" + topic);
     }
 
 }

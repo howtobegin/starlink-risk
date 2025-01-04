@@ -63,21 +63,25 @@ class ProcessorOne implements Processor {
         String ruleCode = ruleInfoDTO.getRuleCode()
         Long ruleVersion = ruleInfoDTO.getRuleVersion()
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+        String smallMapStateName = new StringBuilder("smallMapState_").append(ruleCode).append("_").append(ruleVersion).toString()
         smallMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(
-                        "smallMapState_${ruleCode}_${ruleVersion}", Types.STRING,
+                        smallMapStateName, Types.STRING,
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
                 )
         )
+        String smallInitMapStateName = new StringBuilder("smallInitMapState_").append(ruleCode).append("_").append(ruleVersion).toString()
         smallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("smallInitMapState_${ruleCode}_${ruleVersion}", Types.STRING, Types.BOOLEAN)
+                new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
         )
+        String bigMapStateName = new StringBuilder("bigMapState_").append(ruleCode).append("_").append(ruleVersion).toString()
         bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>("bigMapState_${ruleCode}_${ruleVersion}", Types.STRING,
+                new MapStateDescriptor<>(bigMapStateName, Types.STRING,
                         Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
         )
+        String lastWarningTimeStateName = new StringBuilder("lastWarningTimeState_").append(ruleCode).append("_").append(ruleVersion).toString()
         lastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>("lastWarningTimeState_${ruleCode}_${ruleVersion}", Types.LONG)
+                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
         )
         // 旧状态值
         Long oldRuleVersion = ruleVersion - 1
@@ -543,14 +547,14 @@ class ProcessorOne implements Processor {
         Map<String, Boolean> oldSmallInitMap = new HashMap<>()
         Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = oldSmallInitMapState.iterator()
         while (oldSmallInitMapIterator.hasNext()) {
-            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldSmallInitMapIterator.next()
+            Map.Entry<String, Boolean> next = oldSmallInitMapIterator.next()
             oldSmallInitMap.put(next.getKey(), next.getValue())
         }
 
         Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> oldBigMap = new HashMap<>()
         Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> oldBigMapStateIterator = oldBigMapState.iterator()
         while (oldBigMapStateIterator.hasNext()) {
-            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldBigMapStateIterator.next()
+            Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> next = oldBigMapStateIterator.next()
             oldBigMap.put(next.getKey(), next.getValue())
         }
 
