@@ -85,6 +85,7 @@ public class EngineApplication {
 
     /**
      * 将规则状态的历史key记录数据写入doris
+     * TODO: 如果后续 doris 写入的性能成为瓶颈，可以替换为 redis
      */
     private static void ruleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
