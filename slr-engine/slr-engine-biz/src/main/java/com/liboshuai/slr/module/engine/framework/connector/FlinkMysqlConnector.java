@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.framework.connector;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
 import com.liboshuai.slr.module.engine.framework.serialize.MysqlCdcDeserializationSchema;
@@ -29,7 +30,7 @@ public class FlinkMysqlConnector {
 //        String password = CryptoUtils.decrypt(parameterTool.get(ParameterConstants.MYSQL_PASSWORD));
         String password = parameterTool.get(ParameterConstants.MYSQL_PASSWORD);
         String database = parameterTool.get(ParameterConstants.MYSQL_DATABASE);
-        String table = parameterTool.get(ParameterConstants.MYSQL_TABLE_RULE_JSON);
+        String table = parameterTool.get(ParameterConstants.MYSQL_TABLE_RULEJSON);
 
         MySqlSource<RuleCdcDTO> ruleCdcSource = MySqlSource.<RuleCdcDTO>builder()
                 .hostname(hostname)
@@ -37,7 +38,7 @@ public class FlinkMysqlConnector {
                 .username(username)
                 .password(password)
                 .databaseList(database)
-                .tableList(table)
+                .tableList(database + DefaultConstants.POINT + table)
                 .startupOptions(StartupOptions.initial())
                 .deserializer(new MysqlCdcDeserializationSchema())
                 .build();

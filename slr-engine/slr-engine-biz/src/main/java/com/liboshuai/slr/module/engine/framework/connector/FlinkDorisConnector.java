@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.framework.connector;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import org.apache.doris.flink.cfg.DorisExecutionOptions;
 import org.apache.doris.flink.cfg.DorisOptions;
@@ -25,13 +26,14 @@ public class FlinkDorisConnector {
      */
     public static void writer(String tableName, DataStream<String> dataStream, ParameterTool parameterTool) {
         // 从参数中获取 Doris 配置
-        String feNodes = parameterTool.get(ParameterConstants.DORIS_FE_NODES);
+        String host = parameterTool.get(ParameterConstants.DORIS_FE_HOST);
+        String httpPort = parameterTool.get(ParameterConstants.DORIS_FE_PORT_HTTP);
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
         String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
 
         DorisSink.Builder<String> builder = DorisSink.builder();
         DorisOptions.Builder dorisBuilder = DorisOptions.builder();
-        dorisBuilder.setFenodes(feNodes)
+        dorisBuilder.setFenodes(host + DefaultConstants.COLON + httpPort)
                 .setTableIdentifier(tableName)
                 .setUsername(username)
                 .setPassword(password);

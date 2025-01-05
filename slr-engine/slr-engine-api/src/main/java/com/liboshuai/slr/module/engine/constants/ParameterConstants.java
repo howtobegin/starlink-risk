@@ -48,7 +48,9 @@ public interface ParameterConstants {
      * Doris 配置参数名称
      */
 
-    String DORIS_FE_NODES = "doris.fe.nodes";
+    String DORIS_FE_HOST = "doris.fe.host";
+    String DORIS_FE_PORT_HTTP = "doris.fe.port.http";
+    String DORIS_FE_PORT_QUERY = "doris.fe.port.query";
     String DORIS_USERNAME = "doris.username";
     String DORIS_PASSWORD = "doris.password";
     String DORIS_DATABASE = "doris.database";
@@ -67,7 +69,7 @@ public interface ParameterConstants {
     String MYSQL_USERNAME = "mysql.username";
     String MYSQL_PASSWORD = "mysql.password";
     String MYSQL_DATABASE = "mysql.database";
-    String MYSQL_TABLE_RULE_JSON = "mysql.table.ruleJson";
+    String MYSQL_TABLE_RULEJSON = "mysql.table.ruleJson";
 
     /* **********************
      *

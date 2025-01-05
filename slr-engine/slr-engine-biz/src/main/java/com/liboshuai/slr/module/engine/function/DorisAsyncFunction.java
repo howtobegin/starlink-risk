@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.engine.function;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
@@ -39,7 +40,9 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
 
     @Override
     public void open(Configuration parameters) {
-        String nodes = parameterTool.get(ParameterConstants.DORIS_FE_NODES);
+        String host = parameterTool.get(ParameterConstants.DORIS_FE_HOST);
+        String queryPort = parameterTool.get(ParameterConstants.DORIS_FE_PORT_QUERY);
+        String feNodes = host + DefaultConstants.COLON + queryPort;
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
         String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
@@ -48,7 +51,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setUsername(username);
         druidDataSource.setPassword(password);
-        String url = String.format("jdbc:mysql://%s/%s?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC", nodes, database);
+        String url = String.format("jdbc:mysql://%s/%s?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC", feNodes, database);
         druidDataSource.setUrl(url);
         // 其他必要的Druid配置可以在这里添加
         druidDataSource.setInitialSize(5);
