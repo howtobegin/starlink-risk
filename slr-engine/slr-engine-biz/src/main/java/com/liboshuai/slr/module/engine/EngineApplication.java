@@ -46,7 +46,7 @@ public class EngineApplication {
         DataStream<RuleCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
         // 获取旧状态清理流
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
-                ruleDS, new DorisAsyncFunction(parameterTool), 10, TimeUnit.SECONDS, 100
+                ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
         );
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
