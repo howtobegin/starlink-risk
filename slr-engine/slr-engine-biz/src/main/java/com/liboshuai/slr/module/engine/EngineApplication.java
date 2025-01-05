@@ -56,13 +56,6 @@ public class EngineApplication {
                 .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter");
-        // 将kafka中的事件数据同步往 doris 中留存一份
-        SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
-                // kafka事件数据结构转doris事件数据结构，并设置事件时间
-                .process(new DorisEventProcessFunction()).uid("toDoris-process");
-        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
-        String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
-        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
@@ -71,22 +64,49 @@ public class EngineApplication {
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");
-        // 获取key数据流
+        // 将kafka中的事件数据同步往 doris 中留存一份
+        kafkaEventToDoris(kafkaEventDtoDS, parameterTool);
+        // 将规则状态的历史key记录数据写入doris
+        ruleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
+        // 将告警信息写入kafka
+        alertMessageToKafka(resultDtoStreamOperator, parameterTool);
+        env.execute();
+    }
+
+    /**
+     * 将告警信息写入kafka
+     */
+    private static void alertMessageToKafka(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+        SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
+                .map(resultDTO -> JsonUtil.toJsonString(resultDTO.getAlertMessageDTO())).uid("alert-message-map");
+        FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
+    }
+
+    /**
+     * 将规则状态的历史key记录数据写入doris
+     */
+    private static void ruleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
                 // TODO: 进过布隆过滤器初步过滤掉重复数据，减少与doris的IO交互
                 .map(resultDTO -> JsonUtil.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
                 .uid("rule-key-history-map");
-        // 将规则状态的历史key记录数据写入doris
+        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableKey = parameterTool.get(ParameterConstants.DORIS_TABLE_KEY);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableKey, ruleKeyHistoryDtoStreamOperator, parameterTool);
-        // 获取告警数据流
-        SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
-                .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
-                .map(resultDTO -> JsonUtil.toJsonString(resultDTO.getAlertMessageDTO())).uid("alert-message-map");
-        // 将告警信息写入kafka
-        FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
-        env.execute();
+    }
+
+    /**
+     * 将kafka中的事件数据同步往 doris 中留存一份
+     */
+    private static void kafkaEventToDoris(SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS, ParameterTool parameterTool) {
+        SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
+                // kafka事件数据结构转doris事件数据结构，并设置事件时间
+                .process(new DorisEventProcessFunction()).uid("toDoris-process");
+        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
+        String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
+        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);
     }
 
 }
