@@ -317,7 +317,7 @@ class ProcessorOne implements Processor {
      */
     @Override
     boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
-        logOldState()
+//        logOldState()
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空")
         }
@@ -565,7 +565,6 @@ class ProcessorOne implements Processor {
         log.warn("oldSmallInitMap: {}", JsonUtil.toJsonString(oldSmallInitMap))
         log.warn("oldSmallMap: {}", JsonUtil.toJsonString(oldSmallMap))
         log.warn("oldBigMap: {}", JsonUtil.toJsonString(oldBigMap))
-        log.warn("oldLastWarningTime: {}", JsonUtil.toJsonString(oldLastWarningTime))
         log.warn("========================================旧状态值========================================")
     }
 

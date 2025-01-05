@@ -134,12 +134,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         lastWarningTimeState = getRuntimeContext().getState(
                 new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
         );
-        logState("之前");
+//        logState("之前");
         smallMapState.clear();
         smallInitMapState.clear();
         bigMapState.clear();
         lastWarningTimeState.clear();
-        logState("之后");
+//        logState("之后");
     }
 
     /**

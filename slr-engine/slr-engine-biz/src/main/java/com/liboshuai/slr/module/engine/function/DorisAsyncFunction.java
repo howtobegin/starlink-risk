@@ -121,7 +121,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
                     }
                 }
                 // 提交结果
-                log.warn("构建的数据清洗流：{}", kafkaEventDTOList);
+//                log.warn("构建的数据清洗流：{}", kafkaEventDTOList);
                 resultFuture.complete(kafkaEventDTOList);
             } catch (Exception e) {
                 log.error("Error processing asyncInvoke for RuleInfoDTO: {}", ruleCdcDTO, e);
