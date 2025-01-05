@@ -9,10 +9,7 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
 import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
-import com.liboshuai.slr.module.engine.function.CoreFunction;
-import com.liboshuai.slr.module.engine.function.DorisEventProcessFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
-import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
+import com.liboshuai.slr.module.engine.function.*;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +18,8 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.util.StringUtils;
 
 import java.util.Objects;
 
@@ -44,18 +39,10 @@ public class EngineApplication {
         // 配置上下文环境
         ParameterUtil.envWithConfig(env, parameterTool);
 
-        // 获取规则状态的历史key值，用于清除旧状态
-        DataStreamSource<String> keyDS = env.socketTextStream("localhost", 9999);
-        SingleOutputStreamOperator<KafkaEventDTO> keyKafkaEventDS = keyDS
-                .map(jsonValue -> JsonUtil.parseObject(jsonValue, KafkaEventDTO.class))
-                .filter(Objects::nonNull)
-                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO()))
-                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO().getRuleCode()))
-                .filter(kafkaEventDTO -> Objects.nonNull(kafkaEventDTO.getRuleKeyHistoryDTO().getRuleVersion()))
-                .filter(kafkaEventDTO -> !StringUtils.isNullOrWhitespaceOnly(kafkaEventDTO.getRuleKeyHistoryDTO().getTargetField()))
-                .filter(kafkaEventDTO -> !StringUtils.isNullOrWhitespaceOnly(kafkaEventDTO.getRuleKeyHistoryDTO().getTargetValue()));
         // 获取规则配置数据流
         DataStream<RuleCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
+        // 获取旧状态清理流
+        SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = ruleDS.process(new KeyDsProcessFunction(parameterTool));
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
@@ -73,7 +60,7 @@ public class EngineApplication {
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
-                .union(keyKafkaEventDS)
+                .union(clearKafkaEventDtoSO)
                 .keyBy(new KafkaEventKeyBy())// keyBy分组
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");

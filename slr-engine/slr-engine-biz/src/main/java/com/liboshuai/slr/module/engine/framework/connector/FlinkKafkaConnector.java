@@ -32,7 +32,7 @@ public class FlinkKafkaConnector {
                                           ParameterTool parameterTool) {
 
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SOURCE_BROKERS);
-        String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC_EVENT);
+        String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC);
         String group = parameterTool.get(ParameterConstants.KAFKA_SOURCE_GROUP);
 
         KafkaSource<String> KAFKA_SOURCE = KafkaSource.<String>builder()

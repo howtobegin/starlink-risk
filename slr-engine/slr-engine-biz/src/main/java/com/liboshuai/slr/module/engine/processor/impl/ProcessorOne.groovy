@@ -203,6 +203,7 @@ class ProcessorOne implements Processor {
                     String redisHashKey = buildRedisHashKey(kafkaEventDTO)
                     // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
                     String initValue = RedisUtil.hget(redisKey, redisHashKey)
+                    RedisUtil.hdel(redisKey, redisHashKey)
                     if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
                         throw new BusinessException(
                                 StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)

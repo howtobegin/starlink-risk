@@ -80,38 +80,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                                Collector<ResultDTO> out) throws Exception {
         RuleKeyHistoryDTO ruleKeyHistoryDTO = kafkaEventDTO.getRuleKeyHistoryDTO();
         if (Objects.nonNull(ruleKeyHistoryDTO)) {
-            // FIXME: 获取状态值失败
-            Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
-            Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
-            String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-            smallMapState = getRuntimeContext().getMapState(
-                    new MapStateDescriptor<>(
-                            smallMapStateName, Types.STRING,
-                            Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
-                    )
-            );
-            String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
-            smallInitMapState = getRuntimeContext().getMapState(
-                    new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
-            );
-            String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-            bigMapState = getRuntimeContext().getMapState(
-                    new MapStateDescriptor<>(bigMapStateName, Types.STRING,
-                            Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
-            );
-            String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
-            lastWarningTimeState = getRuntimeContext().getState(
-                    new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
-            );
-            logState("之前");
-            smallMapState.clear();
-            smallInitMapState.clear();
-            bigMapState.clear();
-            lastWarningTimeState.clear();
-            logState("之后");
+            clearOldState(ruleKeyHistoryDTO);
             return;
         }
-
         // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
@@ -137,6 +108,38 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
+    }
+
+    private void clearOldState(RuleKeyHistoryDTO ruleKeyHistoryDTO) throws Exception {
+        log.warn("ruleKeyHistoryDTO: {}", ruleKeyHistoryDTO);
+        Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
+        Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
+        String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
+        smallMapState = getRuntimeContext().getMapState(
+                new MapStateDescriptor<>(
+                        smallMapStateName, Types.STRING,
+                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
+                )
+        );
+        String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
+        smallInitMapState = getRuntimeContext().getMapState(
+                new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
+        );
+        String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
+        bigMapState = getRuntimeContext().getMapState(
+                new MapStateDescriptor<>(bigMapStateName, Types.STRING,
+                        Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
+        );
+        String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
+        lastWarningTimeState = getRuntimeContext().getState(
+                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
+        );
+        logState("之前");
+        smallMapState.clear();
+        smallInitMapState.clear();
+        bigMapState.clear();
+        lastWarningTimeState.clear();
+        logState("之后");
     }
 
     /**

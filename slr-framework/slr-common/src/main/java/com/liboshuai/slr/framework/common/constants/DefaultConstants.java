@@ -22,6 +22,10 @@ public interface DefaultConstants {
      */
     String COLON = ":";
     /**
+     * 点
+     */
+    String POINT = ".";
+    /**
      * 下划线
      */
     String UNDERSCORE = "_";

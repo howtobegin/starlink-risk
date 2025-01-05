@@ -39,8 +39,7 @@ public interface ParameterConstants {
      * *********************/
 
     String KAFKA_SOURCE_BROKERS = "kafka.source.brokers";
-    String KAFKA_SOURCE_TOPIC_EVENT = "kafka.source.topic.event";
-    String KAFKA_SOURCE_TOPIC_KEY = "kafka.source.topic.key";
+    String KAFKA_SOURCE_TOPIC = "kafka.source.topic";
     String KAFKA_SOURCE_GROUP = "kafka.source.group";
     String KAFKA_SINK_BROKERS = "kafka.sink.brokers";
     String KAFKA_SINK_TOPIC_ALERT = "kafka.sink.topic.alert";

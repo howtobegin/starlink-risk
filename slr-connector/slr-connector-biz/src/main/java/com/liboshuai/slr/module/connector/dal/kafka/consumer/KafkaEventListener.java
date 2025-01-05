@@ -78,7 +78,7 @@ public class KafkaEventListener {
         if (!StringUtils.hasText(dto.getChannel())) {
             missingFields.add("channel");
         }
-        if (!StringUtils.hasText(dto.getRuleCode())) {
+        if (Objects.isNull(dto.getRuleCode())) {
             missingFields.add("ruleCode");
         }
         if (!StringUtils.hasText(dto.getAlertMessage())) {

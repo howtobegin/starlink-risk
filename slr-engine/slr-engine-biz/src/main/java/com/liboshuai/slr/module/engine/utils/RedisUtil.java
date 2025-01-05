@@ -132,6 +132,10 @@ public class RedisUtil {
         jedisCluster.expire(key, seconds);
     }
 
+    public static void hdel(final String key, final String... field) {
+        jedisCluster.hdel(key, field);
+    }
+
     // ZSet 操作
     public static void zadd(String key, double score, String member) {
         jedisCluster.zadd(key, score, member);
