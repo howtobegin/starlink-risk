@@ -89,7 +89,6 @@ public class EngineApplication {
     private static void ruleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
-                // TODO: 进过布隆过滤器初步过滤掉重复数据，减少与doris的IO交互
                 .map(resultDTO -> JsonUtil.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
                 .uid("rule-key-history-map");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
