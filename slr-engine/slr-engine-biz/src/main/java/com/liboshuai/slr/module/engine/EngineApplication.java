@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.engine;
 
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.ResultDTO;
@@ -16,12 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -42,7 +45,9 @@ public class EngineApplication {
         // 获取规则配置数据流
         DataStream<RuleCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
         // 获取旧状态清理流
-        SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = ruleDS.process(new KeyDsProcessFunction(parameterTool));
+        SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
+                ruleDS, new DorisAsyncFunction(parameterTool), 10, TimeUnit.SECONDS, 100
+        );
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
@@ -55,7 +60,9 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
                 // kafka事件数据结构转doris事件数据结构，并设置事件时间
                 .process(new DorisEventProcessFunction()).uid("toDoris-process");
-        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT), toDorisStreamOperator, parameterTool);
+        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
+        String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
+        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
@@ -71,7 +78,8 @@ public class EngineApplication {
                 .map(resultDTO -> JsonUtil.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
                 .uid("rule-key-history-map");
         // 将规则状态的历史key记录数据写入doris
-        FlinkDorisConnector.writer(parameterTool.get(ParameterConstants.DORIS_TABLE_KEY), ruleKeyHistoryDtoStreamOperator, parameterTool);
+        String tableKey = parameterTool.get(ParameterConstants.DORIS_TABLE_KEY);
+        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableKey, ruleKeyHistoryDtoStreamOperator, parameterTool);
         // 获取告警数据流
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")

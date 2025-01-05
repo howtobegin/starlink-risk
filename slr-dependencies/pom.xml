@@ -82,7 +82,6 @@
         <scala.binary.version>2.12</scala.binary.version>
         <mysql-cdc.version>2.2.1</mysql-cdc.version>
         <mysql.driver.version>8.0.33</mysql.driver.version>
-        <hikariCP.version>4.0.3</hikariCP.version>
         <jedis.version>3.7.1</jedis.version>
         <kafka-clients.version>2.4.1</kafka-clients.version>
         <log4j2.version>2.16.0</log4j2.version>
@@ -186,7 +185,11 @@
                 <artifactId>slr-spring-boot-starter-mybatis</artifactId>
                 <version>${revision}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql.driver.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
@@ -545,17 +548,11 @@
                 <scope>test</scope>
                 <classifier>tests</classifier>
             </dependency>
-            <!-- mysql -->
+            <!-- druid -->
             <dependency>
-                <groupId>com.mysql</groupId>
-                <artifactId>mysql-connector-j</artifactId>
-                <version>${mysql.driver.version}</version>
-            </dependency>
-            <!-- HikariCP -->
-            <dependency>
-                <groupId>com.zaxxer</groupId>
-                <artifactId>HikariCP</artifactId>
-                <version>${hikariCP.version}</version>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
             </dependency>
             <!-- kafka-->
             <dependency>
