@@ -33,7 +33,13 @@
     mvn clean install -P test -Dmaven.test.skip=true
     ```
 
-4. 项目根目录下执行命令，提交jar包到yarn集群运行
+4. 任意目录下执行目录，创建savepoint、checkpoint的hdfs目录
+    ```shell
+    hadoop fs -mkdir -p /flink/starlink-risk/slr-engine/savepoint
+    hadoop fs -mkdir -p /flink/starlink-risk/slr-engine/checkpoint
+    ```
+
+5. 项目根目录下执行命令，提交jar包到yarn集群运行
     ```shell
     bash ./slr-engine/slr-engine-biz/bin/slr-engine.sh init
     ```
