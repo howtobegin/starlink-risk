@@ -96,12 +96,13 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
             List<KafkaEventDTO> kafkaEventDTOList = new ArrayList<>();
             try (DruidPooledConnection connection = druidDataSource.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(
-                         String.format("SELECT TARGET_VALUE FROM %s WHERE RULE_CODE = ? and RULE_VERSION = ? and TARGET_FIELD = ?", tableName)
+                         String.format("SELECT TARGET_VALUE FROM %s WHERE RULE_CODE = ? and RULE_VERSION = ? and CHANNEL =? and TARGET_FIELD = ?", tableName)
                  )) {
                 // 设置参数
                 preparedStatement.setLong(1, ruleInfoDTOBefore.getRuleCode());
                 preparedStatement.setLong(2, ruleInfoDTOBefore.getRuleVersion());
-                preparedStatement.setString(3, ruleInfoDTOBefore.getTargetField());
+                preparedStatement.setString(3, ruleInfoDTOBefore.getChannel());
+                preparedStatement.setString(4, ruleInfoDTOBefore.getTargetField());
                 // 执行SQL并获取结果
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -109,10 +110,12 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
                         RuleKeyHistoryDTO ruleKeyHistoryDTO = RuleKeyHistoryDTO.builder()
                                 .ruleCode(ruleInfoDTOBefore.getRuleCode())
                                 .ruleVersion(ruleInfoDTOBefore.getRuleVersion())
+                                .channel(ruleInfoDTOBefore.getChannel())
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
                                 .build();
                         KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
+                                .channel(ruleInfoDTOBefore.getChannel())
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
                                 .ruleKeyHistoryDTO(ruleKeyHistoryDTO)

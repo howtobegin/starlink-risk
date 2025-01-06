@@ -11,6 +11,8 @@ import org.apache.flink.api.java.functions.KeySelector;
 public class KafkaEventKeyBy implements KeySelector<KafkaEventDTO, String> {
     @Override
     public String getKey(KafkaEventDTO kafkaEventDTO) throws Exception {
-        return kafkaEventDTO.getTargetField() + DefaultConstants.COLON + kafkaEventDTO.getTargetValue();
+        return kafkaEventDTO.getChannel()
+                + DefaultConstants.COLON + kafkaEventDTO.getTargetField()
+                + DefaultConstants.COLON + kafkaEventDTO.getTargetValue();
     }
 }

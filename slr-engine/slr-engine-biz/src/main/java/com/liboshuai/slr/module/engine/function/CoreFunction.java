@@ -111,7 +111,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     private void clearOldState(RuleKeyHistoryDTO ruleKeyHistoryDTO) throws Exception {
-        log.warn("ruleKeyHistoryDTO: {}", ruleKeyHistoryDTO);
         Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
         Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
         String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;

@@ -178,6 +178,7 @@ class ProcessorOne implements Processor {
             RuleKeyHistoryDTO keyDTO = RuleKeyHistoryDTO.builder()
                     .ruleCode(ruleInfoDTO.getRuleCode())
                     .ruleVersion(ruleInfoDTO.getRuleVersion())
+                    .channel(ruleInfoDTO.getChannel())
                     .targetField(kafkaEventDTO.getTargetField())
                     .targetValue(kafkaEventDTO.getTargetValue())
                     .build()

@@ -32,6 +32,11 @@ public class RuleKeyHistoryDTO implements Serializable {
     private Long ruleVersion;
 
     /**
+     * 渠道
+     */
+    private String channel;
+
+    /**
      * 目标字段
      */
     private String targetField;
