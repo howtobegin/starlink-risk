@@ -10,12 +10,14 @@
 2. idea 添加vm参数：`-Djava.io.tmpdir=C:/Me/flink/temp`（目录要提前创建）
    > 目的是解决RockDB会报错无法创建临时目录文件，具体参考：https://juejin.cn/post/7450077044141654066
 
-3. 项目根目录下执行命令，进行maven install
+3. idea选择`Add dependencies with 'provided' scope to classpath`.
+
+4. 项目根目录下执行命令，进行maven install
     ```shell
     mvn clean install -P local -Dmaven.test.skip=true
     ```
 
-4. 找到`com.liboshuai.slr.module.engine.EngineApplication`类的main方法，右键run
+5. 找到`com.liboshuai.slr.module.engine.EngineApplication`类的main方法，右键run
 
 ## 开发环境yarn
 
