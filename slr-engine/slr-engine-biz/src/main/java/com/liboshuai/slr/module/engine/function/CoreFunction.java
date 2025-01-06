@@ -259,7 +259,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
-            hasPendingTimers = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
+            boolean hasActiveEvents = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
+            if (hasActiveEvents) {
+                hasPendingTimers = true;
+            }
         }
         // 如果运算机中有待处理的定时器，则注册下一次flink定时器。
         if (hasPendingTimers) {
