@@ -129,13 +129,13 @@ public class MultilevelCache extends AbstractValueAdaptingCache {
             // 开启一级缓存，先从一级缓存缓存数据
             value = caffeineCache.get(key);
             if (Objects.nonNull(value)) {
-                log.info("查询caffeine 一级缓存 key:{}, 返回值是:{}", key, value.get());
+//                log.info("查询caffeine 一级缓存 key:{}, 返回值是:{}", key, value.get());
                 return value.get();
             }
         }
         value = redisCache.get(key);
         if (Objects.nonNull(value)) {
-            log.info("查询redis 二级缓存 key:{}, 返回值是:{}", key, value.get());
+//            log.info("查询redis 二级缓存 key:{}, 返回值是:{}", key, value.get());
             // 异步将二级缓存redis写到一级缓存caffeine
             if (multilevelCacheProperties.getCaffeineSwitch()) {
                 ValueWrapper finalValue = value;
