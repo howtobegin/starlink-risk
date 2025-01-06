@@ -107,8 +107,6 @@
             <groupId>org.apache.doris</groupId>
             <artifactId>flink-connector-doris_${scala.binary.version}</artifactId>
             <version>1.14_2.12-1.1.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/flink-doris-connector-1.14_2.12-1.1.1.jar</systemPath>
         </dependency>
 
         <!-- ========== Flink CDC ========== -->
@@ -260,13 +258,6 @@
                     <include>**/*.xml</include>
                 </includes>
                 <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>libs</directory>
-                <includes>
-                    <include>**/*.jar</include>
-                </includes>
-                <filtering>false</filtering>
             </resource>
         </resources>
 
