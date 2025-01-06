@@ -3,9 +3,9 @@
 flink_bin="/home/lbs/software/flink/bin/flink"
 flink_name="slr-engine"
 flink_main="com.liboshuai.slr.module.engine.EngineApplication"
-flink_jar="/home/lbs/project/starlink-risk/slr-engine/target/slr-engine-biz-1.0.jar"
+flink_jar="/home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/target/slr-engine-biz-1.0.jar"
 flink_savepoint="hdfs:///flink/starlink-risk/slr-engine/savepoint"
-savepoint_log="/home/lbs/project/starlink-risk/slr-engine/savepoint.log"
+savepoint_log="/home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/savepoint.log"
 
 function init() {
       echo -----------------------------------------------------------------------------------
