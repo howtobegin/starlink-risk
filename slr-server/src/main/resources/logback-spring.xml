@@ -49,7 +49,7 @@
         </root>
     </springProfile>
     <!-- 其它环境 -->
-    <springProfile name="dev,test,stage,prod,default">
+    <springProfile name="test,dev,uat,prod">
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="ASYNC"/>
