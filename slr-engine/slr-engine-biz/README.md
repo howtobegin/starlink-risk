@@ -35,5 +35,5 @@
 
 4. 项目根目录下执行命令，提交jar包到yarn集群运行
     ```shell
-    bash ./bin/slr-engine.sh init
+    bash ./slr-engine/slr-engine-biz/bin/slr-engine.sh init
     ```
