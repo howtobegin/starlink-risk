@@ -7,6 +7,7 @@ import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,10 +42,12 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "分钟")
     private String windowUnit;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00")
     private LocalDateTime beginTime;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00")
     private LocalDateTime endTime;
@@ -55,6 +58,7 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "是否跨历史数据", example = "true")
     private Boolean crossHistory;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01")
     private LocalDateTime crossHistoryTimeline;

@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
@@ -51,10 +52,12 @@ public class RuleCondSaveReqVO implements Serializable {
     private String windowUnit;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime beginTime;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime endTime;
 
@@ -67,6 +70,7 @@ public class RuleCondSaveReqVO implements Serializable {
     private Boolean crossHistory;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime crossHistoryTimeline;
 

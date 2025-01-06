@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.controller.alertMessage.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.liboshuai.slr.framework.common.pojo.PageParam;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
@@ -36,10 +37,12 @@ public class AlertMessagePageReqVO extends PageParam {
     private String alertMessage;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "预警时间开始", example = "2025-01-01 00:01:01")
     private LocalDateTime alertTimeStart;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "预警时间结束", example = "2025-01-02 00:01:01")
     private LocalDateTime alertTimeEnd;
 }
