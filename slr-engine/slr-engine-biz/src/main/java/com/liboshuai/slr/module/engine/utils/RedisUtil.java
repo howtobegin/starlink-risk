@@ -49,10 +49,13 @@ public class RedisUtil {
         poolConfig.setTestWhileIdle(true);
         // 创建JedisCluster
         if (!StringUtils.isEmpty(password)) {
-            jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
-
+//            jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
+            // FIXME: 暂时取消redis加载连接，降低系统复杂度
+            jedisCluster = null;
         } else {
-            jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, poolConfig);
+//            jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, poolConfig);
+            // FIXME: 暂时取消redis加载连接，降低系统复杂度
+            jedisCluster = null;
         }
     }
 
