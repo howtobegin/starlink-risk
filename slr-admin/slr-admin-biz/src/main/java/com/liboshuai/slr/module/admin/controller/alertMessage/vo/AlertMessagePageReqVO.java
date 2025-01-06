@@ -6,6 +6,7 @@ import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
@@ -34,9 +35,11 @@ public class AlertMessagePageReqVO extends PageParam {
     @Schema(description = "预警消息", example = "触发了xxx预警")
     private String alertMessage;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "预警时间开始", example = "2025-01-01 00:01:01")
     private LocalDateTime alertTimeStart;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "预警时间结束", example = "2025-01-02 00:01:01")
     private LocalDateTime alertTimeEnd;
 }

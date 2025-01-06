@@ -22,7 +22,7 @@ public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
      */
     @Override
     public boolean filter(KafkaEventDTO event) {
-        log.warn("接收到来自kafka的事件数据：{}", event);
+//        log.warn("接收到来自kafka的事件数据：{}", event);
 
         if (Objects.isNull(event)) {
             log.warn("无效的 KafkaEventDTO 数据：为空！");

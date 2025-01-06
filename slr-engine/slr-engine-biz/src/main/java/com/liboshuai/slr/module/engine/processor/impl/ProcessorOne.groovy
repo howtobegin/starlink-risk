@@ -367,7 +367,7 @@ class ProcessorOne implements Processor {
             out.collect(resultDTO)
         }
         // 调试使用，待删除
-        logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
+//        logBigMapState(currentKey, ruleInfoDTO.getRuleCode(), ruleConditionMapByEventField.keySet(), bigMapState)
         return hasActiveEvents()
     }
 
