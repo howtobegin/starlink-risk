@@ -17,7 +17,6 @@ import org.apache.flink.api.common.state.ValueState
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.common.typeinfo.Types
 import org.apache.flink.api.java.tuple.Tuple2
-import org.apache.flink.api.java.tuple.Tuple3
 import org.apache.flink.util.Collector
 import org.apache.flink.util.StringUtils
 import org.slf4j.Logger
@@ -337,8 +336,8 @@ class ProcessorOne implements Processor {
         updateBigMapWithSmallMap(timestamp)
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField)
-        // 计算bigMap中的数据，分别得到[条件判断结果]、[最新的kafka事件数据]、[flink中间计算结果值]
-        Tuple3<Boolean, KafkaEventDTO, ProcessorDTO> bigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO)
+        // 判断是否触发规则事件阈值
+        boolean eventResult = evaluateEventThresholds(ruleConditionMapByEventField, ruleInfoDTO)
         // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
         if (lastWarningTimeState.value() == null) {
             lastWarningTimeState.update(0L)
@@ -348,14 +347,14 @@ class ProcessorOne implements Processor {
                 ruleInfoDTO.getAlertIntervalValue(), TimeUnitEnum.fromEnUnit(ruleInfoDTO.getAlertIntervalUnit())
         )
         // 触发结果为true，且当前时间减去上次预警时间大于预警间隔时间，则进行预警
-        if (bigMapResult.f0 && (timestamp - lastWarningTimeState.value() >= alertInterval)) {
+        if (eventResult && (timestamp - lastWarningTimeState.value() >= alertInterval)) {
             lastWarningTimeState.update(timestamp)
             // 进行预警信息拼接组合
             String finalWarnMessage = TemplateUtil.replacePlaceholders(
                     ruleInfoDTO.getAlertMessage(),
                     ruleInfoDTO,
-                    bigMapResult.f1,
-                    bigMapResult.f2
+                    getLatestEventKafkaDto(),
+                    getProcessorDto()
             )
             AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
                     .channel(ruleInfoDTO.getChannel())
@@ -391,60 +390,106 @@ class ProcessorOne implements Processor {
     }
 
     /**
-     * 处理bigMap数据结构中的信息
-     * 该方法主要用于处理包含事件数据的大映射，计算每个事件字段的累加值，判断是否满足预警条件，并返回最新的事件数据
+     * 判断是否触发规则事件阈值。
      *
-     * @param ruleConditionMapByEventField 按事件字段分类的规则条件映射
-     * @param ruleInfoDTO 规则信息DTO对象，包含规则的相关信息
-     * @return 返回一个Tuple3对象，包含事件结果、最新的KafkaEventDTO和ProcessorDTO
-     * @throws Exception 如果处理过程中发生异常，则抛出此异常
+     * <p>此方法遍历 `bigMapState` 中的所有事件代码及其对应的时间戳和事件值累加，对每个事件代码
+     * 的累加值与预定义的阈值进行比较。如果某个事件代码的累加值超过其阈值，则在结果映射中记录为 `true`。
+     * 最后，根据 `ruleInfoDTO` 中指定的组合条件操作符（如 AND/OR）评估所有事件代码的结果，从而确定
+     * 是否整体满足触发规则的条件。
+     *
+     * @param ruleConditionMapByEventField 按事件代码分组的规则条件映射，每个事件代码对应一个 `RuleConditionDTO`
+     * @param ruleInfoDTO 规则信息数据传输对象，包含组合条件操作符等规则配置
+     * @return 如果根据组合条件操作符评估后满足规则阈值条件，返回 `true`；否则返回 `false`
+     * @throws Exception 在评估过程中发生任何异常时抛出
      */
-    private Tuple3<Boolean, KafkaEventDTO, ProcessorDTO> processBigMap(Map<String, RuleCondDTO> ruleConditionMapByEventField,
-                                                                       RuleInfoDTO ruleInfoDTO) throws Exception {
-        // 记录指定事件当前是否满足预警结果
-        Map<String, Boolean> eventFieldAndAlertResult = new HashMap<>()
-        // 记录当前最新的事件数据
+    private boolean evaluateEventThresholds(Map<String, RuleCondDTO> ruleConditionMapByEventField,
+                                            RuleInfoDTO ruleInfoDTO) throws Exception {
+        Map<String, Boolean> eventFieldAndWarnResult = new HashMap<>()
+        for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
+            String eventField = bigMapEntry.getKey()
+            Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
+            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream()
+                    .map(o -> o.f0)
+                    .mapToLong(Long::longValue)
+                    .sum()
+            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField)
+            if (ruleCondDTO != null) {
+                Long eventThreshold = ruleCondDTO.getThreshold()
+                eventFieldAndWarnResult.put(eventField, eventValueSum > eventThreshold)
+            }
+        }
+        boolean eventResult = evaluateEventResults(eventFieldAndWarnResult, ruleInfoDTO.getRuleCondCombOp())
+        return eventResult
+    }
+
+    /**
+     * 聚合 bigMapState 中的事件值并构建 ProcessorDTO 对象。
+     *
+     * <p>该方法遍历 bigMapState，其中每个键为 eventField，值为一个包含时间戳和对应
+     * Tuple2<Long, EventKafkaDTO> 的映射。对于每个 eventFiled，方法会将所有时间戳
+     * 下的 eventValue（Tuple2 中的第一个值）进行累加，生成一个 eventField 与其
+     * 累加值的映射。最后，基于这些聚合结果构建并返回一个包含 eventFiledAndValueSumMap 的 ProcessorDTO 对象。</p>
+     *
+     * @return 包含每个 eventFiled 对应 eventValue 累加值的 ProcessorDTO 对象
+     * @throws Exception 如果在处理过程中发生错误
+     */
+    private ProcessorDTO getProcessorDto() throws Exception {
+        Map<String, Long> eventFiledAndValueSumMap = new HashMap<>()
+        for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
+            String eventField = bigMapEntry.getKey()
+            Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
+            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream()
+                    .map(o -> o.f0)
+                    .mapToLong(Long::longValue)
+                    .sum()
+            eventFiledAndValueSumMap.put(eventField, eventValueSum)
+        }
+        ProcessorDTO processorDTO = ProcessorDTO.builder()
+                .eventFieldAndValueSumMap(eventFiledAndValueSumMap)
+                .build()
+        return processorDTO
+    }
+
+
+    /**
+     * 从所有事件条件累积的值流中检索最新的 Kafka 事件数据。
+     *
+     * <p>此方法遍历 `bigMapState` 中存储的所有事件数据，查找具有最大时间戳的 `EventKafkaDTO` 对象，
+     * 并返回该最新的事件数据。
+     *
+     * @return 最新的 {@link KafkaEventDTO} 对象，如果没有事件数据则返回 {@code null}
+     * @throws Exception 如果在遍历过程中发生异常
+     */
+    private KafkaEventDTO getLatestEventKafkaDto() throws Exception {
+        // 初始化变量，用于存储最新的 EventKafkaDTO 和对应的最大时间戳
         KafkaEventDTO latestEventKafkaDTO = null
         Long maxTimestamp = Long.MIN_VALUE
-        // 记录指定事件的当前累加值
-        Map<String, Long> eventFiledAndValueSumMap = new HashMap<>()
 
+        // 遍历 bigMapState 中的每一个大键（eventField）及其对应的内部映射
         for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
-            // 事件字段
-            String eventField = bigMapEntry.getKey()
-            // key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
+            // 获取当前 eventField 对应的时间戳与事件数据的映射
             Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
+
             // 获取当前映射中的所有条目（时间戳与事件数据对）
             Set<Map.Entry<Long, Tuple2<Long, KafkaEventDTO>>> entrySet = timestampAndEventValueKafkaDtoMap.entrySet()
+
             // 遍历当前 eventField 下的所有时间戳和事件数据对
             for (Map.Entry<Long, Tuple2<Long, KafkaEventDTO>> entry : entrySet) {
                 Long currentTimestamp = entry.getKey() // 当前条目的时间戳
                 Tuple2<Long, KafkaEventDTO> value = entry.getValue() // 包含累加值和事件数据的元组
+
                 // 如果当前时间戳大于已记录的最大时间戳，则更新最大时间戳和最新的事件数据
                 if (currentTimestamp > maxTimestamp) {
                     maxTimestamp = currentTimestamp
                     latestEventKafkaDTO = value.f1 // 获取元组中的 EventKafkaDTO 对象
                 }
             }
-            // 计算当前事件的累加值
-            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream()
-                    .map(o -> o.f0)
-                    .mapToLong(Long::longValue)
-                    .sum()
-            eventFiledAndValueSumMap.put(eventField, eventValueSum)
-            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField)
-            if (ruleCondDTO != null) {
-                Long eventThreshold = ruleCondDTO.getThreshold()
-                eventFieldAndAlertResult.put(eventField, eventValueSum > eventThreshold)
-            }
         }
-        ProcessorDTO processorDTO = ProcessorDTO.builder()
-                .eventFieldAndValueSumMap(eventFiledAndValueSumMap)
-                .build()
-        boolean eventResult = evaluateEventResults(eventFieldAndAlertResult, ruleInfoDTO.getRuleCondCombOp())
-        Tuple3<Boolean, KafkaEventDTO, ProcessorDTO> tuple3 = Tuple3.of(eventResult, latestEventKafkaDTO, processorDTO)
-        return tuple3
+
+        // 返回找到的最新的 EventKafkaDTO 对象
+        return latestEventKafkaDTO
     }
+
 
     /**
      * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
