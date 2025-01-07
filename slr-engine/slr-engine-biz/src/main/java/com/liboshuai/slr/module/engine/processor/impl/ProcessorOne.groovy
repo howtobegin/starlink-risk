@@ -337,7 +337,7 @@ class ProcessorOne implements Processor {
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField)
         // 判断是否触发规则事件阈值
-        boolean eventResult = evaluateEventThresholds(ruleConditionMapByEventField, ruleInfoDTO)
+        boolean eventResult = evaluateEventThresholds(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp())
         // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
         if (lastWarningTimeState.value() == null) {
             lastWarningTimeState.update(0L)
@@ -354,7 +354,7 @@ class ProcessorOne implements Processor {
                     ruleInfoDTO.getAlertMessage(),
                     ruleInfoDTO,
                     getLatestEventKafkaDto(),
-                    getProcessorDto()
+                    getProcessorDto(ruleConditionMapByEventField)
             )
             AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
                     .channel(ruleInfoDTO.getChannel())
@@ -403,8 +403,30 @@ class ProcessorOne implements Processor {
      * @throws Exception 在评估过程中发生任何异常时抛出
      */
     private boolean evaluateEventThresholds(Map<String, RuleCondDTO> ruleConditionMapByEventField,
-                                            RuleInfoDTO ruleInfoDTO) throws Exception {
+                                            String ruleCondCombOp) throws Exception {
         Map<String, Boolean> eventFieldAndWarnResult = new HashMap<>()
+        // 计算每个事件字段的值总和
+        HashMap<String, Long> eventFiledAndValueSumMap = getEventFiledAndSumValueMap(ruleConditionMapByEventField)
+        Set<String> eventFieldSet = ruleConditionMapByEventField.keySet()
+        for (String eventField in eventFieldSet) {
+            Long eventValueSum = eventFiledAndValueSumMap.get(eventField)
+            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField)
+            Long eventThreshold = ruleCondDTO.getThreshold()
+            eventFieldAndWarnResult.put(eventField, eventValueSum > eventThreshold)
+        }
+        boolean eventResult = evaluateEventResults(eventFieldAndWarnResult, ruleCondCombOp)
+        return eventResult
+    }
+
+    /**
+     * 计算每个事件字段的值总和，并将结果存储在HashMap中
+     * 此方法遍历一个存储事件数据的大Map，对于每个事件字段，计算其所有值的总和
+     * 返回一个Map，其中键是事件字段，值是该字段在所有事件中的值的总和
+     *
+     * @return HashMap<String, Long> 包含事件字段及其对应值总和的Map
+     */
+    private HashMap<String, Long> getEventFiledAndSumValueMap(Map<String, RuleCondDTO> ruleConditionMapByEventField) {
+        Map<String, Long> eventFiledAndValueMap = new HashMap<>()
         for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
             String eventField = bigMapEntry.getKey()
             Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
@@ -412,14 +434,16 @@ class ProcessorOne implements Processor {
                     .map(o -> o.f0)
                     .mapToLong(Long::longValue)
                     .sum()
-            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField)
-            if (ruleCondDTO != null) {
-                Long eventThreshold = ruleCondDTO.getThreshold()
-                eventFieldAndWarnResult.put(eventField, eventValueSum > eventThreshold)
+            eventFiledAndValueMap.put(eventField, eventValueSum)
+        }
+        // 如果当前上送事件数据没有此事件，则将此事件累计值设置为0
+        Set<String> eventFieldSet = ruleConditionMapByEventField.keySet()
+        for (String eventField in eventFieldSet) {
+            if (!eventFiledAndValueMap.containsKey(eventField)) {
+                eventFiledAndValueMap.put(eventField, 0L)
             }
         }
-        boolean eventResult = evaluateEventResults(eventFieldAndWarnResult, ruleInfoDTO.getRuleCondCombOp())
-        return eventResult
+        return eventFiledAndValueMap
     }
 
     /**
@@ -433,17 +457,8 @@ class ProcessorOne implements Processor {
      * @return 包含每个 eventFiled 对应 eventValue 累加值的 ProcessorDTO 对象
      * @throws Exception 如果在处理过程中发生错误
      */
-    private ProcessorDTO getProcessorDto() throws Exception {
-        Map<String, Long> eventFiledAndValueSumMap = new HashMap<>()
-        for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
-            String eventField = bigMapEntry.getKey()
-            Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
-            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream()
-                    .map(o -> o.f0)
-                    .mapToLong(Long::longValue)
-                    .sum()
-            eventFiledAndValueSumMap.put(eventField, eventValueSum)
-        }
+    private ProcessorDTO getProcessorDto(Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
+        Map<String, Long> eventFiledAndValueSumMap = getEventFiledAndSumValueMap(ruleConditionMapByEventField)
         ProcessorDTO processorDTO = ProcessorDTO.builder()
                 .eventFieldAndValueSumMap(eventFiledAndValueSumMap)
                 .build()
