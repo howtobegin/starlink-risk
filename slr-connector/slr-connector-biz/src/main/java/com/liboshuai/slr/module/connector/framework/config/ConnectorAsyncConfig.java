@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.connector.framework.config;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -10,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class ConnectorAsyncConfig {
 
-    @Bean(name = "connectorAsyncExecutor")
+    @Bean(name = DefaultConstants.CONNECTOR_ASYNC_EXECUTOR)
     public Executor connectorAsyncExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //设置核心线程数

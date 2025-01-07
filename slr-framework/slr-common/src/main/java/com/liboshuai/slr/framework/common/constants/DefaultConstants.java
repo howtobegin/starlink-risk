@@ -18,6 +18,14 @@ public interface DefaultConstants {
      */
     String DEFAULT_STRATEGY = "default_strategy";
     /**
+     * admin全局线程池名称
+     */
+    String ADMIN_ASYNC_EXECUTOR = "adminAsyncExecutor";
+    /**
+     * connector全局线程池名称
+     */
+    String CONNECTOR_ASYNC_EXECUTOR = "connectorAsyncExecutor";
+    /**
      * 冒号
      */
     String COLON = ":";

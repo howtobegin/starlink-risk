@@ -1,0 +1,29 @@
+package com.liboshuai.slr.module.connector.controller.mock;
+
+import com.liboshuai.slr.framework.common.pojo.CommonResult;
+import com.liboshuai.slr.module.connector.service.mock.MockService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+
+@Slf4j
+@RestController
+@Tag(name = "mock数据测试")
+@RequestMapping("/mock")
+public class MockController {
+
+    @Resource
+    private MockService mockService;
+
+    @GetMapping("/createEventFileBatchMode")
+    @Operation(summary = "创建事件数据文件（文件内容为批量上送模式）")
+    public CommonResult<String> createEventFileBatchMode(long totalCount) {
+        mockService.createEventFileBatchMode(totalCount);
+        return CommonResult.success("事件日志文件开始生成，请等待......");
+    }
+}

@@ -7,17 +7,21 @@
     mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/libs/flink-doris-connector-1.14_2.12-1.1.1.jar
     ```
 
-2. idea 添加vm参数：`-Djava.io.tmpdir=C:/Me/flink/temp`（目录要提前创建）
+2. 创建本地目录
+    - C:/Me/Temp/flink/checkpoint
+    - C:/Me/Temp/flink/temp
+
+3. idea 添加vm参数：`-Djava.io.tmpdir=C:/Me/Temp/flink/temp`
    > 目的是解决RockDB会报错无法创建临时目录文件，具体参考：https://juejin.cn/post/7450077044141654066
 
-3. idea选择`Add dependencies with 'provided' scope to classpath`.
+4. idea选择`Add dependencies with 'provided' scope to classpath`.
 
-4. 项目根目录下执行命令，进行maven install
+5. 项目根目录下执行命令，进行maven install
     ```shell
     mvn clean install -P local -Dmaven.test.skip=true
     ```
 
-5. 找到`com.liboshuai.slr.module.engine.EngineApplication`类的main方法，右键run
+6. 找到`com.liboshuai.slr.module.engine.EngineApplication`类的main方法，右键run
 
 ## 开发环境yarn
 

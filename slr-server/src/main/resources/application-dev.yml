@@ -48,12 +48,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - one:6381
-        - one:6382
-        - one:6383
-        - one:6384
-        - one:6385
-        - one:6386
+        - one:6379
+        - one:6380
+        - two:6379
+        - two:6380
+        - three:6379
+        - three:6380
     lettuce:
       pool:
         min-idle: 0
@@ -62,9 +62,9 @@ spring:
         max-wait: -1ms
   kafka:
     producer:
-      bootstrap-servers: one:9096,one:9097,one:9098
+      bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
-      bootstrap-servers: one:9096,one:9097,one:9098
+      bootstrap-servers: one:9092,two:9092,three:9092
       group-id: starlink_risk
   data:
     mongodb:
@@ -81,5 +81,5 @@ slr-connector:
     consumer_topic: slr_alert
 
 slr-admin:
-  loadTest:
-    filePath: /slr-server/data/
+  file-path:
+    event-log: /slr-server/data/event.log

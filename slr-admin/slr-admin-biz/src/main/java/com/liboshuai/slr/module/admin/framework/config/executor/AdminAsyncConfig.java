@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.admin.framework.config.executor;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -10,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class AdminAsyncConfig {
 
-    @Bean(name = "adminAsyncExecutor")
+    @Bean(name = DefaultConstants.ADMIN_ASYNC_EXECUTOR)
     public Executor adminAsyncExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //设置核心线程数
@@ -22,7 +23,7 @@ public class AdminAsyncConfig {
         //允许的空闲时间，当超过了核心线程数之外的线程在空闲时间到达之后会被销毁
         taskExecutor.setKeepAliveSeconds(200);
         //异步方法内部线程名称
-        taskExecutor.setThreadNamePrefix("adminAsyncExecutor-");
+        taskExecutor.setThreadNamePrefix(DefaultConstants.ADMIN_ASYNC_EXECUTOR + "-");
         //拒绝策略
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         taskExecutor.initialize();

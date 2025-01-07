@@ -81,5 +81,5 @@ slr-connector:
     consumer_topic: slr_alert
 
 slr-admin:
-  loadTest:
-    filePath: /slr-server/data/load-test/
+  file-path:
+    event-log: /slr-server/data/event.log
