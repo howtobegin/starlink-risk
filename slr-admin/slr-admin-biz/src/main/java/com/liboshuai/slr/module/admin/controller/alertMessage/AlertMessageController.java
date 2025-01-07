@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
 @Slf4j
+@Validated
 @RestController
 @Tag(name = "风控预警消息")
 @RequestMapping("/alertMessage")
@@ -36,7 +38,7 @@ public class AlertMessageController {
     @Operation(summary = "分页")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "预警消息列表请求", required = true,
             content = @Content(schema = @Schema(implementation = AlertMessagePageReqVO.class)))
-    public CommonResult<PageResult<AlertMessageRespVO>> page(@RequestBody @Validated AlertMessagePageReqVO alertMessagePageReqVO) {
+    public CommonResult<PageResult<AlertMessageRespVO>> page(@RequestBody @Valid AlertMessagePageReqVO alertMessagePageReqVO) {
         AlertMessagePageReqDTO alertMessagePageReqDTO = BeanUtils.toBean(alertMessagePageReqVO, AlertMessagePageReqDTO.class);
         PageResult<AlertMessageRespDTO> alertMessageRespDTOPageResult = alertMessageApi.page(alertMessagePageReqDTO);
         PageResult<AlertMessageRespVO> alertMessageRespVOPageResult = BeanUtils.toBean(alertMessageRespDTOPageResult, AlertMessageRespVO.class);
