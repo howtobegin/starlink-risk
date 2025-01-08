@@ -20,7 +20,7 @@ import java.util.*;
 @Service
 public class MockServiceImpl implements MockService {
 
-    private static final int MAX_ENTRIES = 10000;
+    private static final int MAX_ENTRIES = 1000000;
     // Predefined bank names and numbers
     private final List<String> bankNames = new ArrayList<>();
     private final List<String> bankNos = new ArrayList<>();
@@ -73,7 +73,7 @@ public class MockServiceImpl implements MockService {
         log.info("开始生成事件文件，目标条数: {}", totalCount);
         long generatedCount = 0;
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(eventLogFilePath, true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(eventLogFilePath, false))) {
             while (generatedCount < totalCount) {
                 // 计算当前批次的大小，确保不会超过 totalCount
                 int currentBatchSize = (int) Math.min(random.nextInt(10) + 1, totalCount - generatedCount);
