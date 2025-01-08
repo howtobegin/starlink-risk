@@ -6,9 +6,15 @@ docker-compose exec fe bash
 mysql -h ${宿主机IP} -P 9030 -uroot
 
 SET PASSWORD FOR 'root' = PASSWORD('Rongshu@2024');
+
 use mysql;
 ALTER SYSTEM ADD BACKEND "${宿主机IP}:9050";
 SHOW PROC '/backends';
+# 下面的alert操作是集群模式下才需要做
+-- alter system modify backend "10.0.0.17:9050" set ("tag.location" = "group_a");
+-- alter system modify backend "10.0.0.74:9050" set ("tag.location" = "group_b");
+-- alter system modify backend "10.0.0.2:9050" set ("tag.location" = "group_c");
+
 CREATE DATABASE IF NOT EXISTS `starlink_risk`;
 use starlink_risk;
 
@@ -34,7 +40,8 @@ PROPERTIES
     "dynamic_partition.start" = "-6",
     "dynamic_partition.end" = "1",
     "dynamic_partition.prefix" = "p",
-    "replication_num" = "1" -- 设置副本数为1，集群模式要设置为3
+    "replication_allocation" = "tag.location.default:1" -- 单机模式启用
+    -- "replication_allocation" = "tag.location.group_a:1,tag.location.group_b:1,tag.location.group_c:1" -- 集群模式启用
 );
 
 drop table if exists slr_rule_key_history;
@@ -52,6 +59,7 @@ DISTRIBUTED BY HASH(`RULE_CODE`, `RULE_VERSION`, `CHANNEL`, `TARGET_FIELD`) BUCK
 PROPERTIES
 (
     "enable_unique_key_merge_on_write" = "true", -- 写入时合并，提高查询性能
-    "replication_num" = "1" -- 设置副本数为1，集群模式要设置为3
+    "replication_allocation" = "tag.location.default:1" -- 单机模式启用
+    -- "replication_allocation" = "tag.location.group_a:1,tag.location.group_b:1,tag.location.group_c:1" -- 集群模式启用
 );
 ```
