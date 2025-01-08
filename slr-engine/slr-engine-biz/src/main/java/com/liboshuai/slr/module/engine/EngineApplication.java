@@ -66,9 +66,9 @@ public class EngineApplication {
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-        kafkaEventToDoris(kafkaEventDtoDS, parameterTool);
+//        kafkaEventToDoris(kafkaEventDtoDS, parameterTool);
         // 将规则状态的历史key记录数据写入doris
-        ruleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
+//        ruleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
         alertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
