@@ -20,7 +20,7 @@ import java.util.*;
 @Service
 public class MockServiceImpl implements MockService {
 
-    private static final int MAX_ENTRIES = 1000;
+    private static final int MAX_ENTRIES = 10000;
     // Predefined bank names and numbers
     private final List<String> bankNames = new ArrayList<>();
     private final List<String> bankNos = new ArrayList<>();
@@ -106,23 +106,34 @@ public class MockServiceImpl implements MockService {
 
     private KafkaEventReqVO generateEvent(String channel) {
         KafkaEventReqVO.KafkaEventReqVOBuilder builder = KafkaEventReqVO.builder();
-        builder.targetField("userId")
-                .targetValue(generateUserId())
-                .eventValue(String.valueOf(random.nextInt(11))); // 0-10
 
         Map<String, String> eventAttrMap = new HashMap<>();
 
+        String eventField;
         if ("GAME" .equals(channel)) {
-            builder.eventField("lottery");
+            eventField = "lottery";
+            builder.eventField(eventField);
             // Populate eventAttrMap with campaign and bank info
             eventAttrMap.put("campaignId", generateCampaignId());
             eventAttrMap.put("campaignName", generateCampaignName());
         } else if ("HJF" .equals(channel)) {
             // Randomly choose between orderAmount and orderCount
-            builder.eventField(random.nextBoolean() ? "orderAmount" : "orderCount");
+            eventField = random.nextBoolean() ? "orderAmount" : "orderCount";
+            builder.eventField(eventField);
             // Populate eventAttrMap with product and bank info
             eventAttrMap.put("productId", generateProductId());
             eventAttrMap.put("productName", generateProductName());
+        } else {
+            throw new IllegalArgumentException("Invalid channel: " + channel);
+        }
+
+        builder.targetField("userId")
+                .targetValue(generateUserId())
+                .eventValue(String.valueOf(random.nextInt(11)))
+        ;
+        if (Objects.equals(eventField, "orderAmount")) {
+            // 订单金额
+            builder.eventValue(String.valueOf(random.nextInt(100)));
         }
 
         // Common bank info
