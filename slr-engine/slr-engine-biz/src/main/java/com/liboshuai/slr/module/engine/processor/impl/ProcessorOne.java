@@ -433,7 +433,9 @@ public class ProcessorOne implements Processor {
      */
     private void updateBigMapWithSmallMap(long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
+        int count = 0;
         for (Map.Entry<String, Long> smallMapEntry : smallMapState.entries()) { // 性能优化
+            count++;
             String eventField = smallMapEntry.getKey();
             Long eventValue = smallMapEntry.getValue();
 
@@ -443,7 +445,7 @@ public class ProcessorOne implements Processor {
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, eventValue);
         }
-
+        log.warn("smallMapState-遍历次数：{}", count);
         // 当前窗口步长的数据已经添加到窗口中了，清空状态
         smallMapState.clear(); // 性能优化
     }
