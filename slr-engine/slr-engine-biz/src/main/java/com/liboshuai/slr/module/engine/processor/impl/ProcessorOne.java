@@ -15,6 +15,7 @@ import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class ProcessorOne implements Processor {
     /**
      * bigValue（窗口大小）: key为eventField，小map的key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
      */
-    private MapState<String, Map<Long, Long>> bigMapState;
+    private MapState<Tuple2<String, Long>, Long> bigMapState;
     /**
      * 对应 keyCode + keyValue 最近一次预警时间
      */
@@ -70,8 +71,7 @@ public class ProcessorOne implements Processor {
         );
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
         bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(bigMapStateName, Types.STRING,
-                        Types.MAP(Types.LONG, Types.LONG))
+                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.LONG)
         );
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         lastWarningTimeState = runtimeContext.getState(
@@ -323,7 +323,6 @@ public class ProcessorOne implements Processor {
             String finalWarnMessage = TemplateUtil.replacePlaceholders(
                     ruleInfoDTO.getAlertMessage(),
                     ruleInfoDTO,
-                    getLatestEventKafkaDto(),
                     getProcessorDto(ruleConditionMapByEventField)
             );
             AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
@@ -348,15 +347,7 @@ public class ProcessorOne implements Processor {
      * @return boolean - 如果存在活跃的事件，则返回true；否则返回false
      */
     private boolean hasActiveEvents() throws Exception {
-        boolean result = false;
-        for (Map.Entry<String, Map<Long, Long>> bigMapEntry : bigMapState.entries()) {
-            Map<Long, Long> timestampAndEventValueMap = bigMapEntry.getValue();
-            if (!CollectionUtil.isEmpty(timestampAndEventValueMap)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        return bigMapState.entries().iterator().hasNext();
     }
 
     /**
@@ -399,21 +390,23 @@ public class ProcessorOne implements Processor {
      */
     private Map<String, Long> getEventFiledAndSumValueMap(Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
         Map<String, Long> eventFiledAndValueMap = new HashMap<>();
-        for (Map.Entry<String, Map<Long, Long>> bigMapEntry : bigMapState.entries()) {
-            String eventField = bigMapEntry.getKey();
-            Map<Long, Long> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue();
-            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream() // FIXME: 性能优化
-                    .mapToLong(Long::longValue)
-                    .sum();
-            eventFiledAndValueMap.put(eventField, eventValueSum);
+
+        // 遍历 MapState 的所有条目
+        for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
+            Tuple2<String, Long> keyTuple = entry.getKey();
+            String eventField = keyTuple.f0; // Tuple2 的第一个元素作为事件字段
+            Long value = entry.getValue();
+
+            // 使用 merge 方法高效地累加值
+            eventFiledAndValueMap.merge(eventField, value, Long::sum);
         }
-        // 如果当前上送事件数据没有此事件，则将此事件累计值设置为0
+
+        // 确保所有规则条件中的事件字段都被包含，如果不存在则设置为 0L
         Set<String> eventFieldSet = ruleConditionMapByEventField.keySet();
         for (String eventField : eventFieldSet) {
-            if (!eventFiledAndValueMap.containsKey(eventField)) {
-                eventFiledAndValueMap.put(eventField, 0L);
-            }
+            eventFiledAndValueMap.putIfAbsent(eventField, 0L);
         }
+
         return eventFiledAndValueMap;
     }
 
@@ -435,139 +428,62 @@ public class ProcessorOne implements Processor {
                 .build();
     }
 
-
-    /**
-     * 从所有事件条件累积的值流中检索最新的 Kafka 事件数据。
-     *
-     * <p>此方法遍历 `bigMapState` 中存储的所有事件数据，查找具有最大时间戳的 `EventKafkaDTO` 对象，
-     * 并返回该最新的事件数据。
-     *
-     * @return 最新的 {@link KafkaEventDTO} 对象，如果没有事件数据则返回 {@code null}
-     * @throws Exception 如果在遍历过程中发生异常
-     */
-    private KafkaEventDTO getLatestEventKafkaDto() throws Exception {
-//        // 初始化变量，用于存储最新的 EventKafkaDTO 和对应的最大时间戳
-//        KafkaEventDTO latestEventKafkaDTO = null
-//        Long maxTimestamp = Long.MIN_VALUE
-//
-//        // 遍历 bigMapState 中的每一个大键（eventField）及其对应的内部映射
-//        for (Map.Entry<String, Map<Long, Long>> bigMapEntry : bigMapState.entries()) {
-//            // 获取当前 eventField 对应的时间戳与事件数据的映射
-//            Map<Long, Long> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
-//
-//            // 获取当前映射中的所有条目（时间戳与事件数据对）
-//            Set<Map.Entry<Long, Long>> entrySet = timestampAndEventValueKafkaDtoMap.entrySet()
-//
-//            // 遍历当前 eventField 下的所有时间戳和事件数据对
-//            for (Map.Entry<Long, Long> entry : entrySet) {
-//                Long currentTimestamp = entry.getKey() // 当前条目的时间戳
-//                Long value = entry.getValue() // 包含累加值和事件数据的元组
-//
-//                // 如果当前时间戳大于已记录的最大时间戳，则更新最大时间戳和最新的事件数据
-//                if (currentTimestamp > maxTimestamp) {
-//                    maxTimestamp = currentTimestamp
-//                    latestEventKafkaDTO = value.f1 // 获取元组中的 EventKafkaDTO 对象
-//                }
-//            }
-//        }
-//
-//        // 返回找到的最新的 EventKafkaDTO 对象
-//        return latestEventKafkaDTO
-        return null;
-    }
-
-
     /**
      * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
      */
     private void updateBigMapWithSmallMap(long timestamp) throws Exception {
-        for (Map.Entry<String, Long> smallMapEntry : smallMapState.entries()) { // FIXME: 性能优化
+        // 遍历 smallMapState 的所有条目
+        for (Map.Entry<String, Long> smallMapEntry : smallMapState.entries()) { // 性能优化
             String eventField = smallMapEntry.getKey();
             Long eventValue = smallMapEntry.getValue();
-            Map<Long, Long> timestampAndEventValueMap = bigMapState.get(eventField);
-            if (timestampAndEventValueMap == null || timestampAndEventValueMap.isEmpty()) {
-                timestampAndEventValueMap = new HashMap<>();
-            }
-            timestampAndEventValueMap.put(timestamp, eventValue);
-            bigMapState.put(eventField, timestampAndEventValueMap);
+
+            // 创建新的 Tuple2 作为 bigMapState 的键
+            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
+
+            // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
+            bigMapState.put(tupleKey, eventValue);
         }
+
         // 当前窗口步长的数据已经添加到窗口中了，清空状态
-        smallMapState.clear(); // FIXME: 性能优化
+        smallMapState.clear(); // 性能优化
     }
 
     /**
      * 清理窗口大小之外的数据
      */
     private void cleanupWindowData(long timestamp, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
-        for (Map.Entry<String, Map<Long, Long>> bigMapEntry : bigMapState.entries()) {
-            String eventField = bigMapEntry.getKey();
-            Map<Long, Long> timestampAndEventValueMap = bigMapEntry.getValue();
+        // 提前计算每个 eventField 的 windowSize 和 windowThresholdTime
+        Map<String, Long> eventFieldToThresholdTime = new HashMap<>();
+
+        for (Map.Entry<String, RuleCondDTO> entry : ruleConditionMapByEventField.entrySet()) {
+            String eventField = entry.getKey();
+            RuleCondDTO ruleCondDTO = entry.getValue();
+            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(),
+                    TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
+            long windowThresholdTime = timestamp - windowSize;
+            eventFieldToThresholdTime.put(eventField, windowThresholdTime);
+        }
+
+        // 遍历 bigMapState 的所有条目
+        Iterator<Map.Entry<Tuple2<String, Long>, Long>> iterator = bigMapState.entries().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Tuple2<String, Long>, Long> stateEntry = iterator.next();
+            Tuple2<String, Long> keyTuple = stateEntry.getKey();
+            String eventField = keyTuple.f0;
+            Long eventTime = keyTuple.f1;
+
             RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField);
             if (Objects.isNull(ruleCondDTO)) {
-                log.warn("清理窗口大小之外的数据时，存在规则条件中不存在的数据");
+                log.warn("清理窗口大小之外的数据时，存在规则条件中不存在的 eventField: {}", eventField);
                 continue;
             }
-            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
-            long windowThresholdTime = timestamp - windowSize;
-            Iterator<Map.Entry<Long, Long>> iterator = timestampAndEventValueMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<Long, Long> next = iterator.next();
-                Long time = next.getKey();
-                if (time <= windowThresholdTime) {
-                    iterator.remove();
-                }
+
+            Long windowThresholdTime = eventFieldToThresholdTime.get(eventField);
+            if (eventTime <= windowThresholdTime) {
+                // 删除过期的条目
+                iterator.remove();
             }
-            bigMapState.put(eventField, timestampAndEventValueMap);
         }
-    }
-
-    /**
-     * 打印老状态值
-     */
-//    private void logOldState() throws Exception {
-//        Map<String, Long> oldSmallMap = new HashMap<>();
-//        Iterator<Map.Entry<String, Long>> oldSmallMapIterator = oldSmallMapState.iterator();
-//        while (oldSmallMapIterator.hasNext()) {
-//            Map.Entry<String, Long> next = oldSmallMapIterator.next();
-//            oldSmallMap.put(next.getKey(), next.getValue());
-//        }
-//
-//        Map<String, Boolean> oldSmallInitMap = new HashMap<>();
-//        Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = oldSmallInitMapState.iterator();
-//        while (oldSmallInitMapIterator.hasNext()) {
-//            Map.Entry<String, Boolean> next = oldSmallInitMapIterator.next();
-//            oldSmallInitMap.put(next.getKey(), next.getValue());
-//        }
-//
-//        Map<String, Map<Long, Long>> oldBigMap = new HashMap<>();
-//        Iterator<Map.Entry<String, Map<Long, Long>>> oldBigMapStateIterator = oldBigMapState.iterator();
-//        while (oldBigMapStateIterator.hasNext()) {
-//            Map.Entry<String, Map<Long, Long>> next = oldBigMapStateIterator.next();
-//            oldBigMap.put(next.getKey(), next.getValue());
-//        }
-//
-//        Long oldLastWarningTime = oldLastWarningTimeState.value();
-//
-//        log.warn("========================================旧状态值========================================");
-//        log.warn("oldSmallInitMap: {}", JsonUtil.toJsonString(oldSmallInitMap));
-//        log.warn("oldSmallMap: {}", JsonUtil.toJsonString(oldSmallMap));
-//        log.warn("oldBigMap: {}", JsonUtil.toJsonString(oldBigMap));
-//        log.warn("========================================旧状态值========================================");
-//    }
-
-    /**
-     * 日志打印
-     */
-    private void logBigMapState(String currentKey, Long ruleCode, Set<String> eventFieldList, MapState<String,
-            Map<Long, Long>> bigMapState) throws Exception {
-        Map<String, Map<Long, Long>> bigMap = new HashMap<>();
-        Iterator<Map.Entry<String, Map<Long, Long>>> iterator = bigMapState.iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Map<Long, Long>> next = iterator.next();
-            bigMap.put(next.getKey(), next.getValue());
-        }
-        log.warn("ProcessorOne对象onTimer方法结束 currentKey={}, ruleCode={}, eventFieldList={}, bigMapState={}",
-                currentKey, ruleCode, JsonUtil.toJsonString(eventFieldList), JsonUtil.toJsonString(bigMap));
     }
 
     /**
