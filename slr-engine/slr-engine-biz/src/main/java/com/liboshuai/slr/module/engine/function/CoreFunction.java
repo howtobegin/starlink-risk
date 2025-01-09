@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer.*;
 
@@ -49,7 +48,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 最近2分钟时间事件数据缓存
      * （对于需要设置过期时间的大状态，不要使用ListState，而是使用MapState。详见：https://juejin.cn/spost/7453734359793778698）
      */
-    private MapState<KafkaEventDTO, Object> recentEventMapState;
+//    private MapState<KafkaEventDTO, Object> recentEventMapState;
 
     /**
      * 旧规则列表
@@ -66,11 +65,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void open(Configuration parameters) {
-        ruleProcessorPool = new ConcurrentHashMap<>();
+        ruleProcessorPool = new HashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_MAP_STATE_DESC
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
-        recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
+//        recentEventMapState = getRuntimeContext().getMapState(RECENT_EVENT_MAP_STATE_DESC);
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
     }
 
@@ -88,23 +87,28 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
         // 将事件放入缓存列表中
-        recentEventMapState.put(kafkaEventDTO, null);
+//        recentEventMapState.put(kafkaEventDTO, null);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
+//        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
+//            String ruleCode = stringProcessorEntry.getKey();
+//            Processor processor = stringProcessorEntry.getValue();
+//            if (!oldRuleListState.contains(ruleCode)) {
+//                // 新规则需要先将缓存的最近历史事件数据处理一遍
+//                for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
+//                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
+//                }
+//                oldRuleListState.put(ruleCode, null);
+//            } else {
+//                // 否则直接处理当前一条事件数据即可
+//                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
+//            }
+//        }
         for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
-            if (!oldRuleListState.contains(ruleCode)) {
-                // 新规则需要先将缓存的最近历史事件数据处理一遍
-                for (KafkaEventDTO historyKafkaEventDTO : recentEventMapState.keys()) {
-                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
-                }
-                oldRuleListState.put(ruleCode, null);
-            } else {
-                // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
-            }
+            processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
         }
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
