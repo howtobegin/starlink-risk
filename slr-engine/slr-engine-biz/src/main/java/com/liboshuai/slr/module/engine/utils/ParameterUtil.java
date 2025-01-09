@@ -6,7 +6,7 @@ import com.liboshuai.slr.module.engine.framework.exception.FlinkPropertiesExcept
 import com.liboshuai.slr.module.engine.framework.exception.FlinkPropertiesExceptionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -193,8 +193,8 @@ public class ParameterUtil {
         checkpointConfig.setMaxConcurrentCheckpoints(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_MAXCONCURRENT));
         // 设置 checkpoint 存储位置
         setupCheckpointStorage(parameterTool, checkpointConfig);
-        //设置 StateBacked 为 rocksDB，并开启增量存储（临时设置为 HashMapStateBackend）
-        env.setStateBackend(new HashMapStateBackend());
+        //设置 StateBacked 为 rocksDB，并开启增量存储
+        env.setStateBackend(new EmbeddedRocksDBStateBackend(true));
     }
 
     /**
