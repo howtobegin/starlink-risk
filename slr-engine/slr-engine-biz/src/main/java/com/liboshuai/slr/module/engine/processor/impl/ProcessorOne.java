@@ -33,7 +33,7 @@ public class ProcessorOne implements Processor {
     /**
      * smallValue（窗口步长）: key为eventField,value为eventValue和最新的EventKafkaDTO
      */
-    private MapState<String, Long> smallMapState;
+    private Map<String, Long> smallMap;
     /**
      * 记录对应eventField是否已经初始化过（注意不要使用ListState，它查找指定元素的性能很差）
      */
@@ -59,12 +59,7 @@ public class ProcessorOne implements Processor {
         Long ruleCode = ruleInfoDTO.getRuleCode();
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
-        String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-        smallMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(
-                        smallMapStateName, Types.STRING,
-                        Types.LONG)
-        );
+        smallMap = new HashMap<>();
         String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
         smallInitMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
@@ -158,9 +153,7 @@ public class ProcessorOne implements Processor {
                     .build();
             out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
             // 状态值防空
-            if (smallMapState.get(kafkaEventDTO.getEventField()) == null) {
-                smallMapState.put(kafkaEventDTO.getEventField(), 0L);
-            }
+            smallMap.putIfAbsent(kafkaEventDTO.getEventField(), 0L);
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
                 String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
                 // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
@@ -184,21 +177,21 @@ public class ProcessorOne implements Processor {
                                 StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
                         );
                     }
-                    smallMapState.put(kafkaEventDTO.getEventField(), Long.parseLong(initValue));
+                    smallMap.put(kafkaEventDTO.getEventField(), Long.parseLong(initValue));
                     smallInitMapState.put(kafkaEventDTO.getEventField(), true);
                 }
                 // 从redis初始化值后，正常处理数据
-                Long currentValue = smallMapState.get(kafkaEventDTO.getEventField());
+                Long currentValue = smallMap.get(kafkaEventDTO.getEventField());
                 Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-                smallMapState.put(kafkaEventDTO.getEventField(), newValue);
+                smallMap.put(kafkaEventDTO.getEventField(), newValue);
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
                 if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
                     continue;
                 }
-                Long currentValue = smallMapState.get(kafkaEventDTO.getEventField());
+                Long currentValue = smallMap.get(kafkaEventDTO.getEventField());
                 Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-                smallMapState.put(kafkaEventDTO.getEventField(), newValue);
+                smallMap.put(kafkaEventDTO.getEventField(), newValue);
             }
         }
     }
@@ -433,9 +426,7 @@ public class ProcessorOne implements Processor {
      */
     private void updateBigMapWithSmallMap(long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
-        int count = 0;
-        for (Map.Entry<String, Long> smallMapEntry : smallMapState.entries()) { // 性能优化
-            count++;
+        for (Map.Entry<String, Long> smallMapEntry : smallMap.entrySet()) { // 性能优化
             String eventField = smallMapEntry.getKey();
             Long eventValue = smallMapEntry.getValue();
 
@@ -445,9 +436,8 @@ public class ProcessorOne implements Processor {
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, eventValue);
         }
-        log.warn("smallMapState-遍历次数：{}", count);
         // 当前窗口步长的数据已经添加到窗口中了，清空状态
-        smallMapState.clear(); // 性能优化
+        smallMap.clear(); // 性能优化
     }
 
     /**
