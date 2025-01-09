@@ -16,6 +16,9 @@ services:
       - "one:10.0.0.17"
       - "two:10.0.0.74"
       - "three:10.0.0.2"
+      - "four:10.0.0.76"
+      - "five:10.0.0.77"
+      - "six:10.0.0.78"
     mem_limit: 8g
 
 volumes:
