@@ -38,7 +38,7 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://one:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://four:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
   redis:
@@ -48,12 +48,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - one:6379
-        - one:6380
-        - two:6379
-        - two:6380
-        - three:6379
-        - three:6380
+        - four:6379
+        - four:6380
+        - five:6379
+        - five:6380
+        - six:6379
+        - six:6380
     lettuce:
       pool:
         min-idle: 0
@@ -62,13 +62,13 @@ spring:
         max-wait: -1ms
   kafka:
     producer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: four:9092,five:9092,six:9092
     consumer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: four:9092,five:9092,six:9092
       group-id: starlink_risk
   data:
     mongodb:
-      host: one
+      host: four
       port: 27018
       username: lbs
       password: Rongshu@2024
