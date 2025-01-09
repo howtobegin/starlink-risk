@@ -430,7 +430,7 @@ class ProcessorOne implements Processor {
         for (Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapEntry : bigMapState.entries()) {
             String eventField = bigMapEntry.getKey()
             Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueKafkaDtoMap = bigMapEntry.getValue()
-            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream()
+            long eventValueSum = timestampAndEventValueKafkaDtoMap.values().stream() // FIXME: 性能优化
                     .map(o -> o.f0)
                     .mapToLong(Long::longValue)
                     .sum()
@@ -510,7 +510,7 @@ class ProcessorOne implements Processor {
      * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
      */
     private void updateBigMapWithSmallMap(long timestamp) throws Exception {
-        for (Map.Entry<String, Tuple2<Long, KafkaEventDTO>> smallMapEntry : smallMapState.entries()) {
+        for (Map.Entry<String, Tuple2<Long, KafkaEventDTO>> smallMapEntry : smallMapState.entries()) { // FIXME: 性能优化
             String eventField = smallMapEntry.getKey()
             Tuple2<Long, KafkaEventDTO> eventValueAndKafkaDtoTuple2 = smallMapEntry.getValue()
             Map<Long, Tuple2<Long, KafkaEventDTO>> timestampAndEventValueMap = bigMapState.get(eventField)
@@ -521,7 +521,7 @@ class ProcessorOne implements Processor {
             bigMapState.put(eventField, timestampAndEventValueMap)
         }
         // 当前窗口步长的数据已经添加到窗口中了，清空状态
-        smallMapState.clear()
+        smallMapState.clear() // FIXME: 性能优化
     }
 
     /**
