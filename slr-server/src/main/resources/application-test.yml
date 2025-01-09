@@ -77,8 +77,8 @@ spring:
 
 slr-connector:
   kafka:
-    provider_topic: slr_event
-    consumer_topic: slr_alert
+    provider_topic: slr_event_data
+    consumer_topic: slr_alert_message
 
 slr-admin:
   file-path:
