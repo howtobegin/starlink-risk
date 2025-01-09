@@ -3,6 +3,7 @@ package com.liboshuai.slr.module.engine.function;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
+import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.WindowUtil;
 import groovy.lang.GroovyClassLoader;
@@ -236,7 +237,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             return;
         }
         // 构建规则运算机
-        Processor processor = buildProcessor(getRuntimeContext(), ruleInfoDTO);
+        Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         broadcastState.put(ruleCode, ruleInfoDTO);
         log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
@@ -286,10 +287,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     // mock运算机对象
-//    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
-//        Processor processor = new ProcessorOne();
-//        processor.init(runtimeContext, ruleInfoDTO);
-//        return processor;
-//    }
+    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+        Processor processor = new ProcessorOne();
+        processor.init(runtimeContext, ruleInfoDTO);
+        return processor;
+    }
 
 }
