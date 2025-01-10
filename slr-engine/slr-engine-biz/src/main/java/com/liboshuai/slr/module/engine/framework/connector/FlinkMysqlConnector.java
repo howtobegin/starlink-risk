@@ -43,6 +43,6 @@ public class FlinkMysqlConnector {
                 .deserializer(new MysqlCdcDeserializationSchema())
                 .build();
 
-        return env.fromSource(ruleCdcSource, WatermarkStrategy.noWatermarks(), "ruleSource");
+        return env.fromSource(ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]");
     }
 }

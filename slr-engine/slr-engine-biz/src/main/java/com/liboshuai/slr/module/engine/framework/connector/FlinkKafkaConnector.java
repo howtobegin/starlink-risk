@@ -46,7 +46,7 @@ public class FlinkKafkaConnector {
         return env.fromSource(
                 KAFKA_SOURCE,
                 WatermarkStrategy.noWatermarks(),
-                "kafka-source-" + topic
+                "kafka-[" + topic + "]"
         ).uid("kafka-source-" + topic);
     }
 
@@ -63,12 +63,12 @@ public class FlinkKafkaConnector {
                                 .setTopic(topic) //topic
                                 .setValueSerializationSchema(new SimpleStringSchema()) //设置value的序列化器
                                 .build())
-                //设置事务超时时间
+                //设置事务前缀
                 .setTransactionalIdPrefix("starlink-risk-" + topic)
                 //设置交付保证-至少一次
                 .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();
-        dataStream.sinkTo(kafkaSink).uid("kafka-skin-" + topic);
+        dataStream.sinkTo(kafkaSink).name("kafka-[" + topic + "]").uid("kafka-[" + topic + "]");
     }
 
 }

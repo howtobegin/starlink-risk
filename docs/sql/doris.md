@@ -3,12 +3,12 @@
 ```
 docker-compose exec fe bash
 
-mysql -h 192.168.113.244 -P 9030 -uroot
+mysql -h 192.168.6.186 -P 9030 -uroot
 
 SET PASSWORD FOR 'root' = PASSWORD('Rongshu@2024');
 
 use mysql;
-ALTER SYSTEM ADD BACKEND "192.168.113.244:9050";
+ALTER SYSTEM ADD BACKEND "192.168.6.186:9050";
 SHOW PROC '/backends';
 # 下面的alert操作是集群模式下才需要做
 -- alter system modify backend "10.0.0.17:9050" set ("tag.location" = "group_a");

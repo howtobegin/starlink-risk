@@ -45,7 +45,7 @@ public class EngineApplication {
         // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
                 ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
-        );
+        ).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
@@ -67,14 +67,14 @@ public class EngineApplication {
         // 将规则状态的历史key记录数据写入doris
         writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
-        alertMessageToKafka(resultDtoStreamOperator, parameterTool);
+        writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
     }
 
     /**
      * 将告警信息写入kafka
      */
-    private static void alertMessageToKafka(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+    private static void writeAlertMessageToKafka(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
                 .map(resultDTO -> JsonUtil.toJsonString(resultDTO.getAlertMessageDTO())).uid("alert-message-map");
