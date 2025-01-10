@@ -48,7 +48,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 旧规则列表
      */
-    private MapState<String, Object> oldRuleListState;
+    private MapState<String, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
     private MapState<String, Boolean> smallInitMapState;

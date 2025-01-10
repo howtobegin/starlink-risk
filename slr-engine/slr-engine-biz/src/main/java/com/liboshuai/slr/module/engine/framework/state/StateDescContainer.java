@@ -24,6 +24,6 @@ public class StateDescContainer {
     /**
      * 旧规则状态定义
      */
-    public static MapStateDescriptor<String, Object> OLD_RULE_MAP_STATE_DESC = new MapStateDescriptor<>("oldRuleMapState", String.class, Object.class);
+    public static MapStateDescriptor<String, Void> OLD_RULE_MAP_STATE_DESC = new MapStateDescriptor<>("oldRuleMapState", String.class, Void.class);
 
 }
