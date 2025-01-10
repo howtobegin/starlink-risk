@@ -341,9 +341,10 @@ public class ProcessorOne implements Processor {
                     .alertMessage(finalWarnMessage)
                     .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build();
-            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
-            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
-            out.collect(resultDTO);
+            // FIXME: 方便测试，临时取消
+//            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+//            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
+//            out.collect(resultDTO);
         }
 //        logState(ruleInfoDTO.getRuleCode(), currentKey);
         return hasActiveEvents();
