@@ -40,13 +40,31 @@ public class ProcessorOne implements Processor {
      */
     private MapState<String, Boolean> smallInitMapState;
     /**
-     * bigValue（窗口大小）: key为eventField，小map的key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
-     */
-    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
-    /**
      * 对应 keyCode + keyValue 最近一次预警时间
      */
     private ValueState<Long> lastWarningTimeState;
+    /**
+     * bigValue（窗口大小）: key为eventField，小map的key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
+     */
+    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
+
+    private void logState(Long ruleCode, String currentKey) throws Exception {
+//        // smallInitMapState
+//        Map<String, Boolean> smallInitMap = new HashMap<>();
+//        Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = smallInitMapState.iterator();
+//        while (oldSmallInitMapIterator.hasNext()) {
+//            Map.Entry<String, Boolean> next = oldSmallInitMapIterator.next();
+//            smallInitMap.put(next.getKey(), next.getValue());
+//        }
+//        // lastWarningTimeState
+//        Long lastWarningTime = lastWarningTimeState.value();
+        // bigMapState
+        Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
+            bigMap.put(entry.getKey(), entry.getValue());
+        }
+        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+    }
 
     /**
      * 初始化方法，用于在运行时上下文中注册各种状态
@@ -282,7 +300,6 @@ public class ProcessorOne implements Processor {
      */
     @Override
     public boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
-//        logOldState()
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
         }
@@ -330,6 +347,7 @@ public class ProcessorOne implements Processor {
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
             out.collect(resultDTO);
         }
+        logState(ruleInfoDTO.getRuleCode(), currentKey);
         return hasActiveEvents();
     }
 
