@@ -5,6 +5,5 @@
   -Dstate.backend.rocksdb.writebuffer.size=128mb \
   -Dstate.backend.rocksdb.writebuffer.count=4 \
   -Dstate.backend.rocksdb.thread.num=4 \
-  -Dstate.backend.rocksdb.incremental-checkpointing=true \
   -Dstate.backend.rocksdb.metrics.enable=true \
   /home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/target/slr-engine-biz-1.0.jar
