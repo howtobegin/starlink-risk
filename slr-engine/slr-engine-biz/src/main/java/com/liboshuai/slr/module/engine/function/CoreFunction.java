@@ -20,6 +20,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer.*;
 
@@ -58,7 +59,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void open(Configuration parameters) {
-        ruleProcessorPool = new HashMap<>();
+        ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_MAP_STATE_DESC
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
