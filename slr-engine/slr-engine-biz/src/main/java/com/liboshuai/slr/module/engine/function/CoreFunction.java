@@ -50,8 +50,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     // 上一个同规则的运算机残留状态
     private MapState<String, Boolean> smallInitMapState;
-    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
     private ValueState<Long> lastWarningTimeState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
 
     /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
@@ -110,19 +110,19 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         smallInitMapState = getRuntimeContext().getMapState(
                 new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
         );
+        String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
+        lastWarningTimeState = getRuntimeContext().getState(
+                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
+        );
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
         bigMapState = getRuntimeContext().getMapState(
                 new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
         );
-        String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
-        lastWarningTimeState = getRuntimeContext().getState(
-                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
-        );
 //        logState("之前");
         smallInitMapState.clear();
-        bigMapState.clear();
         lastWarningTimeState.clear();
+        bigMapState.clear();
 //        logState("之后");
     }
 
@@ -137,14 +137,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             smallInitMap.put(next.getKey(), next.getValue());
         }
 
+        Long lastWarningTime = lastWarningTimeState.value();
+
         Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
         Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>>> oldBigMapStateIterator = bigMapState.iterator();
         while (oldBigMapStateIterator.hasNext()) {
             Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> next = oldBigMapStateIterator.next();
             bigMap.put(next.getKey(), next.getValue());
         }
-
-        Long lastWarningTime = lastWarningTimeState.value();
 
         log.warn("========================================清理状态值-{}========================================", status);
         log.warn("smallInitMap: {}", JsonUtil.toJsonString(smallInitMap));
