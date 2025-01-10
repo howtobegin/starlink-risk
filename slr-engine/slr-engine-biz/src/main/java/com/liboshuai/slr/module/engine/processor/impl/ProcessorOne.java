@@ -59,9 +59,9 @@ public class ProcessorOne implements Processor {
 //        // lastWarningTimeState
 //        Long lastWarningTime = lastWarningTimeState.value();
         // bigMapState
-        Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
+        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
         for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
-            bigMap.put(entry.getKey(), entry.getValue());
+            bigMap.put(entry.getKey(), entry.getValue().f0);
         }
         log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
     }
