@@ -49,16 +49,6 @@ public class ProcessorOne implements Processor {
     private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
 
     private void logState(Long ruleCode, String currentKey) throws Exception {
-//        // smallInitMapState
-//        Map<String, Boolean> smallInitMap = new HashMap<>();
-//        Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = smallInitMapState.iterator();
-//        while (oldSmallInitMapIterator.hasNext()) {
-//            Map.Entry<String, Boolean> next = oldSmallInitMapIterator.next();
-//            smallInitMap.put(next.getKey(), next.getValue());
-//        }
-//        // lastWarningTimeState
-//        Long lastWarningTime = lastWarningTimeState.value();
-        // bigMapState
         Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
         for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
             bigMap.put(entry.getKey(), entry.getValue().f0);
@@ -355,7 +345,7 @@ public class ProcessorOne implements Processor {
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
             out.collect(resultDTO);
         }
-        logState(ruleInfoDTO.getRuleCode(), currentKey);
+//        logState(ruleInfoDTO.getRuleCode(), currentKey);
         return hasActiveEvents();
     }
 
