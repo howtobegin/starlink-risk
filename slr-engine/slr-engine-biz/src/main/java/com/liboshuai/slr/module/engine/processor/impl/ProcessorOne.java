@@ -34,7 +34,7 @@ public class ProcessorOne implements Processor {
     /**
      * smallValue（窗口步长）: key为eventField,value为eventValue和最新的EventKafkaDTO
      */
-    private Map<String, Tuple2<Long, KafkaEventDTO>> smallMap;
+    private Map<String, Map<String, Tuple2<Long, KafkaEventDTO>>> smallMap;
     /**
      * 记录对应eventField是否已经初始化过（注意不要使用ListState，它查找指定元素的性能很差）
      */
@@ -103,7 +103,7 @@ public class ProcessorOne implements Processor {
      * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
      */
     @Override
-    public void processElement(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO,
+    public void processElement(String currentKey, long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO,
                                Collector<ResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
@@ -135,7 +135,7 @@ public class ProcessorOne implements Processor {
             }
         }
         // 计算规则条件值
-        processRuleCondValue(currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out);
+        processRuleCondValue(currentKey, currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out);
     }
 
     /**
@@ -146,7 +146,7 @@ public class ProcessorOne implements Processor {
      * @param currentEventTimestamp 时间戳，用于非跨历史时间段的事件匹配
      * @param kafkaEventDTO         Kafka事件DTO
      */
-    private void processRuleCondValue(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
+    private void processRuleCondValue(String currentKey, long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
                                       KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) throws Exception {
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
@@ -172,7 +172,11 @@ public class ProcessorOne implements Processor {
                     .build();
             out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
             // 状态值防空
-            smallMap.putIfAbsent(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO));
+            smallMap.computeIfAbsent(currentKey, key -> {
+                Map<String, Tuple2<Long, KafkaEventDTO>> newMap = new HashMap<>();
+                newMap.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO));
+                return newMap;
+            });
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
                 String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
                 // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
@@ -196,23 +200,29 @@ public class ProcessorOne implements Processor {
                                 StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
                         );
                     }
-                    smallMap.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO));
+                    Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
+                    stringTuple2Map.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO));
+                    smallMap.put(currentKey, stringTuple2Map);
                     smallInitMapState.put(kafkaEventDTO.getEventField(), true);
                 }
                 // 从redis初始化值后，正常处理数据
-                Long currentValue = smallMap.get(kafkaEventDTO.getEventField()).f0;
-                Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-                smallMap.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO));
+                addEventValue(currentKey, kafkaEventDTO);
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
                 if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
                     continue;
                 }
-                Long currentValue = smallMap.get(kafkaEventDTO.getEventField()).f0;
-                Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-                smallMap.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO));
+                addEventValue(currentKey, kafkaEventDTO);
             }
         }
+    }
+
+    private void addEventValue(String currentKey, KafkaEventDTO kafkaEventDTO) {
+        Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
+        Long currentValue = stringTuple2Map.get(kafkaEventDTO.getEventField()).f0;
+        Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
+        stringTuple2Map.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO));
+        smallMap.put(currentKey, stringTuple2Map);
     }
 
 
@@ -299,7 +309,7 @@ public class ProcessorOne implements Processor {
      * @throws Exception 可能抛出的异常
      */
     @Override
-    public boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
+    public boolean onTimer(String currentKey, long timestamp, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
         }
@@ -314,7 +324,7 @@ public class ProcessorOne implements Processor {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
         // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
-        updateBigMapWithSmallMap(timestamp);
+        updateBigMapWithSmallMap(currentKey, timestamp);
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField);
         // 处理bigMapState
@@ -417,9 +427,10 @@ public class ProcessorOne implements Processor {
     /**
      * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
      */
-    private void updateBigMapWithSmallMap(long timestamp) throws Exception {
+    private void updateBigMapWithSmallMap(String currentKey, long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
-        for (Map.Entry<String, Tuple2<Long, KafkaEventDTO>> smallMapEntry : smallMap.entrySet()) { // 性能优化
+        Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
+        for (Map.Entry<String, Tuple2<Long, KafkaEventDTO>> smallMapEntry : stringTuple2Map.entrySet()) { // 性能优化
             String eventField = smallMapEntry.getKey();
             Tuple2<Long, KafkaEventDTO> tupleValue = smallMapEntry.getValue();
 
@@ -429,8 +440,8 @@ public class ProcessorOne implements Processor {
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, tupleValue);
         }
-        // 当前窗口步长的数据已经添加到窗口中了，清空状态
-        smallMap.clear(); // 性能优化
+        // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
+        smallMap.remove(currentKey); // 性能优化
     }
 
     /**

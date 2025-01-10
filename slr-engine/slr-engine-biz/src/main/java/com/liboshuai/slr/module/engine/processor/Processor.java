@@ -19,10 +19,10 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(long timestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) throws Exception;
+    void processElement(String currentKey, long timestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) throws Exception;
 
     /**
      * 定时器
      */
-    boolean onTimer(long timestamp, String currentKey, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception;
+    boolean onTimer(String currentKey, long timestamp, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception;
 }

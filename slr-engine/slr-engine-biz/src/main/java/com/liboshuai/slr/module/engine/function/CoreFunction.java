@@ -16,6 +16,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
+import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
@@ -43,7 +44,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 最近2分钟时间事件数据缓存
      */
-    private List<KafkaEventDTO> recentEventList;
+    private Map<String, List<KafkaEventDTO>> recentEventMap;
     /**
      * 旧规则列表
      */
@@ -63,7 +64,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         groovyClassLoader = new GroovyClassLoader();
         RECENT_EVENT_MAP_STATE_DESC
                 .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
-        recentEventList = new ArrayList<>();
+        recentEventMap = new HashMap<>();
         oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
     }
 
@@ -71,6 +72,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void processElement(KafkaEventDTO kafkaEventDTO,
                                KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.ReadOnlyContext ctx,
                                Collector<ResultDTO> out) throws Exception {
+        // 获取当前key
+        String currentKey = ctx.getCurrentKey();
+        // 获取下线规则key信息
         RuleKeyHistoryDTO ruleKeyHistoryDTO = kafkaEventDTO.getRuleKeyHistoryDTO();
         if (Objects.nonNull(ruleKeyHistoryDTO)) {
             clearOldState(ruleKeyHistoryDTO);
@@ -80,7 +84,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
         // 将事件放入缓存列表中
-        recentEventList.add(kafkaEventDTO);
+        recentEventMap
+                .computeIfAbsent(currentKey, k -> new ArrayList<>())
+                .add(kafkaEventDTO);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
@@ -89,13 +95,17 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
-                for (KafkaEventDTO historyKafkaEventDTO : recentEventList) {
-                    processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDTO, out);
+                List<KafkaEventDTO> historyKafkaEventDTOList = recentEventMap.get(currentKey);
+                if (CollectionUtil.isNullOrEmpty(historyKafkaEventDTOList)) {
+                    continue;
+                }
+                for (KafkaEventDTO historyKafkaEventDto : historyKafkaEventDTOList) {
+                    processor.processElement(currentKey, currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
+                processor.processElement(currentKey, currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -227,6 +237,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void onTimer(long timestamp,
                         KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.OnTimerContext ctx,
                         Collector<ResultDTO> out) throws Exception {
+        // 获取当前Key
+        String currentKey = ctx.getCurrentKey();
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 判断当前key所有运算机中是否有待处理的定时器
@@ -236,7 +248,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             String ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
-            boolean hasActiveEvents = processor.onTimer(timestamp, ctx.getCurrentKey(), broadcastState.get(ruleCode), out);
+            boolean hasActiveEvents = processor.onTimer(currentKey, timestamp, broadcastState.get(ruleCode), out);
             if (hasActiveEvents) {
                 hasPendingTimers = true;
             }
