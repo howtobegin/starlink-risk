@@ -32,54 +32,58 @@ public class ProcessorOne implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ProcessorOne.class);
 
     /**
-     * smallValue（窗口步长）: key为eventField,value为eventValue和最新的EventKafkaDTO
+     * key: currentKey
+     * value: key-eventField，value-f0为eventValue累加值，f1为最新的EventKafkaDTO
      */
     private Map<String, Map<String, Tuple2<Long, KafkaEventDTO>>> smallMap;
     /**
-     * 记录对应eventField是否已经初始化过（注意不要使用ListState，它查找指定元素的性能很差）
+     * 记录对于事件条件是否初始化过
+     * （注意不要使用ListState，它查找指定元素的性能很差）
      */
     private MapState<String, Boolean> smallInitMapState;
     /**
-     * 对应 keyCode + keyValue 最近一次预警时间
+     * 规则最近一次触发预警时间
      */
     private ValueState<Long> lastWarningTimeState;
     /**
-     * bigValue（窗口大小）: key为eventField，小map的key为时间戳，小map的value为一个一个步长的eventValue累加值和最新的EventKafkaDTO
+     * key: f0为eventField，f1为时间戳
+     * value: f0为eventValue累加值，f1为最新的EventKafkaDTO
      */
     private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
 
-    private void logState(Long ruleCode, String currentKey) throws Exception {
-        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
-        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
-            bigMap.put(entry.getKey(), entry.getValue().f0);
-        }
-        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
-    }
+    // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
+    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> oldBigMapState;
 
     /**
      * 初始化方法，用于在运行时上下文中注册各种状态
      *
      * @param runtimeContext 运行时上下文，用于访问状态和其它运行时设施
      * @param ruleInfoDTO    规则信息数据传输对象，包含规则特定的元数据
-     * @throws Exception 如果初始化过程中发生错误则抛出异常
      */
     @Override
-    public void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+    public void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) {
         Long ruleCode = ruleInfoDTO.getRuleCode();
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
-        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMap = new HashMap<>();
+        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
         smallInitMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
         );
-        String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
-        );
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         lastWarningTimeState = runtimeContext.getState(
                 new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
+        );
+        String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
+        bigMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
+                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
+        );
+
+        // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
+        String oldBigMapStateName = "oldBigMapState_" + ruleCode + "_" + ruleVersion;
+        oldBigMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>(oldBigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
         );
     }
 
@@ -342,12 +346,29 @@ public class ProcessorOne implements Processor {
                     .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build();
             // FIXME: 方便测试，临时取消
-//            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
-//            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
-//            out.collect(resultDTO);
+            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
+            out.collect(resultDTO);
         }
+        logOldState(ruleInfoDTO.getRuleCode(), currentKey);
 //        logState(ruleInfoDTO.getRuleCode(), currentKey);
         return hasActiveEvents();
+    }
+
+    private void logState(Long ruleCode, String currentKey) throws Exception {
+        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
+            bigMap.put(entry.getKey(), entry.getValue().f0);
+        }
+        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+    }
+
+    private void logOldState(Long ruleCode, String currentKey) throws Exception {
+        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
+            bigMap.put(entry.getKey(), entry.getValue().f0);
+        }
+        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
     }
 
     /**
