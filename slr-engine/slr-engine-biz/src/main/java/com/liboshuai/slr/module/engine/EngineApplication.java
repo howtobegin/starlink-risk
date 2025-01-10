@@ -63,9 +63,9 @@ public class EngineApplication {
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-//        kafkaEventToDoris(kafkaEventDtoDS, parameterTool);
+        writeKafkaEventToDoris(kafkaEventDtoDS, parameterTool);
         // 将规则状态的历史key记录数据写入doris
-//        ruleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
+        writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
         alertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
@@ -85,7 +85,7 @@ public class EngineApplication {
      * 将规则状态的历史key记录数据写入doris
      * TODO: 如果后续 doris 写入的性能成为瓶颈，可以替换为 redis
      */
-    private static void ruleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+    private static void writeRuleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
                 .map(resultDTO -> JsonUtil.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
@@ -98,7 +98,7 @@ public class EngineApplication {
     /**
      * 将kafka中的事件数据同步往 doris 中留存一份
      */
-    private static void kafkaEventToDoris(SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS, ParameterTool parameterTool) {
+    private static void writeKafkaEventToDoris(SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
                 // kafka事件数据结构转doris事件数据结构，并设置事件时间
                 .process(new DorisEventProcessFunction()).uid("toDoris-process");
