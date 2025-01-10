@@ -172,11 +172,9 @@ public class ProcessorOne implements Processor {
                     .build();
             out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
             // 状态值防空
-            smallMap.computeIfAbsent(currentKey, key -> {
-                Map<String, Tuple2<Long, KafkaEventDTO>> newMap = new HashMap<>();
-                newMap.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO));
-                return newMap;
-            });
+            Map<String, Tuple2<Long, KafkaEventDTO>> eventFieldTuple2 = smallMap.computeIfAbsent(currentKey, k -> new HashMap<>());
+            eventFieldTuple2.putIfAbsent(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO));
+            // 规则事件值计算
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
                 String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
                 // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
@@ -430,6 +428,9 @@ public class ProcessorOne implements Processor {
     private void updateBigMapWithSmallMap(String currentKey, long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
         Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
+        if (CollectionUtil.isEmpty(stringTuple2Map)) {
+            return;
+        }
         for (Map.Entry<String, Tuple2<Long, KafkaEventDTO>> smallMapEntry : stringTuple2Map.entrySet()) { // 性能优化
             String eventField = smallMapEntry.getKey();
             Tuple2<Long, KafkaEventDTO> tupleValue = smallMapEntry.getValue();
