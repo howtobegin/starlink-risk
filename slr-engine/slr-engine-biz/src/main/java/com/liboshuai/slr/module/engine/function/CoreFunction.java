@@ -35,25 +35,22 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 规则运算机池：key-规则编号，value-运算机对象
      */
     private Map<String, Processor> ruleProcessorPool;
-
     /**
      * groovy加载器
      */
     private GroovyClassLoader groovyClassLoader;
-
     /**
      * 最近2分钟时间事件数据缓存
      */
     private List<KafkaEventDTO> recentEventList;
-
     /**
      * 旧规则列表
      */
     private MapState<String, Object> oldRuleListState;
 
-    private MapState<String, Tuple2<Long, KafkaEventDTO>> smallMapState;
+    // 上一个同规则的运算机残留状态
     private MapState<String, Boolean> smallInitMapState;
-    private MapState<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
     private ValueState<Long> lastWarningTimeState;
 
     /**
@@ -108,28 +105,21 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private void clearOldState(RuleKeyHistoryDTO ruleKeyHistoryDTO) throws Exception {
         Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
         Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
-        String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-        smallMapState = getRuntimeContext().getMapState(
-                new MapStateDescriptor<>(
-                        smallMapStateName, Types.STRING,
-                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))
-                )
-        );
+
         String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
         smallInitMapState = getRuntimeContext().getMapState(
                 new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
         );
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
         bigMapState = getRuntimeContext().getMapState(
-                new MapStateDescriptor<>(bigMapStateName, Types.STRING,
-                        Types.MAP(Types.LONG, Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class))))
+                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
+                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
         );
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         lastWarningTimeState = getRuntimeContext().getState(
                 new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
         );
 //        logState("之前");
-        smallMapState.clear();
         smallInitMapState.clear();
         bigMapState.clear();
         lastWarningTimeState.clear();
@@ -140,13 +130,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 打印状态值
      */
     private void logState(String status) throws Exception {
-        Map<String, Tuple2<Long, KafkaEventDTO>> smallMap = new HashMap<>();
-        Iterator<Map.Entry<String, Tuple2<Long, KafkaEventDTO>>> oldSmallMapIterator = smallMapState.iterator();
-        while (oldSmallMapIterator.hasNext()) {
-            Map.Entry<String, Tuple2<Long, KafkaEventDTO>> next = oldSmallMapIterator.next();
-            smallMap.put(next.getKey(), next.getValue());
-        }
-
         Map<String, Boolean> smallInitMap = new HashMap<>();
         Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = smallInitMapState.iterator();
         while (oldSmallInitMapIterator.hasNext()) {
@@ -154,10 +137,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             smallInitMap.put(next.getKey(), next.getValue());
         }
 
-        Map<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> bigMap = new HashMap<>();
-        Iterator<Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>>> oldBigMapStateIterator = bigMapState.iterator();
+        Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
+        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>>> oldBigMapStateIterator = bigMapState.iterator();
         while (oldBigMapStateIterator.hasNext()) {
-            Map.Entry<String, Map<Long, Tuple2<Long, KafkaEventDTO>>> next = oldBigMapStateIterator.next();
+            Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> next = oldBigMapStateIterator.next();
             bigMap.put(next.getKey(), next.getValue());
         }
 
@@ -165,9 +148,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
         log.warn("========================================清理状态值-{}========================================", status);
         log.warn("smallInitMap: {}", JsonUtil.toJsonString(smallInitMap));
-        log.warn("smallMap: {}", JsonUtil.toJsonString(smallMap));
-        log.warn("bigMap: {}", JsonUtil.toJsonString(bigMap));
         log.warn("lastWarningTime: {}", JsonUtil.toJsonString(lastWarningTime));
+        log.warn("bigMap: {}", JsonUtil.toJsonString(bigMap));
         log.warn("========================================清理状态值-{}========================================", status);
     }
 
