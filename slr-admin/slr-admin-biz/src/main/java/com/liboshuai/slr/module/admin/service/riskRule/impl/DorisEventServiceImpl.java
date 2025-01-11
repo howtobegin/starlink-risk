@@ -6,11 +6,14 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.DorisEventDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.DorisEventMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.DorisEventService;
+import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +40,7 @@ public class DorisEventServiceImpl implements DorisEventService {
                 .collect(Collectors.groupingBy(DorisEventDO::getTargetValue));
         // 遍历每个targetValue下的数据，进行风控规则判断
         long alertCount = 0L;
+        List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
         for (Map.Entry<String, List<DorisEventDO>> entry : targetValueAndDorisEventDOMap.entrySet()) {
             String targetValue = entry.getKey();
             List<DorisEventDO> dorisEventDOS = entry.getValue();
@@ -90,11 +94,15 @@ public class DorisEventServiceImpl implements DorisEventService {
                         eventValueSum);
 
                 if (eventValueSum > 10 && (windowEndTimeStamp - lastAlertTimestamp >= 5 * 60 * 1000)) {
-                    DorisEventDO latestDorisEventDo = windowsDorisEventDOList.get(windowsDorisEventDOList.size() - 1);
-                    Map<String, String> map = JsonUtils.parseObject(latestDorisEventDo.getEventAttrMap(), Map.class);
-                    String alertMessage = String.format("[异常高频抽奖]%s: 活动%s(%s)中游戏用户(%s)最近20分钟内抽奖数量为%d，超过10次，请您及时查看原因！",
-                            map.get("bankName"), map.get("campaignName"), map.get("campaignId"), targetValue, eventValueSum);
-                    log.info(LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp) + ": " + alertMessage);
+                    String alertMessage = String.format("[异常高频抽奖]: 游戏用户(%s)最近20分钟内抽奖数量为%d，超过10次，请您及时查看原因！",
+                            targetValue, eventValueSum);
+                    AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
+                            .channel("GAME")
+                            .ruleCode(1873910811026657280L)
+                            .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(windowEndTimeStamp))
+                            .alertMessage(alertMessage)
+                            .build();
+                    alertMessageDTOS.add(alertMessageDTO);
                     alertCount++;
 
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
@@ -102,7 +110,9 @@ public class DorisEventServiceImpl implements DorisEventService {
                 }
             }
         }
-        log.info("触发的预警信息条数: {}", alertCount);
+        log.info("触发的预警信息条数: {}", alertMessageDTOS.size());
+        alertMessageDTOS.sort(Comparator.comparing(AlertMessageDTO::getAlertTime, Comparator.reverseOrder()));
+        alertMessageDTOS.forEach(alertMessageDTO -> log.info(JsonUtils.toJsonString(alertMessageDTO)));
     }
 }
 
