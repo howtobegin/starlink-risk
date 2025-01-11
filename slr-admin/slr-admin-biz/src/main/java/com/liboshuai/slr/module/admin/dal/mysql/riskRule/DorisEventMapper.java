@@ -16,7 +16,7 @@ public interface DorisEventMapper extends BaseMapperX<DorisEventDO> {
                 .eq(DorisEventDO::getChannel, channel)
                 .eq(DorisEventDO::getTargetField, targetField)
                 .eq(DorisEventDO::getEventField, eventField)
-                .orderByDesc(DorisEventDO::getEventTime)
+                .orderByAsc(DorisEventDO::getEventTime)
         );
     }
 }
