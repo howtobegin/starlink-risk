@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.engine.convert;
 
+import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.module.engine.dto.DorisEventDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.utils.DateUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -23,6 +23,6 @@ public interface EventConvert {
         if (Objects.isNull(eventTime)) {
             return null;
         }
-        return DateUtil.convertTimestamp2String(eventTime);
+        return LocalDateTimeUtils.convertTimestamp2String(eventTime);
     }
 }

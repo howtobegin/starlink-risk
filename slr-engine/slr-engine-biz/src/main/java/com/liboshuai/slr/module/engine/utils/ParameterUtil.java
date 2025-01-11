@@ -20,9 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * author: liboshuai
- * description: 配置信息读取类
- * date: 2023
+ * 配置信息读取类
  */
 @Slf4j
 public class ParameterUtil {

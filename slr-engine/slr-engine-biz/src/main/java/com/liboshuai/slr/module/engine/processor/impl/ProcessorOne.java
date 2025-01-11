@@ -2,6 +2,7 @@ package com.liboshuai.slr.module.engine.processor.impl;
 
 import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
+import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
@@ -174,7 +175,7 @@ public class ProcessorOne implements Processor {
                 // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
                 // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
                 if (kafkaEventDTO.getEventTime()
-                        <= DateUtil.convertString2Timestamp(crossHistoryTimeline)) {
+                        <= LocalDateTimeUtils.convertString2Timestamp(crossHistoryTimeline)) {
                     continue;
                 }
                 // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
@@ -189,7 +190,7 @@ public class ProcessorOne implements Processor {
                     RedisUtil.hdel(redisKey, redisHashKey);
                     if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
                         throw new BusinessException(
-                                StringUtil.format("从redis获取初始值必须非空, redisKey:{}, hashKey: {}", redisKey, redisHashKey)
+                                String.format("从redis获取初始值必须非空, redisKey:%s, hashKey: %s", redisKey, redisHashKey)
                         );
                     }
                     Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
@@ -343,7 +344,7 @@ public class ProcessorOne implements Processor {
                     .channel(ruleInfoDTO.getChannel())
                     .ruleCode(ruleInfoDTO.getRuleCode())
                     .alertMessage(finalWarnMessage)
-                    .alertTime(DateUtil.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
+                    .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
                     .build();
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();

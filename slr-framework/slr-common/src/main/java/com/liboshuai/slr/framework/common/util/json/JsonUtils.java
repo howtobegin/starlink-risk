@@ -5,10 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -193,6 +190,46 @@ public class JsonUtils {
             log.error("json parse err,json:{}", text, e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 将下划线命名的 JSON 字符串解析成指定类型的对象（驼峰命名）
+     *
+     * @param text  JSON 字符串
+     * @param clazz 目标类型
+     * @return 解析后的对象
+     */
+    public static <T> T parseObjectFromUnderscore(String text, Class<T> clazz) {
+        if (StrUtil.isEmpty(text)) {
+            return null;
+        }
+        try {
+            // 设置命名策略为下划线转驼峰
+            objectMapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE);
+            return objectMapper.readValue(text, clazz);
+        } catch (IOException e) {
+            log.error("json parse err,json:{}", text, e);
+            throw new RuntimeException(e);
+        } finally {
+            // 恢复默认命名策略
+            objectMapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.LOWER_CAMEL_CASE);
+        }
+    }
+
+    /**
+     * 将对象序列化为字段名为大写下划线形式的 JSON 字符串
+     *
+     * @param object 要序列化的对象
+     * @return JSON 字符串
+     */
+    @SneakyThrows
+    public static String toJsonStringWithUpperSnakeCaseKeys(Object object) {
+        if (object == null) {
+            return null;
+        }
+        ObjectMapper mapper = objectMapper.copy();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_SNAKE_CASE);
+        return mapper.writeValueAsString(object);
     }
 
     public static boolean isJson(String text) {

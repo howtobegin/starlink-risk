@@ -1,11 +1,11 @@
 package com.liboshuai.slr.module.engine.function;
 
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
-import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -163,9 +163,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
 
         log.warn("========================================清理状态值-{}========================================", status);
-        log.warn("smallInitMap: {}", JsonUtil.toJsonString(smallInitMap));
-        log.warn("lastWarningTime: {}", JsonUtil.toJsonString(lastWarningTime));
-        log.warn("bigMap: {}", JsonUtil.toJsonString(bigMap));
+        log.warn("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
+        log.warn("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
+        log.warn("bigMap: {}", JsonUtils.toJsonString(bigMap));
         log.warn("========================================清理状态值-{}========================================", status);
     }
 
@@ -185,7 +185,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         RuleJsonDTO ruleCdcDTOAfter = ruleCdcDTO.getAfter();
         String ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
         String ruleJsonAfter = ruleCdcDTOAfter.getRuleJson();
-        RuleInfoDTO ruleInfoDTOAfter = JsonUtil.parseObject(ruleJsonAfter, RuleInfoDTO.class);
+        RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleJsonAfter, RuleInfoDTO.class);
         // 获取广播流数据
         BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 上下线规则运算机

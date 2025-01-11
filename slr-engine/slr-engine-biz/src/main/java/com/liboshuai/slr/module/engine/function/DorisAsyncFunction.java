@@ -3,10 +3,10 @@ package com.liboshuai.slr.module.engine.function;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
-import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -89,7 +89,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
             // 变更之前的数据
             RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
             String ruleJsonBefore = ruleCdcDTOBefore.getRuleJson();
-            RuleInfoDTO ruleInfoDTOBefore = JsonUtil.parseObject(ruleJsonBefore, RuleInfoDTO.class);
+            RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleJsonBefore, RuleInfoDTO.class);
             if (Objects.isNull(ruleInfoDTOBefore)) {
                 throw new BusinessException("Mysql Cdc 规则流 ruleCdcDTOBefore 必须非空");
             }

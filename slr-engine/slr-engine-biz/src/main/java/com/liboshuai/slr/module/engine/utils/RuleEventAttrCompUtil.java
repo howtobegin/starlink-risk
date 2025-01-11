@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.engine.utils;
 
+import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
@@ -109,7 +110,7 @@ public class RuleEventAttrCompUtil {
                 case BIG_DECIMAL:
                     return new BigDecimal(value);
                 case DateTime:
-                    return DateUtil.convertStr2LocalDateTime(value);
+                    return LocalDateTimeUtils.convertStr2LocalDateTime(value);
                 default:
                     throw new IllegalArgumentException("未知的类型: " + typeEnum);
             }

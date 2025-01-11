@@ -2,8 +2,8 @@ package com.liboshuai.slr.module.engine.framework.serialize;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
-import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Field;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Schema;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Struct;
@@ -76,7 +76,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
         result.put("op", type);
 
         // 7.将 JSON 转换为 RuleCdcDTO 对象
-        RuleCdcDTO ruleCdcDTO = JsonUtil.parseObjectFromUnderscore(result.toString(), RuleCdcDTO.class);
+        RuleCdcDTO ruleCdcDTO = JsonUtils.parseObjectFromUnderscore(result.toString(), RuleCdcDTO.class);
         //8.输出数据
         collector.collect(ruleCdcDTO);
     }
