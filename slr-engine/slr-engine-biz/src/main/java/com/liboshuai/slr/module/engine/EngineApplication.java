@@ -3,6 +3,8 @@ package com.liboshuai.slr.module.engine;
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
+import com.liboshuai.slr.module.engine.convert.EventConvert;
+import com.liboshuai.slr.module.engine.dto.DorisEventDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.ResultDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
@@ -10,7 +12,10 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
 import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
-import com.liboshuai.slr.module.engine.function.*;
+import com.liboshuai.slr.module.engine.function.CoreFunction;
+import com.liboshuai.slr.module.engine.function.DorisAsyncFunction;
+import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
+import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +68,7 @@ public class EngineApplication {
                 .connect(broadcastStream)// 连接规则配置流
                 .process(new CoreFunction()).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-        writeKafkaEventToDoris(kafkaEventDtoDS, parameterTool);
+        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
         // 将规则状态的历史key记录数据写入doris
         writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
@@ -98,10 +103,14 @@ public class EngineApplication {
     /**
      * 将kafka中的事件数据同步往 doris 中留存一份
      */
-    private static void writeKafkaEventToDoris(SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS, ParameterTool parameterTool) {
-        SingleOutputStreamOperator<String> toDorisStreamOperator = kafkaEventDtoDS
-                // kafka事件数据结构转doris事件数据结构，并设置事件时间
-                .process(new DorisEventProcessFunction()).uid("toDoris-process");
+    private static void writeKafkaEventToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+        SingleOutputStreamOperator<String> toDorisStreamOperator = resultDtoStreamOperator
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getKafkaEventDTO()))
+                .map(resultDTO -> {
+                    KafkaEventDTO kafkaEventDTO = resultDTO.getKafkaEventDTO();
+                    DorisEventDTO dorisEventDTO = EventConvert.INSTANCE.kafkaDto2DorisDto(kafkaEventDTO);
+                    return JsonUtil.toJsonStringWithUpperSnakeCaseKeys(dorisEventDTO);// 转为大写下划线，适配doris表结构字段
+                }).uid("toDoris-process");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);

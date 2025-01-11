@@ -80,9 +80,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             clearOldState(ruleKeyHistoryDTO);
             return;
         }
-        // 设置时间事件为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
+        // 设置事件时间为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         kafkaEventDTO.setEventTime(currentProcessingTime);
+        // 将设置了事件时间的数据放入结果中，以便后续写入doris
+        ResultDTO resultDTO = ResultDTO.builder()
+                .kafkaEventDTO(kafkaEventDTO)
+                .build();
+        out.collect(resultDTO);
         // 将事件放入缓存列表中
         recentEventMap
                 .computeIfAbsent(currentKey, k -> new ArrayList<>())

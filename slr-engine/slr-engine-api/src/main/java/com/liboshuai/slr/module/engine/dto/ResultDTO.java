@@ -18,6 +18,8 @@ public class ResultDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
+    private KafkaEventDTO kafkaEventDTO;
+
     private RuleKeyHistoryDTO ruleKeyHistoryDTO;
 
     private AlertMessageDTO alertMessageDTO;
