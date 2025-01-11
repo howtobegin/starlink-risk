@@ -41,6 +41,11 @@ spring:
           url: jdbc:mysql://windows:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
+        slave:
+          lazy: true
+          url: jdbc:mysql://192.168.6.186:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: root
+          password: Rongshu@2024
   redis:
     database: 0
     password: Rongshu@2024

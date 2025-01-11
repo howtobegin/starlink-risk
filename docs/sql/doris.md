@@ -18,8 +18,8 @@ SHOW PROC '/backends';
 CREATE DATABASE IF NOT EXISTS `starlink_risk`;
 use starlink_risk;
 
-drop table if exists slr_event;
-CREATE TABLE IF NOT EXISTS slr_event
+drop table if exists slr_kafka_event;
+CREATE TABLE IF NOT EXISTS slr_kafka_event
 (
     `EVENT_TIME`    DATETIME    NOT NULL COMMENT '事件时间',
     `CHANNEL`       VARCHAR(16) NOT NULL COMMENT '渠道',

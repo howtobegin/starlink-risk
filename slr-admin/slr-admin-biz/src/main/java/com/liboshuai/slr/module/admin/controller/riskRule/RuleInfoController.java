@@ -6,6 +6,7 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoChangeS
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
+import com.liboshuai.slr.module.admin.service.riskRule.DorisEventService;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,6 +31,8 @@ public class RuleInfoController {
 
     @Resource
     private RuleInfoService ruleInfoService;
+    @Resource
+    private DorisEventService dorisEventService;
 
     @PostMapping("/page")
     @Operation(summary = "分页")
@@ -72,5 +75,12 @@ public class RuleInfoController {
     public CommonResult<Boolean> changeStatus(@RequestBody @Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO) {
         ruleInfoService.changeStatus(ruleInfoChangeStatusReqVO);
         return success(true);
+    }
+
+    @PostMapping(value = "/validateFlink")
+    @Operation(summary = "验证flink")
+    public CommonResult<?> validateFlink() {
+        dorisEventService.validateFlink();
+        return success();
     }
 }
