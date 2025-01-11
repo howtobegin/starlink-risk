@@ -39,7 +39,6 @@ public class DorisEventServiceImpl implements DorisEventService {
         Map<String, List<DorisEventDO>> targetValueAndDorisEventDOMap = dorisEventDOList.stream()
                 .collect(Collectors.groupingBy(DorisEventDO::getTargetValue));
         // 遍历每个targetValue下的数据，进行风控规则判断
-        long alertCount = 0L;
         List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
         for (Map.Entry<String, List<DorisEventDO>> entry : targetValueAndDorisEventDOMap.entrySet()) {
             String targetValue = entry.getKey();
@@ -85,14 +84,6 @@ public class DorisEventServiceImpl implements DorisEventService {
                         .mapToLong(eventDO -> Long.parseLong(eventDO.getEventValue()))
                         .sum();
 
-                // 增加详细日志
-                log.debug("TARGET_VALUE: {}, 窗口 [{} - {})，事件数量：{}，事件值累计和：{}",
-                        targetValue,
-                        LocalDateTimeUtils.convertTimestamp2String(windowStartTimeStamp),
-                        LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp),
-                        windowsDorisEventDOList.size(),
-                        eventValueSum);
-
                 if (eventValueSum > 10 && (windowEndTimeStamp - lastAlertTimestamp >= 5 * 60 * 1000)) {
                     String alertMessage = String.format("[异常高频抽奖]: 游戏用户(%s)最近20分钟内抽奖数量为%d，超过10次，请您及时查看原因！",
                             targetValue, eventValueSum);
@@ -103,7 +94,6 @@ public class DorisEventServiceImpl implements DorisEventService {
                             .alertMessage(alertMessage)
                             .build();
                     alertMessageDTOS.add(alertMessageDTO);
-                    alertCount++;
 
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
                     lastAlertTimestamp = windowEndTimeStamp;
