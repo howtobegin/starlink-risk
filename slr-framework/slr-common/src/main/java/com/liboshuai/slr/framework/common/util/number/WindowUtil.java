@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.engine.utils;
+package com.liboshuai.slr.framework.common.util.number;
 
 /**
  * WindowUtil 类提供了用于计算时间窗口起始点的实用方法。

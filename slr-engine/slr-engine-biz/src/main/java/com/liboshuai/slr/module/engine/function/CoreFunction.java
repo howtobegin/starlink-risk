@@ -1,11 +1,11 @@
 package com.liboshuai.slr.module.engine.function;
 
+import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
 import com.liboshuai.slr.module.engine.utils.JsonUtil;
-import com.liboshuai.slr.module.engine.utils.WindowUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
