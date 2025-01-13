@@ -22,6 +22,7 @@ import org.apache.flink.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer.*;
 
@@ -42,7 +43,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     private GroovyClassLoader groovyClassLoader;
     /**
-     * 最近2分钟时间事件数据缓存
+     * 最近5分钟时间事件数据缓存
      */
     private Map<String, List<KafkaEventDTO>> recentEventMap;
     /**
@@ -88,10 +89,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                 .kafkaEventDTO(kafkaEventDTO)
                 .build();
         out.collect(resultDTO);
-        // 将事件放入缓存列表中
-        recentEventMap
-                .computeIfAbsent(currentKey, k -> new ArrayList<>())
-                .add(kafkaEventDTO);
+        // 将事件添加到缓存列表中并移除超过5分钟的过期数据
+        addEventToCacheAndRemoveExpired(currentKey, kafkaEventDTO, currentProcessingTime);
         // 从广播流中获取规则信息
         ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
@@ -116,6 +115,31 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
         ctx.timerService().registerProcessingTimeTimer(fireTime);
+    }
+
+    /**
+     * 将事件添加到缓存列表中并移除超过5分钟的过期数据。
+     *
+     * @param currentKey            当前的键值
+     * @param kafkaEventDTO         要添加的事件对象
+     * @param currentProcessingTime 当前的处理时间
+     */
+    private void addEventToCacheAndRemoveExpired(String currentKey, KafkaEventDTO kafkaEventDTO, long currentProcessingTime) {
+        // 将事件放入缓存列表中
+        recentEventMap
+                .computeIfAbsent(currentKey, k -> new ArrayList<>())
+                .add(kafkaEventDTO);
+        List<KafkaEventDTO> kafkaEventDTOList = recentEventMap.get(currentKey);
+        // 遍历并移除过期的数据
+        Iterator<KafkaEventDTO> iterator = kafkaEventDTOList.iterator();
+        while (iterator.hasNext()) {
+            KafkaEventDTO eventDTO = iterator.next();
+            Long eventTime = eventDTO.getEventTime();
+            if (eventTime < currentProcessingTime - TimeUnit.MINUTES.toMillis(5)) {
+                // 移除过期数据
+                iterator.remove();
+            }
+        }
     }
 
     private void clearOldState(RuleKeyHistoryDTO ruleKeyHistoryDTO) throws Exception {
