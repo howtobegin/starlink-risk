@@ -41,6 +41,6 @@ public class KafkaEventProvider {
         String targetField = eventUploadDTO.getTargetField();
         String targetValue = eventUploadDTO.getTargetValue();
         // 使用下划线连接，避免键值冲突
-        return String.join(DefaultConstants.UNDERSCORE, channel, targetField, targetValue);
+        return String.join(DefaultConstants.COLON, channel, targetField, targetValue);
     }
 }
