@@ -33,6 +33,9 @@ public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
         List<String> nullFields = new ArrayList<>();
 
         // 检查各个字段是否为空
+        if (event.getEventTime() == null) {
+            nullFields.add("eventTime");
+        }
         if (event.getChannel() == null || event.getChannel().trim().isEmpty()) {
             nullFields.add("channel");
         }
