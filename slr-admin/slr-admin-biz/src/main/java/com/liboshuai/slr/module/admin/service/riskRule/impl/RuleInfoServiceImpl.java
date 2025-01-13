@@ -606,59 +606,50 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         if (CollectionUtils.isEmpty(alertMessageDTOS)) {
             log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
-            return true;
+            return false;
         }
         if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
             log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
-            return true;
+            return false;
         }
         int processSize = alertMessageDTOS.size();
         int mongoSize = mongoAlertMessageDtoList.size();
         log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
         // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
-        if (processSize != mongoSize) {
-            log.info("计算得出/mongo中的预警信息条数不一致！");
+        return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
+    }
+
+    private Boolean compareAlerts(List<AlertMessageDTO> generatedAlerts, List<AlertMessageDTO> mongoAlerts) {
+        if (CollectionUtils.isEmpty(generatedAlerts) && CollectionUtils.isEmpty(mongoAlerts)) {
+            log.info("计算得出的预警信息条数与Mongo中的预警信息条数都为0");
+            return true;
+        }
+        if (CollectionUtils.isEmpty(generatedAlerts) || CollectionUtils.isEmpty(mongoAlerts)) {
+            log.info("计算得出的预警信息条数与Mongo中的预警信息条数不一致。计算: {}, Mongo: {}", generatedAlerts.size(), mongoAlerts.size());
             return false;
         }
-        alertMessageDTOS.sort(Comparator.comparing(AlertMessageDTO::getAlertTime));
-        mongoAlertMessageDtoList.sort(Comparator.comparing(AlertMessageDTO::getAlertTime));
-        for (AlertMessageDTO processAlertMessageDTO : alertMessageDTOS) {
-            for (AlertMessageDTO mongoAlertMessageDTO : mongoAlertMessageDtoList) {
-                if (!Objects.equals(processAlertMessageDTO.getRuleCode(), mongoAlertMessageDTO.getRuleCode())) {
-                    return false;
-                }
-                if (!Objects.equals(processAlertMessageDTO.getAlertTime(), mongoAlertMessageDTO.getAlertTime())) {
-                    return false;
-                }
-                if (!Objects.equals(processAlertMessageDTO.getChannel(), mongoAlertMessageDTO.getChannel())) {
-                    return false;
-                }
-                if (!Objects.equals(processAlertMessageDTO.getTargetField(), mongoAlertMessageDTO.getTargetField())) {
-                    return false;
-                }
-                if (!Objects.equals(processAlertMessageDTO.getTargetValue(), mongoAlertMessageDTO.getTargetValue())) {
-                    return false;
-                }
-                Map<String, Long> processEventValueGroup = processAlertMessageDTO.getEventValueGroup();
-                Map<String, Long> mongoEventValueGroup = mongoAlertMessageDTO.getEventValueGroup();
-                for (Map.Entry<String, Long> entry : processEventValueGroup.entrySet()) {
-                    String processEventField = entry.getKey();
-                    Long processEventValueSum = entry.getValue();
-                    Long mongoEventValueSum = mongoEventValueGroup.get(processEventField);
-                    if (!Objects.equals(processEventValueSum, mongoEventValueSum)) {
-                        return false;
-                    }
-                }
-                for (Map.Entry<String, Long> entry : mongoEventValueGroup.entrySet()) {
-                    String mongoEventField = entry.getKey();
-                    Long mongoEventValueSum = entry.getValue();
-                    Long processEventValueSum = processEventValueGroup.get(mongoEventField);
-                    if (!Objects.equals(mongoEventValueSum, processEventValueSum)) {
-                        return false;
-                    }
-                }
+        if (generatedAlerts.size() != mongoAlerts.size()) {
+            log.info("计算得出 / Mongo 中的预警信息条数不一致！计算: {}, Mongo: {}", generatedAlerts.size(), mongoAlerts.size());
+            return false;
+        }
+
+        // 确保 AlertMessageDTO 重写了 equals 和 hashCode 方法
+        List<AlertMessageDTO> sortedGeneratedAlerts = generatedAlerts.stream()
+                .sorted(Comparator.comparing(AlertMessageDTO::getAlertTime))
+                .collect(Collectors.toList());
+        List<AlertMessageDTO> sortedMongoAlerts = mongoAlerts.stream()
+                .sorted(Comparator.comparing(AlertMessageDTO::getAlertTime))
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
+            AlertMessageDTO generatedAlert = sortedGeneratedAlerts.get(i);
+            AlertMessageDTO mongoAlert = sortedMongoAlerts.get(i);
+            if (!generatedAlert.equals(mongoAlert)) {
+                log.info("预警信息内容不一致！计算: {}, Mongo: {}", generatedAlert, mongoAlert);
+                return false;
             }
         }
+        log.info("所有预警信息均与Mongo中的数据一致");
         return true;
     }
 }
