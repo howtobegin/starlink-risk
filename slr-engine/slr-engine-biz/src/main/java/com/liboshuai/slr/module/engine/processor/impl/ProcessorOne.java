@@ -345,6 +345,9 @@ public class ProcessorOne implements Processor {
                     .ruleCode(ruleInfoDTO.getRuleCode())
                     .alertMessage(finalWarnMessage)
                     .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
+                    .targetField(ruleInfoDTO.getTargetField())
+                    .targetValue(processBigMapResult.f1.getTargetValue())
+                    .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
                     .build();
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
@@ -428,7 +431,7 @@ public class ProcessorOne implements Processor {
         boolean eventResult = evaluateEventResults(eventFieldAndWarnResult, ruleCondCombOp);
         // 构建运算机的DTO对象
         ProcessorDTO processorDTO = ProcessorDTO.builder()
-                .eventFieldAndValueSumMap(eventFiledAndValueSumMap)
+                .eventValueGroup(eventFiledAndValueSumMap)
                 .build();
         return Tuple3.of(eventResult, latestEventKafkaDTO, processorDTO);
     }

@@ -1,7 +1,7 @@
-package com.liboshuai.slr.module.connector.convert;
+package com.liboshuai.slr.module.connector.convert.alertMessage;
 
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
@@ -11,4 +11,6 @@ import java.util.List;
 public interface AlertMessageConvert {
 
     List<AlertMessageDO> batchConvertDto2Mongo(List<AlertMessageDTO> alertMessageDTOList);
+
+    List<AlertMessageDTO> batchConvertMongo2Dto(List<AlertMessageDO> alertMessageDOList);
 }

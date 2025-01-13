@@ -14,7 +14,7 @@ import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventErr
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
-import com.liboshuai.slr.module.connector.convert.KafkaEventConvert;
+import com.liboshuai.slr.module.connector.convert.kafkaEvent.KafkaEventConvert;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.KafkaEventErrorDO;
 import com.liboshuai.slr.module.connector.dal.kafka.provider.KafkaEventProvider;
 import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventErrorRepository;

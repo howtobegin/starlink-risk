@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -27,21 +28,30 @@ public class AlertMessageDO implements Serializable {
      * {@link ChannelEnum}
      */
     private String channel;
-
     /**
      * 规则编号
      */
-    private String ruleCode;
-
+    private Long ruleCode;
     /**
      * 预警消息
      */
     private String alertMessage;
-
     /**
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
     private LocalDateTime alertTime;
-
+    /**
+     * 目标字段
+     */
+    private String targetField;
+    /**
+     * 目标值
+     */
+    private String targetValue;
+    /**
+     * 累计事件值组
+     * （key为事件字段，value为事件累计值）
+     */
+    private Map<String, Long> eventValueGroup;
 }

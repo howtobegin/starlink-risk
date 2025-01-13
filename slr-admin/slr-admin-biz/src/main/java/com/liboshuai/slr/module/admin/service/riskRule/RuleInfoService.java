@@ -20,4 +20,6 @@ public interface RuleInfoService {
     void update(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 
     void changeStatus(@Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO);
+
+    Boolean validateFlink(Long ruleCode);
 }

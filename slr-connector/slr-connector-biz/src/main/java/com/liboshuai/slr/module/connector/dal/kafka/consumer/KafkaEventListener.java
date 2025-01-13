@@ -1,10 +1,10 @@
 package com.liboshuai.slr.module.connector.dal.kafka.consumer;
 
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.module.connector.convert.AlertMessageConvert;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
+import com.liboshuai.slr.module.connector.convert.alertMessage.AlertMessageConvert;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageRepository;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -61,7 +61,6 @@ public class KafkaEventListener {
             List<AlertMessageDO> alertMessageDOList = alertMessageConvert.batchConvertDto2Mongo(validAlertMessageDTOList);
             alertMessageRepository.saveAll(alertMessageDOList);
         }
-
         // 手动提交偏移量
         ack.acknowledge();
     }

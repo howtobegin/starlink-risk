@@ -9,13 +9,19 @@ import java.util.List;
 
 @Mapper
 public interface DorisEventMapper extends BaseMapperX<DorisEventDO> {
-
-
     default List<DorisEventDO> selectListByKey(String channel, String targetField, String eventField) {
         return selectList(new LambdaQueryWrapperX<DorisEventDO>()
                 .eq(DorisEventDO::getChannel, channel)
                 .eq(DorisEventDO::getTargetField, targetField)
                 .eq(DorisEventDO::getEventField, eventField)
+                .orderByAsc(DorisEventDO::getEventTime)
+        );
+    }
+
+    default List<DorisEventDO> selectListByChannelAndTargetField(String channel, String targetField) {
+        return selectList(new LambdaQueryWrapperX<DorisEventDO>()
+                .eq(DorisEventDO::getChannel, channel)
+                .eq(DorisEventDO::getTargetField, targetField)
                 .orderByAsc(DorisEventDO::getEventTime)
         );
     }

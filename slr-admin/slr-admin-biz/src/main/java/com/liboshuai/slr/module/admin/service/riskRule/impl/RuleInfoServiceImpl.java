@@ -1,11 +1,13 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.dynamic.datasource.annotation.Slave;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
@@ -13,12 +15,18 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleCondRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrValueRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
+import com.liboshuai.slr.module.admin.convert.riskRule.DorisEventConvert;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.module.connector.api.alertMessage.AlertMessageApi;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
+import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
+import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
+import com.liboshuai.slr.module.engine.utils.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +34,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,7 +59,13 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     @Resource
     private RuleJsonMapper ruleJsonMapper;
     @Resource
+    private DorisEventMapper dorisEventMapper;
+    @Resource
+    private DorisEventConvert dorisEventConvert;
+    @Resource
     private SnowflakeIdGenerator snowflakeIdGenerator;
+    @Resource
+    private AlertMessageApi alertMessageApi;
 
     @Override
     public PageResult<RuleInfoRespVO> page(RuleInfoPageReqVO ruleInfoPageReqVO) {
@@ -469,5 +482,183 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         );
         // 给 规则 设置 条件组
         ruleInfoRespVO.setRuleCondGroup(ruleCondGroup);
+    }
+
+    /**
+     * 验证flink规则运算是否正确
+     * 通过查询doris事件表，并进行模拟滑动窗口计算得到预警信息，然后对比mongo中的预警信息，以此验证flink规则运算是否正确
+     * （目前仅支持单条件、无事件属性的规则验证）
+     *
+     * @param ruleCode 规则编号
+     * @return true:正确，false:错误
+     */
+    @Slave
+    @Override
+    public Boolean validateFlink(Long ruleCode) {
+        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
+        if (Objects.isNull(ruleInfoDO)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
+        }
+        if (Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.ONLINE.getCode())
+                || Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.OFFLINE_PENDING.getCode())) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.ONLY_SUPPORT_NOT_ONLINE_RULE);
+        }
+        // 通过规则编号构建RuleInfoDTO对象
+        RuleInfoDTO ruleInfoDTO = this.buildRuleInfoDTO(ruleCode);
+        // 获取RuleInfoDTO对象中的各个属性
+        String channel = ruleInfoDTO.getChannel();
+        String targetField = ruleInfoDTO.getTargetField();
+        // 获取规则告警间隔时间
+        long alertInterval = TimeUtil.toMillis(ruleInfoDTO.getAlertIntervalValue(),
+                TimeUnitEnum.fromEnUnit(ruleInfoDTO.getAlertIntervalUnit()));
+        // 获取规则条件组
+        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
+        if (CollectionUtils.isEmpty(ruleCondGroup)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_COND_GROUP_IS_NULL);
+        }
+        // 目前仅支持单条件规则
+        if (ruleCondGroup.size() > 1) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.ONLY_SUPPORT_SINGLE_COND_RULE);
+        }
+        RuleCondDTO ruleCondDTO = ruleCondGroup.get(0);
+        List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup();
+        if (!CollectionUtils.isEmpty(ruleEventAttrValueGroup)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.ONLY_SUPPORT_NULL_ATTR_RULE);
+        }
+        String eventField = ruleCondDTO.getEventField();
+        // 根据渠道、目标字段、事件字段查询doris历史事件数据
+        List<DorisEventDO> dorisEventDOList = dorisEventMapper.selectListByKey(channel, targetField, eventField);
+        if (CollectionUtils.isEmpty(dorisEventDOList)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
+        }
+        // doris 事件数据转换成 kafka 事件数据
+        List<KafkaEventDTO> kafkaEventDTOList = dorisEventConvert.batchConvertDO2KafkaDTO(dorisEventDOList);
+        // 根据 targetValue 进行分组
+        Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap = kafkaEventDTOList.stream()
+                .collect(Collectors.groupingBy(KafkaEventDTO::getTargetValue));
+        // 最终生成的风控信息集合
+        List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
+        // 遍历每个targetValue下的数据，进行风控规则判断
+        for (Map.Entry<String, List<KafkaEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
+            String targetValue = entry.getKey();
+            List<KafkaEventDTO> kafkaEventDTOS = entry.getValue();
+            // 最近一次预警时间（针对当前 TARGET_VALUE）
+            long lastAlertTimestamp = 0L;
+            if (CollectionUtils.isEmpty(kafkaEventDTOS)) {
+                continue;
+            }
+            // 获取第一个和最后一个事件的时间戳
+            KafkaEventDTO firstKafkaEventDO = kafkaEventDTOS.get(0);
+            long firstEventTimestamp = firstKafkaEventDO.getEventTime();
+            KafkaEventDTO latestKafkaEventDO = kafkaEventDTOS.get(kafkaEventDTOS.size() - 1);
+            long latestEventTimestamp = latestKafkaEventDO.getEventTime();
+
+            // 获取窗口大小与窗口步长（毫秒）
+            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
+            long windowStep = TimeUnit.MINUTES.toMillis(1); // 窗口步长恒定为1分钟
+
+            // 计算窗口的起始时间
+            long earliestWindowStartTimeStamp = firstEventTimestamp - windowSize + windowStep;
+            // 对齐到整分钟
+            earliestWindowStartTimeStamp = earliestWindowStartTimeStamp - (earliestWindowStartTimeStamp % windowStep);
+            long latestWindowStartTimeStamp = latestEventTimestamp - (latestEventTimestamp % windowStep);
+            // 模拟滑动窗口
+            for (long windowStartTimeStamp = earliestWindowStartTimeStamp;
+                 windowStartTimeStamp <= latestWindowStartTimeStamp;
+                 windowStartTimeStamp += windowStep) {
+                // 更新窗口结束时间
+                long windowEndTimeStamp = windowStartTimeStamp + windowSize;
+                // 过滤出在当前窗口内的事件
+                long finalWindowStartTimeStamp = windowStartTimeStamp;
+                List<KafkaEventDTO> windowsKafkaEventDOList = kafkaEventDTOS.stream()
+                        .filter(eventDO -> {
+                            long eventTimestamp = eventDO.getEventTime();
+                            return eventTimestamp >= finalWindowStartTimeStamp && eventTimestamp < windowEndTimeStamp;
+                        })
+                        .collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(windowsKafkaEventDOList)) {
+                    continue;
+                }
+                // 计算事件值累计和
+                long eventValueSum = windowsKafkaEventDOList.stream()
+                        .mapToLong(eventDO -> Long.parseLong(eventDO.getEventValue()))
+                        .sum();
+                if (eventValueSum > ruleCondDTO.getThreshold() && (windowEndTimeStamp - lastAlertTimestamp >= alertInterval)) {
+                    AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
+                            .channel(channel)
+                            .ruleCode(ruleCode)
+                            .targetField(targetField)
+                            .targetValue(targetValue)
+                            .eventValueGroup(Collections.singletonMap(eventField, eventValueSum))
+                            .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(windowEndTimeStamp))
+                            .build();
+                    alertMessageDTOS.add(alertMessageDTO);
+                    // 更新 lastAlertTimestamp 为当前窗口的结束时间
+                    lastAlertTimestamp = windowEndTimeStamp;
+                }
+            }
+        }
+        // 查询mongo中对应规则产生的预警信息
+        List<AlertMessageDTO> mongoAlertMessageDtoList = alertMessageApi.findByRuleCode(ruleCode);
+        if (CollectionUtils.isEmpty(alertMessageDTOS) && CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+            log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
+            return true;
+        }
+        if (CollectionUtils.isEmpty(alertMessageDTOS)) {
+            log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
+            return true;
+        }
+        if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+            log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
+            return true;
+        }
+        int processSize = alertMessageDTOS.size();
+        int mongoSize = mongoAlertMessageDtoList.size();
+        log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
+        // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
+        if (processSize != mongoSize) {
+            log.info("计算得出/mongo中的预警信息条数不一致！");
+            return false;
+        }
+        alertMessageDTOS.sort(Comparator.comparing(AlertMessageDTO::getAlertTime));
+        mongoAlertMessageDtoList.sort(Comparator.comparing(AlertMessageDTO::getAlertTime));
+        for (AlertMessageDTO processAlertMessageDTO : alertMessageDTOS) {
+            for (AlertMessageDTO mongoAlertMessageDTO : mongoAlertMessageDtoList) {
+                if (!Objects.equals(processAlertMessageDTO.getRuleCode(), mongoAlertMessageDTO.getRuleCode())) {
+                    return false;
+                }
+                if (!Objects.equals(processAlertMessageDTO.getAlertTime(), mongoAlertMessageDTO.getAlertTime())) {
+                    return false;
+                }
+                if (!Objects.equals(processAlertMessageDTO.getChannel(), mongoAlertMessageDTO.getChannel())) {
+                    return false;
+                }
+                if (!Objects.equals(processAlertMessageDTO.getTargetField(), mongoAlertMessageDTO.getTargetField())) {
+                    return false;
+                }
+                if (!Objects.equals(processAlertMessageDTO.getTargetValue(), mongoAlertMessageDTO.getTargetValue())) {
+                    return false;
+                }
+                Map<String, Long> processEventValueGroup = processAlertMessageDTO.getEventValueGroup();
+                Map<String, Long> mongoEventValueGroup = mongoAlertMessageDTO.getEventValueGroup();
+                for (Map.Entry<String, Long> entry : processEventValueGroup.entrySet()) {
+                    String processEventField = entry.getKey();
+                    Long processEventValueSum = entry.getValue();
+                    Long mongoEventValueSum = mongoEventValueGroup.get(processEventField);
+                    if (!Objects.equals(processEventValueSum, mongoEventValueSum)) {
+                        return false;
+                    }
+                }
+                for (Map.Entry<String, Long> entry : mongoEventValueGroup.entrySet()) {
+                    String mongoEventField = entry.getKey();
+                    Long mongoEventValueSum = entry.getValue();
+                    Long processEventValueSum = processEventValueGroup.get(mongoEventField);
+                    if (!Objects.equals(mongoEventValueSum, processEventValueSum)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

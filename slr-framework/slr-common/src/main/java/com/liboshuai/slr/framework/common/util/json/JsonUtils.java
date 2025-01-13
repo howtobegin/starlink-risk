@@ -70,6 +70,18 @@ public class JsonUtils {
         }
     }
 
+    public static <T> T parseObjectWithType(String text, TypeReference<T> typeReference) {
+        if (StrUtil.isEmpty(text)) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(text, typeReference);
+        } catch (IOException e) {
+            log.error("json parse err, json:{}", text, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public static <T> T parseObject(String text, String path, Class<T> clazz) {
         if (StrUtil.isEmpty(text)) {
             return null;

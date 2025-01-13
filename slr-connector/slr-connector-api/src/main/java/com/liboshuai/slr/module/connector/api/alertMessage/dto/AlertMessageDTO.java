@@ -1,6 +1,5 @@
-package com.liboshuai.slr.module.engine.dto;
+package com.liboshuai.slr.module.connector.api.alertMessage.dto;
 
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,12 +24,10 @@ public class AlertMessageDTO implements Serializable {
 
     /**
      * 渠道
-     * {@link ChannelEnum}
      */
     private String channel;
     /**
      * 规则编号
-     * {@link RuleInfoDTO#getRuleCode()}
      */
     private Long ruleCode;
     /**

@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.connector.convert;
+package com.liboshuai.slr.module.connector.convert.kafkaEvent;
 
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;

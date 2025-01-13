@@ -39,4 +39,9 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_MODEL_GROOVY_IS_NULL = new ErrorCode(20026, "规则模型编号[{}]的groovy脚本不能为空");
     ErrorCode RULE_TARGET_CODE_IS_NULL = new ErrorCode(20027, "规则目标编号不能为空");
     ErrorCode RULE_TARGET_NOT_EXISTS = new ErrorCode(20028, "规则目标编号[{}]不存在");
+    ErrorCode HISTORY_EVENT_DATA_IS_NULL = new ErrorCode(20029, "历史事件数据不能为空");
+    ErrorCode RULE_COND_GROUP_IS_NULL = new ErrorCode(20030, "规则条件组不能为空");
+    ErrorCode ONLY_SUPPORT_SINGLE_COND_RULE = new ErrorCode(20031, "仅支持单条件规则");
+    ErrorCode ONLY_SUPPORT_NOT_ONLINE_RULE = new ErrorCode(20032, "仅支持非上线规则");
+    ErrorCode ONLY_SUPPORT_NULL_ATTR_RULE = new ErrorCode(20033, "仅支持无事件属性规则");
 }

@@ -22,7 +22,8 @@ public class ProcessorDTO implements Serializable {
 
     /**
      * 事件值累计结果
+     * （key为事件字段，value为事件累计值）
      */
-    private Map<String, Long> eventFieldAndValueSumMap;
+    private Map<String, Long> eventValueGroup;
 
 }
