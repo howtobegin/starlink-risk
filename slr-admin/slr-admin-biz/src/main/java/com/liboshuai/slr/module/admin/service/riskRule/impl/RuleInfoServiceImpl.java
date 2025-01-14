@@ -507,8 +507,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         String channel = ruleInfoDTO.getChannel();
         String targetField = ruleInfoDTO.getTargetField();
         // 获取规则告警间隔时间
-        long alertInterval = TimeUtil.toMillis(ruleInfoDTO.getAlertIntervalValue(),
-                TimeUnitEnum.fromEnUnit(ruleInfoDTO.getAlertIntervalUnit()));
+        Long alertInterval = getAlertInterval(ruleInfoDTO);
         // 获取规则条件组
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         if (CollectionUtils.isEmpty(ruleCondGroup)) {
@@ -555,6 +554,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             if (CollectionUtils.isEmpty(kafkaEventDTOS)) {
                 continue;
             }
+            // 上一次更新后的阈值
+            Long latestThreshold = null;
             // 获取第一个和最后一个事件的时间戳
             KafkaEventDTO firstKafkaEventDO = kafkaEventDTOS.get(0);
             long firstEventTimestamp = firstKafkaEventDO.getEventTime();
@@ -587,7 +588,21 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 long eventValueSum = windowsKafkaEventDOList.stream()
                         .mapToLong(eventDO -> Long.parseLong(eventDO.getEventValue()))
                         .sum();
-                if (eventValueSum > ruleCondDTO.getThreshold() && (windowEndTimeStamp - lastAlertTimestamp >= alertInterval)) {
+                // 计算阈值
+                Long eventThreshold = ruleCondDTO.getThreshold();
+                Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
+                if (Objects.nonNull(thresholdScaleFactor)) {
+                    if (Objects.isNull(latestThreshold)) {
+                        eventThreshold = eventThreshold * thresholdScaleFactor;
+                    } else {
+                        eventThreshold = latestThreshold * thresholdScaleFactor;
+                    }
+                    latestThreshold = eventThreshold;
+                }
+                // 判断是否需要预警
+                boolean shouldAlert = (eventValueSum > eventThreshold) &&
+                        (alertInterval == null || (windowEndTimeStamp - lastAlertTimestamp >= alertInterval));
+                if (shouldAlert) {
                     AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
                             .channel(channel)
                             .ruleCode(ruleCode)
@@ -621,6 +636,20 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
         // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
         return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
+    }
+
+    private Long getEventThreshold(Long eventThreshold, Long thresholdScaleFactor, Long latestThreshold) throws Exception {
+
+        return eventThreshold;
+    }
+
+    private Long getAlertInterval(RuleInfoDTO ruleInfoDTO) {
+        Long alertIntervalValue = ruleInfoDTO.getAlertIntervalValue();
+        String alertIntervalUnit = ruleInfoDTO.getAlertIntervalUnit();
+        if (Objects.isNull(alertIntervalValue) || Objects.isNull(alertIntervalUnit)) {
+            return null;
+        }
+        return TimeUtil.toMillis(alertIntervalValue, TimeUnitEnum.fromEnUnit(alertIntervalUnit));
     }
 
     private Boolean compareAlerts(List<AlertMessageDTO> generatedAlerts, List<AlertMessageDTO> mongoAlerts) {
