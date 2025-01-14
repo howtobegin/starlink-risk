@@ -53,7 +53,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * groovy加载器
      */
-    private GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
+    private GroovyClassLoader groovyClassLoader;
     /**
      * 规则信息list状态（用于故障恢复）
      */
@@ -74,6 +74,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void open(Configuration parameters) {
+        groovyClassLoader = new GroovyClassLoader();
         RuntimeContext runtimeContext = getRuntimeContext();
         oldRuleListState = runtimeContext.getMapState(CommonStateDesc.OLD_RULE_MAP_STATE_DESC);
     }
