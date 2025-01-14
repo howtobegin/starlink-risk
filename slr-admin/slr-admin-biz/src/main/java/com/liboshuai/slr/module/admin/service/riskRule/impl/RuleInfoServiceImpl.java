@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.admin.service.riskRule.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.dynamic.datasource.annotation.Master;
 import com.baomidou.dynamic.datasource.annotation.Slave;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
@@ -28,6 +29,7 @@ import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import com.liboshuai.slr.module.engine.utils.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -231,7 +233,9 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 构建规则信息DTO
      */
-    private RuleInfoDTO buildRuleInfoDTO(Long ruleCode) {
+    @Master
+    @Override
+    public RuleInfoDTO buildRuleInfoDTO(Long ruleCode) {
         RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
         if (Objects.isNull(ruleInfoDO)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
@@ -495,16 +499,9 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     @Slave
     @Override
     public Boolean validateFlink(Long ruleCode) {
-        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
-        if (Objects.isNull(ruleInfoDO)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
-        }
-        if (Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.ONLINE.getCode())
-                || Objects.equals(ruleInfoDO.getRuleStatus(), CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.ONLY_SUPPORT_NOT_ONLINE_RULE);
-        }
         // 通过规则编号构建RuleInfoDTO对象
-        RuleInfoDTO ruleInfoDTO = this.buildRuleInfoDTO(ruleCode);
+        RuleInfoService ruleInfoService = (RuleInfoService) AopContext.currentProxy();
+        RuleInfoDTO ruleInfoDTO = ruleInfoService.buildRuleInfoDTO(ruleCode);
         // 获取RuleInfoDTO对象中的各个属性
         String channel = ruleInfoDTO.getChannel();
         String targetField = ruleInfoDTO.getTargetField();
@@ -644,6 +641,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
             AlertMessageDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertMessageDTO mongoAlert = sortedMongoAlerts.get(i);
+            mongoAlert.setAlertMessage(null);
+            mongoAlert.setAlertTime(mongoAlert.getAlertTime().withSecond(0).withNano(0));
             if (!generatedAlert.equals(mongoAlert)) {
                 log.info("预警信息内容不一致！计算: {}, Mongo: {}", generatedAlert, mongoAlert);
                 return false;

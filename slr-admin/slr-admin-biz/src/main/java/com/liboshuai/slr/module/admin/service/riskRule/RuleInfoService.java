@@ -5,6 +5,7 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoChangeS
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleInfoSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleInfoRespVO;
+import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -20,6 +21,8 @@ public interface RuleInfoService {
     void update(@Valid RuleInfoSaveReqVO ruleInfoSaveReqVO);
 
     void changeStatus(@Valid RuleInfoChangeStatusReqVO ruleInfoChangeStatusReqVO);
+
+    RuleInfoDTO buildRuleInfoDTO(Long ruleCode);
 
     Boolean validateFlink(Long ruleCode);
 }
