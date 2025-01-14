@@ -33,12 +33,14 @@ public class ProcessorOne implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ProcessorOne.class);
 
     /**
-     * key: currentKey
-     * value: key-eventField，value-f0为eventValue累加值，f1为最新的EventKafkaDTO
+     * - key: currentKey
+     * - value: key-eventField，value-f0为eventValue累加值，f1为最新的EventKafkaDTO
      */
     private Map<String, Map<String, Tuple2<Long, KafkaEventDTO>>> smallMap;
     /**
      * 记录对于事件条件是否初始化过
+     * - key: eventField
+     * - value: 任意值
      * （注意不要使用ListState，它查找指定元素的性能很差）
      */
     private MapState<String, Boolean> smallInitMapState;
@@ -47,9 +49,11 @@ public class ProcessorOne implements Processor {
      */
     private ValueState<Long> lastWarningTimeState;
     /**
-     * 事件字段及对应现阈值
+     * 最新更新的事件阈值
+     * - key: eventField
+     * - value: 最新更新eventThreshold
      */
-    private MapState<String, Long> eventFieldAndThresholdState;
+    private MapState<String, Long> latestEventThresholdMapState;
     /**
      * key: f0为eventField，f1为时间戳
      * value: f0为eventValue累加值，f1为最新的EventKafkaDTO
@@ -78,6 +82,10 @@ public class ProcessorOne implements Processor {
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         lastWarningTimeState = runtimeContext.getState(
                 new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
+        );
+        String latestEventThresholdMapStateName = "latestEventThresholdMapStateName_" + ruleCode + "_" + ruleVersion;
+        latestEventThresholdMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG)
         );
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
         bigMapState = runtimeContext.getMapState(
@@ -474,13 +482,13 @@ public class ProcessorOne implements Processor {
         Long eventThreshold = ruleCondDTO.getThreshold();
         Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
         if (Objects.nonNull(thresholdScaleFactor)) {
-            Long latestThreshold = eventFieldAndThresholdState.get(eventField);
+            Long latestThreshold = latestEventThresholdMapState.get(eventField);
             if (Objects.isNull(latestThreshold)) {
                 eventThreshold = eventThreshold * thresholdScaleFactor;
             } else {
                 eventThreshold = latestThreshold * thresholdScaleFactor;
             }
-            eventFieldAndThresholdState.put(eventField, eventThreshold);
+            latestEventThresholdMapState.put(eventField, eventThreshold);
         }
         return eventThreshold;
     }
