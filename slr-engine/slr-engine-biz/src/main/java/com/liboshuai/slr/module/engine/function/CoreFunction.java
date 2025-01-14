@@ -332,7 +332,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     // mock运算机对象
     private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
         Processor processor = new ProcessorOne();
-        processor.init(runtimeContext, null, ruleInfoDTO);
+        if (Objects.nonNull(runtimeContext)) {
+            processor.init(runtimeContext, null, ruleInfoDTO);
+        } else {
+            processor.init(null, keyedStateStore, ruleInfoDTO);
+        }
         return processor;
     }
 
