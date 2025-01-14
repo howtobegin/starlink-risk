@@ -78,6 +78,10 @@ public class RuleInfoController {
     @Operation(summary = "验证flink")
     public CommonResult<Boolean> validateFlink(Long ruleCode) {
         Boolean result = ruleInfoService.validateFlink(ruleCode);
-        return success(result);
+        if (result) {
+            return success(true, "验证flink成功");
+        } else {
+            return success(false, "验证flink失败！");
+        }
     }
 }
