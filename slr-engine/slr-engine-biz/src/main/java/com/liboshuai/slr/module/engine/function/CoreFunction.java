@@ -54,6 +54,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     // 上一个同规则的运算机残留状态
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Long> lastWarningTimeState;
+    private MapState<String, Long> latestEventThresholdMapState;
     private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
 
     /**
@@ -146,22 +147,29 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
         Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
 
+        RuntimeContext runtimeContext = getRuntimeContext();
+        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
-        smallInitMapState = getRuntimeContext().getMapState(
+        smallInitMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
         );
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
-        lastWarningTimeState = getRuntimeContext().getState(
+        lastWarningTimeState = runtimeContext.getState(
                 new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
         );
+        String latestEventThresholdMapStateName = "latestEventThresholdMapStateName_" + ruleCode + "_" + ruleVersion;
+        latestEventThresholdMapState = runtimeContext.getMapState(
+                new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG)
+        );
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        bigMapState = getRuntimeContext().getMapState(
+        bigMapState = runtimeContext.getMapState(
                 new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
                         Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
         );
 //        logState("之前");
         smallInitMapState.clear();
         lastWarningTimeState.clear();
+        latestEventThresholdMapState.clear();
         bigMapState.clear();
 //        logState("之后");
     }
@@ -179,6 +187,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
         Long lastWarningTime = lastWarningTimeState.value();
 
+        Map<String, Long> latestEventThresholdMap = new HashMap<>();
+        Iterator<Map.Entry<String, Long>> latestEventThresholdMapStateIterator = latestEventThresholdMapState.iterator();
+        while (latestEventThresholdMapStateIterator.hasNext()) {
+            Map.Entry<String, Long> next = latestEventThresholdMapStateIterator.next();
+            latestEventThresholdMap.put(next.getKey(), next.getValue());
+        }
+
         Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
         Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>>> oldBigMapStateIterator = bigMapState.iterator();
         while (oldBigMapStateIterator.hasNext()) {
@@ -189,6 +204,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         log.warn("========================================清理状态值-{}========================================", status);
         log.warn("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
         log.warn("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
+        log.warn("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
         log.warn("bigMap: {}", JsonUtils.toJsonString(bigMap));
         log.warn("========================================清理状态值-{}========================================", status);
     }
