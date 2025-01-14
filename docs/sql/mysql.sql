@@ -37,6 +37,7 @@ CREATE TABLE `slr_rule_cond`
     `begin_time`             datetime                                               NULL DEFAULT NULL COMMENT '开始时间',
     `end_time`               datetime                                               NULL DEFAULT NULL COMMENT '结束时间',
     `threshold`              bigint                                                 NULL DEFAULT NULL COMMENT '阈值',
+    `thresholdScaleFactor` bigint NULL DEFAULT NULL COMMENT '阈值缩放因子',
     `cross_history`          bit(1)                                                 NULL DEFAULT NULL COMMENT '条件类型',
     `cross_history_timeline` datetime                                               NULL DEFAULT NULL COMMENT '跨历史时间点',
     `rule_code`              bigint UNSIGNED                                        NULL DEFAULT NULL COMMENT '规则编号',
@@ -57,19 +58,19 @@ CREATE TABLE `slr_rule_cond`
 -- Records of slr_rule_cond
 -- ----------------------------
 INSERT INTO `slr_rule_cond`
-VALUES (61, '1873910811026657280_GAME_userId_lottery', 'CYCLE', 20, '分钟', NULL, NULL, 10, b'0', NULL,
+VALUES (61, '1873910811026657280_GAME_userId_lottery', 'CYCLE', 20, '分钟', NULL, NULL, 10, null, b'0', NULL,
         1873910811026657280, 'GAME_userId_lottery', 'system', NULL, '2024-12-31 09:55:28', NULL);
 INSERT INTO `slr_rule_cond`
-VALUES (62, '1873910842395856896_HJF_userId_orderAmount', 'CYCLE', 5, '分钟', NULL, NULL, 100, b'0', NULL,
+VALUES (62, '1873910842395856896_HJF_userId_orderAmount', 'CYCLE', 5, '分钟', NULL, NULL, 100, null, b'0', NULL,
         1873910842395856896, 'HJF_userId_orderAmount', 'system', NULL, '2024-12-31 09:55:35', NULL);
 INSERT INTO `slr_rule_cond`
-VALUES (63, '1873910842395856896_HJF_userId_orderCount', 'CYCLE', 5, '分钟', NULL, NULL, 10, b'0', NULL,
+VALUES (63, '1873910842395856896_HJF_userId_orderCount', 'CYCLE', 5, '分钟', NULL, NULL, 10, null, b'0', NULL,
         1873910842395856896, 'HJF_userId_orderCount', 'system', NULL, '2024-12-31 09:55:35', NULL);
 INSERT INTO `slr_rule_cond`
-VALUES (64, '1873910865082847232_HJF_userId_orderAmount', 'CYCLE', 5, '分钟', NULL, NULL, 100, b'0', NULL,
+VALUES (64, '1873910865082847232_HJF_userId_orderAmount', 'CYCLE', 5, '分钟', NULL, NULL, 100, null, b'0', NULL,
         1873910865082847232, 'HJF_userId_orderAmount', 'system', NULL, '2024-12-31 09:55:40', NULL);
 INSERT INTO `slr_rule_cond`
-VALUES (65, '1873910865082847232_HJF_userId_orderCount', 'CYCLE', 5, '分钟', NULL, NULL, 10, b'0', NULL,
+VALUES (65, '1873910865082847232_HJF_userId_orderCount', 'CYCLE', 5, '分钟', NULL, NULL, 10, null, b'0', NULL,
         1873910865082847232, 'HJF_userId_orderCount', 'system', NULL, '2024-12-31 09:55:40', NULL);
 
 -- ----------------------------
