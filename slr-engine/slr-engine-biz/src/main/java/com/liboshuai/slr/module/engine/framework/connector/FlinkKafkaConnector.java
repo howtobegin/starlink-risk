@@ -39,6 +39,7 @@ public class FlinkKafkaConnector {
                 .setBootstrapServers(brokers)
                 .setTopics(topic)
                 .setGroupId(group)
+                .setClientIdPrefix("slr-engine-")
                 .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
