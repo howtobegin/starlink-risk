@@ -107,10 +107,6 @@ public class ProcessorOne implements Processor {
     @Override
     public void processElement(String currentKey, long currentEventTimestamp, KafkaEventDTO kafkaEventDTO,
                                Collector<ResultDTO> out) throws Exception {
-        if (Objects.equals(kafkaEventDTO.getEventValue(), "999")) {
-            int a = 1 / 0;
-            log.warn("a的值: {}", a);
-        }
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
         }
