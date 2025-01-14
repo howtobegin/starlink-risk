@@ -546,6 +546,34 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 最终生成的风控信息集合
         List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
         // 遍历每个targetValue下的数据，进行风控规则判断
+        process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertMessageDTOS);
+        // 查询mongo中对应规则产生的预警信息
+        List<AlertMessageDTO> mongoAlertMessageDtoList = alertMessageApi.findByRuleCode(ruleCode);
+        if (CollectionUtils.isEmpty(alertMessageDTOS) && CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+            log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
+            return true;
+        }
+        if (CollectionUtils.isEmpty(alertMessageDTOS)) {
+            log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
+            return false;
+        }
+        if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+            log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
+            return false;
+        }
+        int processSize = alertMessageDTOS.size();
+        int mongoSize = mongoAlertMessageDtoList.size();
+        log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
+        // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
+        return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
+    }
+
+    /**
+     * 遍历每个targetValue下的数据，进行风控规则判断
+     */
+    private void process(Long ruleCode, Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap,
+                         long windowSize, long windowStep, RuleCondDTO ruleCondDTO, Long alertInterval,
+                         String channel, String targetField, String eventField, List<AlertMessageDTO> alertMessageDTOS) {
         for (Map.Entry<String, List<KafkaEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
             String targetValue = entry.getKey();
             List<KafkaEventDTO> kafkaEventDTOS = entry.getValue();
@@ -617,30 +645,6 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 }
             }
         }
-        // 查询mongo中对应规则产生的预警信息
-        List<AlertMessageDTO> mongoAlertMessageDtoList = alertMessageApi.findByRuleCode(ruleCode);
-        if (CollectionUtils.isEmpty(alertMessageDTOS) && CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
-            log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
-            return true;
-        }
-        if (CollectionUtils.isEmpty(alertMessageDTOS)) {
-            log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
-            return false;
-        }
-        if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
-            log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
-            return false;
-        }
-        int processSize = alertMessageDTOS.size();
-        int mongoSize = mongoAlertMessageDtoList.size();
-        log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
-        // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
-        return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
-    }
-
-    private Long getEventThreshold(Long eventThreshold, Long thresholdScaleFactor, Long latestThreshold) throws Exception {
-
-        return eventThreshold;
     }
 
     private Long getAlertInterval(RuleInfoDTO ruleInfoDTO) {
