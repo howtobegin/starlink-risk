@@ -37,7 +37,7 @@ CREATE TABLE `slr_rule_cond`
     `begin_time`             datetime                                               NULL DEFAULT NULL COMMENT '开始时间',
     `end_time`               datetime                                               NULL DEFAULT NULL COMMENT '结束时间',
     `threshold`              bigint                                                 NULL DEFAULT NULL COMMENT '阈值',
-    `thresholdScaleFactor` bigint NULL DEFAULT NULL COMMENT '阈值缩放因子',
+    `threshold_scale_factor` bigint NULL DEFAULT NULL COMMENT '阈值缩放因子',
     `cross_history`          bit(1)                                                 NULL DEFAULT NULL COMMENT '条件类型',
     `cross_history_timeline` datetime                                               NULL DEFAULT NULL COMMENT '跨历史时间点',
     `rule_code`              bigint UNSIGNED                                        NULL DEFAULT NULL COMMENT '规则编号',
