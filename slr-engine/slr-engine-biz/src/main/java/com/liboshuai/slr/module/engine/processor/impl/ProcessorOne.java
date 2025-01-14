@@ -32,6 +32,10 @@ public class ProcessorOne implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ProcessorOne.class);
 
     /**
+     * 规则信息
+     */
+    private RuleInfoDTO ruleInfoDTO;
+    /**
      * - key: currentKey
      * - value: key-eventField，value-f0为eventValue累加值，f1为最新的EventKafkaDTO
      */
@@ -70,11 +74,12 @@ public class ProcessorOne implements Processor {
      */
     @Override
     public void init(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) {
+        this.ruleInfoDTO = ruleInfoDTO;
         Long ruleCode = ruleInfoDTO.getRuleCode();
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
         smallMap = new HashMap<>();
+        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         if (Objects.nonNull(runtimeContext)) {
-            // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
             smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
             lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
             latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
@@ -82,7 +87,6 @@ public class ProcessorOne implements Processor {
             // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
             oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
         } else {
-            // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
             smallInitMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
             lastWarningTimeState = keyedStateStore.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
             latestEventThresholdMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
@@ -96,13 +100,12 @@ public class ProcessorOne implements Processor {
      * 处理元素事件，根据给定的规则信息和Kafka事件进行处理
      *
      * @param currentEventTimestamp 时间戳，用于处理的时间参考
-     * @param ruleInfoDTO           规则信息数据传输对象，包含规则的详细信息
      * @param kafkaEventDTO         Kafka事件数据传输对象，包含事件的详细信息
      * @param out                   用于输出处理结果的收集器
      * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
      */
     @Override
-    public void processElement(String currentKey, long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, KafkaEventDTO kafkaEventDTO,
+    public void processElement(String currentKey, long currentEventTimestamp, KafkaEventDTO kafkaEventDTO,
                                Collector<ResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
@@ -301,12 +304,11 @@ public class ProcessorOne implements Processor {
      * 定时器触发时执行的方法
      *
      * @param timestamp   时间戳，表示当前时间
-     * @param ruleInfoDTO 规则信息DTO，包含规则相关数据
      * @param out         输出收集器，用于收集和输出预警信息
      * @throws Exception 可能抛出的异常
      */
     @Override
-    public boolean onTimer(String currentKey, long timestamp, RuleInfoDTO ruleInfoDTO, Collector<ResultDTO> out) throws Exception {
+    public boolean onTimer(String currentKey, long timestamp, Collector<ResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             throw new BusinessException("运算机 ruleInfoDTO 必须非空");
         }
