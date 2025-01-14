@@ -36,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -522,11 +523,21 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (!CollectionUtils.isEmpty(ruleEventAttrValueGroup)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.ONLY_SUPPORT_NULL_ATTR_RULE);
         }
+        // 获取事件字段
         String eventField = ruleCondDTO.getEventField();
+        // 获取窗口大小与窗口步长（毫秒）
+        long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
+        long windowStep = TimeUnit.MINUTES.toMillis(1); // 窗口步长恒定为1分钟
         // 根据渠道、目标字段、事件字段查询doris历史事件数据
         List<DorisEventDO> dorisEventDOList = dorisEventMapper.selectListByKey(channel, targetField, eventField);
         if (CollectionUtils.isEmpty(dorisEventDOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
+        }
+        DorisEventDO dorisEventDO = dorisEventDOList.get(dorisEventDOList.size() - 1);
+        LocalDateTime eventTime = dorisEventDO.getEventTime();
+        long flinkProcessEndTime = LocalDateTimeUtils.convertLocalDateTime2Timestamp(eventTime) + windowSize;
+        if (System.currentTimeMillis() <= flinkProcessEndTime) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.FLINK_PROCESS_NOT_END, LocalDateTimeUtils.convertTimestamp2String(flinkProcessEndTime));
         }
         // doris 事件数据转换成 kafka 事件数据
         List<KafkaEventDTO> kafkaEventDTOList = dorisEventConvert.batchConvertDO2KafkaDTO(dorisEventDOList);
@@ -549,10 +560,6 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             long firstEventTimestamp = firstKafkaEventDO.getEventTime();
             KafkaEventDTO latestKafkaEventDO = kafkaEventDTOS.get(kafkaEventDTOS.size() - 1);
             long latestEventTimestamp = latestKafkaEventDO.getEventTime();
-
-            // 获取窗口大小与窗口步长（毫秒）
-            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(), TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
-            long windowStep = TimeUnit.MINUTES.toMillis(1); // 窗口步长恒定为1分钟
 
             // 计算窗口的起始时间
             long earliestWindowStartTimeStamp = firstEventTimestamp - windowSize + windowStep;

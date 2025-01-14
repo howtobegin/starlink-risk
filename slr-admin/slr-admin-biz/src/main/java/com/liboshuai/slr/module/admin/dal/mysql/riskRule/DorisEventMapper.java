@@ -17,12 +17,4 @@ public interface DorisEventMapper extends BaseMapperX<DorisEventDO> {
                 .orderByAsc(DorisEventDO::getEventTime)
         );
     }
-
-    default List<DorisEventDO> selectListByChannelAndTargetField(String channel, String targetField) {
-        return selectList(new LambdaQueryWrapperX<DorisEventDO>()
-                .eq(DorisEventDO::getChannel, channel)
-                .eq(DorisEventDO::getTargetField, targetField)
-                .orderByAsc(DorisEventDO::getEventTime)
-        );
-    }
 }
