@@ -41,23 +41,23 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 规则信息池：key-规则编号，value-规则信息对象（用于广播流）
      */
-    private Map<Long, RuleInfoDTO> ruleInfoPool;
+    private final Map<Long, RuleInfoDTO> ruleInfoPool = new HashMap<>();
+    /**
+     * 规则运算机池：key-规则编号，value-运算机对象
+     */
+    private final Map<Long, Processor> ruleProcessorPool = new ConcurrentHashMap<>();
+    /**
+     * 最近5分钟时间事件数据缓存
+     */
+    private final Map<String, List<KafkaEventDTO>> recentEventMap = new HashMap<>();
+    /**
+     * groovy加载器
+     */
+    private GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
     /**
      * 规则信息list状态（用于故障恢复）
      */
     private ListState<RuleInfoDTO> restoreRuleInfoListState;
-    /**
-     * 规则运算机池：key-规则编号，value-运算机对象
-     */
-    private Map<Long, Processor> ruleProcessorPool;
-    /**
-     * groovy加载器
-     */
-    private GroovyClassLoader groovyClassLoader;
-    /**
-     * 最近5分钟时间事件数据缓存
-     */
-    private Map<String, List<KafkaEventDTO>> recentEventMap;
     /**
      * 旧规则列表
      */
@@ -75,10 +75,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     @Override
     public void open(Configuration parameters) {
         RuntimeContext runtimeContext = getRuntimeContext();
-        ruleInfoPool = new HashMap<>();
-        ruleProcessorPool = new ConcurrentHashMap<>();
-        groovyClassLoader = new GroovyClassLoader();
-        recentEventMap = new HashMap<>();
         oldRuleListState = runtimeContext.getMapState(CommonStateDesc.OLD_RULE_MAP_STATE_DESC);
     }
 
@@ -124,7 +120,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             }
         }
         // 注册定时器（窗口大小1分钟）
-        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, 60 * 1000) + 60 * 1000;
+        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, TimeUnit.MINUTES.toMillis(1))
+                + TimeUnit.MINUTES.toMillis(1);
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
@@ -283,7 +280,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
-            Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
             boolean hasActiveEvents = processor.onTimer(currentKey, timestamp, out);
@@ -294,7 +290,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 如果运算机中有待处理的定时器，则注册下一次flink定时器。
         if (hasPendingTimers) {
             // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-            long nextTimerTime = timestamp + 60 * 1000;
+            long nextTimerTime = timestamp + TimeUnit.MINUTES.toMillis(1);
             ctx.timerService().registerProcessingTimeTimer(nextTimerTime);
         }
     }
