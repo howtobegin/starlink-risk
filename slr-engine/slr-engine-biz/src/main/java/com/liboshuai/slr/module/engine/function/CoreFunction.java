@@ -45,7 +45,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 规则信息list状态（用于故障恢复）
      */
-    private ListState<RuleInfoDTO> restoreRuleInfoDTOListState;
+    private ListState<RuleInfoDTO> restoreRuleInfoListState;
     /**
      * 规则运算机池：key-规则编号，value-运算机对象
      */
@@ -330,7 +330,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     @Override
     public void snapshotState(FunctionSnapshotContext functionSnapshotContext) throws Exception {
         List<RuleInfoDTO> ruleInfoDTOList = new ArrayList<>(ruleInfoPool.values());
-        restoreRuleInfoDTOListState.update(ruleInfoDTOList);
+        restoreRuleInfoListState.update(ruleInfoDTOList);
     }
 
     /**
@@ -342,10 +342,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             groovyClassLoader = new GroovyClassLoader();
         }
         // 获取用于存储规则信息的 UnionList 算子状态
-        restoreRuleInfoDTOListState = functionInitializationContext.getOperatorStateStore()
-                .getUnionListState(CommonStateDesc.RULE_INFO_LIST_STATE_DESC);
+        restoreRuleInfoListState = functionInitializationContext.getOperatorStateStore()
+                .getUnionListState(CommonStateDesc.RESTORE_RULE_INFO_LIST_STATE_DESC);
         // 遍历 UnionList 算子状态，恢复构建规则运算机，并进行初始化
-        for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoDTOListState.get()) {
+        for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoListState.get()) {
             loadProcessor(ruleInfoDTO.getRuleCode(), ruleInfoDTO);
         }
         log.warn("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());

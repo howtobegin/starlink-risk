@@ -18,8 +18,8 @@ public class CommonStateDesc {
     /**
      * 规则信息map状态定义
      */
-    public static ListStateDescriptor<RuleInfoDTO> RULE_INFO_LIST_STATE_DESC =
-            new ListStateDescriptor<>("ruleInfoListState", RuleInfoDTO.class);
+    public static ListStateDescriptor<RuleInfoDTO> RESTORE_RULE_INFO_LIST_STATE_DESC =
+            new ListStateDescriptor<>("restoreRuleInfoListState", RuleInfoDTO.class);
     /**
      * 旧规则状态定义
      */
