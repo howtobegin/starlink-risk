@@ -25,7 +25,7 @@ public class RuleJsonDTO implements Serializable {
      * （例如：R1553673459123456000）
      * {@link RuleInfoDTO#getRuleCode()}
      */
-    private String ruleCode;
+    private Long ruleCode;
 
     /**
      * 规则json数据

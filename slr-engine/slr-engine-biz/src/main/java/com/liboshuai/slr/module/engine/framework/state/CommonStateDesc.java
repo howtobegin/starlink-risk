@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.engine.framework.state;
 
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
+import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 
 /**
@@ -13,17 +13,16 @@ public class CommonStateDesc {
     /**
      * 规则广播流状态定义
      */
-    public static MapStateDescriptor<String, RuleInfoDTO> BROADCAST_RULE_MAP_STATE_DESC =
-            new MapStateDescriptor<>("broadcastRuleMapState", String.class, RuleInfoDTO.class);
-
+    public static MapStateDescriptor<Long, RuleInfoDTO> BROADCAST_RULE_MAP_STATE_DESC =
+            new MapStateDescriptor<>("broadcastRuleMapState", Long.class, RuleInfoDTO.class);
     /**
-     * 最近事件数据缓存状态定义
+     * 规则信息map状态定义
      */
-    public static MapStateDescriptor<KafkaEventDTO, Object> RECENT_EVENT_MAP_STATE_DESC = new MapStateDescriptor<>("recentEventCacheMapState", KafkaEventDTO.class, Object.class);
-
+    public static ListStateDescriptor<RuleInfoDTO> RULE_INFO_LIST_STATE_DESC =
+            new ListStateDescriptor<>("ruleInfoListState", RuleInfoDTO.class);
     /**
      * 旧规则状态定义
      */
-    public static MapStateDescriptor<String, Void> OLD_RULE_MAP_STATE_DESC = new MapStateDescriptor<>("oldRuleMapState", String.class, Void.class);
+    public static MapStateDescriptor<Long, Void> OLD_RULE_MAP_STATE_DESC = new MapStateDescriptor<>("oldRuleMapState", Long.class, Void.class);
 
 }

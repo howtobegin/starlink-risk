@@ -4,6 +4,7 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
+import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
@@ -12,9 +13,11 @@ import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
-import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.FunctionInitializationContext;
+import org.apache.flink.runtime.state.FunctionSnapshotContext;
+import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.CollectionUtil;
 import org.apache.flink.util.Collector;
@@ -24,20 +27,28 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.liboshuai.slr.module.engine.framework.state.CommonStateDesc.*;
+import static com.liboshuai.slr.module.engine.framework.state.CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC;
 
 /**
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO> {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO> implements CheckpointedFunction {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
     /**
+     * 规则信息池：key-规则编号，value-规则信息对象（用于广播流）
+     */
+    private Map<Long, RuleInfoDTO> ruleInfoPool;
+    /**
+     * 规则信息list状态（用于故障恢复）
+     */
+    private ListState<RuleInfoDTO> restoreRuleInfoDTOListState;
+    /**
      * 规则运算机池：key-规则编号，value-运算机对象
      */
-    private Map<String, Processor> ruleProcessorPool;
+    private Map<Long, Processor> ruleProcessorPool;
     /**
      * groovy加载器
      */
@@ -49,7 +60,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 旧规则列表
      */
-    private MapState<String, Void> oldRuleListState;
+    private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
     private MapState<String, Boolean> smallInitMapState;
@@ -62,12 +73,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void open(Configuration parameters) {
+        RuntimeContext runtimeContext = getRuntimeContext();
+        ruleInfoPool = new ConcurrentHashMap<>();
         ruleProcessorPool = new ConcurrentHashMap<>();
         groovyClassLoader = new GroovyClassLoader();
-        RECENT_EVENT_MAP_STATE_DESC
-                .enableTimeToLive(StateTtlConfig.newBuilder(Time.minutes(2)).neverReturnExpired().build());
         recentEventMap = new HashMap<>();
-        oldRuleListState = getRuntimeContext().getMapState(OLD_RULE_MAP_STATE_DESC);
+        oldRuleListState = runtimeContext.getMapState(CommonStateDesc.OLD_RULE_MAP_STATE_DESC);
     }
 
     @Override
@@ -92,11 +103,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         out.collect(resultDTO);
         // 将事件添加到缓存列表中并移除超过5分钟的过期数据
         addEventToCacheAndRemoveExpired(currentKey, kafkaEventDTO, currentProcessingTime);
-        // 从广播流中获取规则信息
-        ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 数据遍历经过每个规则运算机
-        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
-            String ruleCode = stringProcessorEntry.getKey();
+        for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
+            Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
@@ -105,12 +114,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                     continue;
                 }
                 for (KafkaEventDTO historyKafkaEventDto : historyKafkaEventDTOList) {
-                    processor.processElement(currentKey, currentProcessingTime, broadcastState.get(ruleCode), historyKafkaEventDto, out);
+                    processor.processElement(currentKey, currentProcessingTime, ruleInfoPool.get(ruleCode), historyKafkaEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, currentProcessingTime, broadcastState.get(ruleCode), kafkaEventDTO, out);
+                processor.processElement(currentKey, currentProcessingTime, ruleInfoPool.get(ruleCode), kafkaEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -208,27 +217,25 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         String op = ruleCdcDTO.getOp();
         // 变更之前的数据
         RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
-        String ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
+        Long ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
         // 变更之后的数据
         RuleJsonDTO ruleCdcDTOAfter = ruleCdcDTO.getAfter();
-        String ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
+        Long ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
         String ruleJsonAfter = ruleCdcDTOAfter.getRuleJson();
         RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleJsonAfter, RuleInfoDTO.class);
-        // 获取广播流数据
-        BroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
-            loadProcessor(ruleCodeAfter, broadcastState, ruleInfoDTOAfter);
+            loadProcessor(ruleCodeAfter, ruleInfoDTOAfter);
         } else if (Envelope.Operation.READ.code().equals(op)) {
             // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
-            loadProcessor(ruleCodeAfter, broadcastState, ruleInfoDTOAfter);
+            loadProcessor(ruleCodeAfter, ruleInfoDTOAfter);
         } else if (Envelope.Operation.UPDATE.code().equals(op)) {
             // update: 因为上线规则时进行insert，下线规则时直接delete了，其他更新操作不会同步到rule_json表中，故忽略
             log.warn("规则运算机不支持在线热更新，请不要直接 update rule_json 表中的数据！");
         } else if (Envelope.Operation.DELETE.code().equals(op)) {
             // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
-            removeProcessor(ruleCodeBefore, broadcastState);
+            removeProcessor(ruleCodeBefore);
         }
         log.warn("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
@@ -236,22 +243,21 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 移除规则运算机
      */
-    private void removeProcessor(String ruleCode, BroadcastState<String, RuleInfoDTO> broadcastState) throws Exception {
+    private void removeProcessor(Long ruleCode) throws Exception {
         Processor processor = ruleProcessorPool.get(ruleCode);
         if (Objects.isNull(processor)) {
             log.warn("规则运算机不存在，无需移除，规则编号为: {}", ruleCode);
             return;
         }
         ruleProcessorPool.remove(ruleCode);
-        broadcastState.remove(ruleCode);
+        ruleInfoPool.remove(ruleCode);
         log.warn("下线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
      * 加载规则运算机
      */
-    private void loadProcessor(String ruleCode, BroadcastState<String, RuleInfoDTO> broadcastState,
-                               RuleInfoDTO ruleInfoDTO) throws Exception {
+    private void loadProcessor(Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
         if (ruleProcessorPool.containsKey(ruleCode)) {
             log.warn("规则运算机已存在，无需再次加载，规则编号为: {}", ruleCode);
             return;
@@ -259,7 +265,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 构建规则运算机
         Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
-        broadcastState.put(ruleCode, ruleInfoDTO);
+        ruleInfoPool.put(ruleCode, ruleInfoDTO);
         log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
@@ -273,12 +279,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 获取当前Key
         String currentKey = ctx.getCurrentKey();
         // 从广播流中获取规则信息
-        ReadOnlyBroadcastState<String, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
+        ReadOnlyBroadcastState<Long, RuleInfoDTO> broadcastState = ctx.getBroadcastState(BROADCAST_RULE_MAP_STATE_DESC);
         // 判断当前key所有运算机中是否有待处理的定时器
         boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
-        for (Map.Entry<String, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
-            String ruleCode = stringProcessorEntry.getKey();
+        for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
+            Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             // 调用定时器
             boolean hasActiveEvents = processor.onTimer(currentKey, timestamp, broadcastState.get(ruleCode), out);
@@ -297,22 +303,52 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 构造运算机对象
      */
-    private Processor buildProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+    private Processor buildProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleModelGroovyCode = ruleInfoDTO.getModelGroovy();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
         }
-        Class aClass = groovyClassLoader.parseClass(ruleModelGroovyCode);
+        Class<?> aClass = groovyClassLoader.parseClass(ruleModelGroovyCode);
         Processor processor = (Processor) aClass.newInstance();
-        processor.init(runtimeContext, ruleInfoDTO);
+        if (Objects.nonNull(runtimeContext)) {
+            processor.init(runtimeContext, null, ruleInfoDTO);
+        } else {
+            processor.init(null, keyedStateStore, ruleInfoDTO);
+        }
         return processor;
     }
 
     // mock运算机对象
     private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
         Processor processor = new ProcessorOne();
-        processor.init(runtimeContext, ruleInfoDTO);
+        processor.init(runtimeContext, null, ruleInfoDTO);
         return processor;
     }
 
+    /**
+     * checkpoint时调用的方法
+     */
+    @Override
+    public void snapshotState(FunctionSnapshotContext functionSnapshotContext) throws Exception {
+        List<RuleInfoDTO> ruleInfoDTOList = new ArrayList<>(ruleInfoPool.values());
+        restoreRuleInfoDTOListState.update(ruleInfoDTOList);
+    }
+
+    /**
+     * 恢复状态时调用的方法
+     */
+    @Override
+    public void initializeState(FunctionInitializationContext functionInitializationContext) throws Exception {
+        if (groovyClassLoader == null) {
+            groovyClassLoader = new GroovyClassLoader();
+        }
+        // 获取用于存储规则信息的 UnionList 算子状态
+        restoreRuleInfoDTOListState = functionInitializationContext.getOperatorStateStore()
+                .getUnionListState(CommonStateDesc.RULE_INFO_LIST_STATE_DESC);
+        // 遍历 UnionList 算子状态，恢复构建规则运算机，并进行初始化
+        for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoDTOListState.get()) {
+            loadProcessor(ruleInfoDTO.getRuleCode(), ruleInfoDTO);
+        }
+        log.warn("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
+    }
 }

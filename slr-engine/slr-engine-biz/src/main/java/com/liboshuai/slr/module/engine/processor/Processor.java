@@ -4,6 +4,7 @@ import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.ResultDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.api.common.state.KeyedStateStore;
 import org.apache.flink.util.Collector;
 
 /**
@@ -14,7 +15,7 @@ public interface Processor {
     /**
      * 初始化
      */
-    void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception;
+    void init(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception;
 
     /**
      * 处理单条数据

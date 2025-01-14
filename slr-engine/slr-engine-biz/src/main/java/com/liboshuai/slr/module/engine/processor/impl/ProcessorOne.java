@@ -12,6 +12,7 @@ import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.utils.*;
 import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.api.common.state.KeyedStateStore;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -68,18 +69,27 @@ public class ProcessorOne implements Processor {
      * @param ruleInfoDTO    规则信息数据传输对象，包含规则特定的元数据
      */
     @Override
-    public void init(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) {
+    public void init(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) {
         Long ruleCode = ruleInfoDTO.getRuleCode();
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
         smallMap = new HashMap<>();
-        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
-        smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
-        lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
-        latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
-        bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
-
-        // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-        oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+        if (Objects.nonNull(runtimeContext)) {
+            // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+            smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+            lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+            latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
+            bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
+            // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
+            oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+        } else {
+            // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+            smallInitMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+            lastWarningTimeState = keyedStateStore.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+            latestEventThresholdMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
+            bigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
+            // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
+            oldBigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+        }
     }
 
     /**
