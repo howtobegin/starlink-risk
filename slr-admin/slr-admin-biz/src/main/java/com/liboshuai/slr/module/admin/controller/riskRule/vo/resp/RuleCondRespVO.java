@@ -55,6 +55,9 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "阈值", example = "20")
     private Long threshold;
 
+    @Schema(description = "阈值缩放因子", example = "2")
+    private Long thresholdScaleFactor;
+
     @Schema(description = "是否跨历史数据", example = "true")
     private Boolean crossHistory;
 

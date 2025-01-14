@@ -65,6 +65,9 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "阈值", example = "20", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long threshold;
 
+    @Schema(description = "阈值缩放因子", example = "2")
+    private Long thresholdScaleFactor;
+
     @NotNull(message = "是否跨历史数据[crossHistory]，不能为空")
     @Schema(description = "是否跨历史数据", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean crossHistory;

@@ -58,6 +58,10 @@ public class RuleCondDO extends BaseDO {
      */
     private Long threshold;
     /**
+     * 阈值缩放因子
+     */
+    private Long thresholdScaleFactor;
+    /**
      * 是否跨历史数据
      */
     private Boolean crossHistory;

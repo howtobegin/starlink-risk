@@ -47,6 +47,10 @@ public class ProcessorOne implements Processor {
      */
     private ValueState<Long> lastWarningTimeState;
     /**
+     * 事件字段及对应现阈值
+     */
+    private MapState<String, Long> eventFieldAndThresholdState;
+    /**
      * key: f0为eventField，f1为时间戳
      * value: f0为eventValue累加值，f1为最新的EventKafkaDTO
      */
@@ -327,29 +331,18 @@ public class ProcessorOne implements Processor {
             lastWarningTimeState.update(0L);
         }
         // 获取预警间隔时间，单位为毫秒
-        long alertInterval = TimeUtil.toMillis(
-                ruleInfoDTO.getAlertIntervalValue(), TimeUnitEnum.fromEnUnit(ruleInfoDTO.getAlertIntervalUnit())
-        );
-        // 触发结果为true，且当前时间减去上次预警时间大于预警间隔时间，则进行预警
-        if (processBigMapResult.f0 && (timestamp - lastWarningTimeState.value() >= alertInterval)) {
+        Long alertInterval = getAlertInterval(ruleInfoDTO);
+        // 检查是否需要发送预警
+        boolean shouldAlert = processBigMapResult.f0 &&
+                (alertInterval == null || (timestamp - lastWarningTimeState.value() >= alertInterval));
+        if (shouldAlert) {
+            // 更新最后预警时间
             lastWarningTimeState.update(timestamp);
-            // 进行预警信息拼接组合
-            String finalWarnMessage = TemplateUtil.replacePlaceholders(
-                    ruleInfoDTO.getAlertMessage(),
-                    ruleInfoDTO,
-                    processBigMapResult.f1,
-                    processBigMapResult.f2
-            );
-            AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
-                    .channel(ruleInfoDTO.getChannel())
-                    .ruleCode(ruleInfoDTO.getRuleCode())
-                    .alertMessage(finalWarnMessage)
-                    .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
-                    .targetField(ruleInfoDTO.getTargetField())
-                    .targetValue(processBigMapResult.f1.getTargetValue())
-                    .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
-                    .build();
+            // 构建预警信息
+            AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
+            // 记录日志
             log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+            // 收集结果
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
             out.collect(resultDTO);
         }
@@ -375,6 +368,36 @@ public class ProcessorOne implements Processor {
     }
 
     /**
+     * 构建预警信息的方法，提取重复逻辑
+     */
+    private AlertMessageDTO buildAlertMessage(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, KafkaEventDTO, ProcessorDTO> processBigMapResult) {
+        String finalWarnMessage = TemplateUtil.replacePlaceholders(
+                ruleInfoDTO.getAlertMessage(),
+                ruleInfoDTO,
+                processBigMapResult.f1,
+                processBigMapResult.f2
+        );
+        return AlertMessageDTO.builder()
+                .channel(ruleInfoDTO.getChannel())
+                .ruleCode(ruleInfoDTO.getRuleCode())
+                .alertMessage(finalWarnMessage)
+                .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(System.currentTimeMillis()))
+                .targetField(ruleInfoDTO.getTargetField())
+                .targetValue(processBigMapResult.f1.getTargetValue())
+                .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
+                .build();
+    }
+
+    private Long getAlertInterval(RuleInfoDTO ruleInfoDTO) {
+        Long alertIntervalValue = ruleInfoDTO.getAlertIntervalValue();
+        String alertIntervalUnit = ruleInfoDTO.getAlertIntervalUnit();
+        if (Objects.isNull(alertIntervalValue) || Objects.isNull(alertIntervalUnit)) {
+            return null;
+        }
+        return TimeUtil.toMillis(alertIntervalValue, TimeUnitEnum.fromEnUnit(alertIntervalUnit));
+    }
+
+    /**
      * 检查是否存在活跃的事件
      * 该方法用于遍历一个大的状态映射，以确定其中是否包含活跃的Kafka事件
      *
@@ -389,7 +412,7 @@ public class ProcessorOne implements Processor {
      * 此方法主要负责遍历大映射表状态，计算每个事件字段的累加值，判断是否满足规则条件，并返回相关的处理结果
      *
      * @param ruleConditionMapByEventField 按事件字段分类的规则条件映射表
-     * @param ruleCondCombOp 规则条件的组合操作符，用于确定如何组合多个规则条件的结果
+     * @param ruleCondCombOp               规则条件的组合操作符，用于确定如何组合多个规则条件的结果
      * @return 返回一个Tuple3对象，包含事件结果、最新的Kafka事件DTO和处理器DTO
      * @throws Exception 如果处理过程中发生错误，则抛出异常
      */
@@ -425,7 +448,8 @@ public class ProcessorOne implements Processor {
         for (String eventField : eventFieldSet) {
             Long eventValueSum = eventFiledAndValueSumMap.get(eventField);
             RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField);
-            Long eventThreshold = ruleCondDTO.getThreshold();
+            // 获取事件的阈值
+            Long eventThreshold = getEventThreshold(eventField, ruleCondDTO);
             eventFieldAndWarnResult.put(eventField, eventValueSum > eventThreshold);
         }
         boolean eventResult = evaluateEventResults(eventFieldAndWarnResult, ruleCondCombOp);
@@ -434,6 +458,31 @@ public class ProcessorOne implements Processor {
                 .eventValueGroup(eventFiledAndValueSumMap)
                 .build();
         return Tuple3.of(eventResult, latestEventKafkaDTO, processorDTO);
+    }
+
+    /**
+     * 获取事件的阈值
+     * 此方法用于计算和获取给定规则条件下的事件阈值如果设置了阈值缩放因子，则使用之；
+     * 否则直接返回规则条件中的阈值
+     *
+     * @param eventField  事件字段，用于查找可能已经存在的阈值
+     * @param ruleCondDTO 规则条件对象，包含阈值和阈值缩放因子
+     * @return 计算后的事件阈值
+     * @throws Exception 如果计算过程中发生错误，则抛出异常
+     */
+    private Long getEventThreshold(String eventField, RuleCondDTO ruleCondDTO) throws Exception {
+        Long eventThreshold = ruleCondDTO.getThreshold();
+        Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
+        if (Objects.nonNull(thresholdScaleFactor)) {
+            Long latestThreshold = eventFieldAndThresholdState.get(eventField);
+            if (Objects.isNull(latestThreshold)) {
+                eventThreshold = eventThreshold * thresholdScaleFactor;
+            } else {
+                eventThreshold = latestThreshold * thresholdScaleFactor;
+            }
+            eventFieldAndThresholdState.put(eventField, eventThreshold);
+        }
+        return eventThreshold;
     }
 
 
