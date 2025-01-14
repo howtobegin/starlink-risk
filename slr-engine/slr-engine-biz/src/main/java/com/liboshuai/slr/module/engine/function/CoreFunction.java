@@ -225,10 +225,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
-            loadProcessor(ruleCodeAfter, ruleInfoDTOAfter);
+            loadProcessor(getRuntimeContext(), ruleCodeAfter, ruleInfoDTOAfter);
         } else if (Envelope.Operation.READ.code().equals(op)) {
             // read: 读操作意味着计算引擎是刚刚启动，我们需要从数据库中恢复加载之前已经上线的规则运算机
-            loadProcessor(ruleCodeAfter, ruleInfoDTOAfter);
+            loadProcessor(getRuntimeContext(), ruleCodeAfter, ruleInfoDTOAfter);
         } else if (Envelope.Operation.UPDATE.code().equals(op)) {
             // update: 因为上线规则时进行insert，下线规则时直接delete了，其他更新操作不会同步到rule_json表中，故忽略
             log.warn("规则运算机不支持在线热更新，请不要直接 update rule_json 表中的数据！");
@@ -256,16 +256,31 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 加载规则运算机
      */
-    private void loadProcessor(Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
+    private void loadProcessor(RuntimeContext runtimeContext, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
         if (ruleProcessorPool.containsKey(ruleCode)) {
             log.warn("规则运算机已存在，无需再次加载，规则编号为: {}", ruleCode);
             return;
         }
         // 构建规则运算机
-        Processor processor = mockProcessor(getRuntimeContext(), ruleInfoDTO);
+        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
         log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
+    }
+
+    /**
+     * 加载规则运算机
+     */
+    private void loadProcessor(KeyedStateStore keyedStateStore, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
+        if (ruleProcessorPool.containsKey(ruleCode)) {
+            log.warn("规则运算机已存在，无需再次恢复，规则编号为: {}", ruleCode);
+            return;
+        }
+        // 构建规则运算机
+        Processor processor = mockProcessor(null, keyedStateStore, ruleInfoDTO);
+        ruleProcessorPool.put(ruleCode, processor);
+        ruleInfoPool.put(ruleCode, ruleInfoDTO);
+        log.warn("恢复了一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -315,7 +330,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     // mock运算机对象
-    private Processor mockProcessor(RuntimeContext runtimeContext, RuleInfoDTO ruleInfoDTO) throws Exception {
+    private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
         Processor processor = new ProcessorOne();
         processor.init(runtimeContext, null, ruleInfoDTO);
         return processor;
@@ -343,7 +358,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                 .getUnionListState(CommonStateDesc.RESTORE_RULE_INFO_LIST_STATE_DESC);
         // 遍历 UnionList 算子状态，恢复构建规则运算机，并进行初始化
         for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoListState.get()) {
-            loadProcessor(ruleInfoDTO.getRuleCode(), ruleInfoDTO);
+            loadProcessor(functionInitializationContext.getKeyedStateStore(), ruleInfoDTO.getRuleCode(), ruleInfoDTO);
         }
         log.warn("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
