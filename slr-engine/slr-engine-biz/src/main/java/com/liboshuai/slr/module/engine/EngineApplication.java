@@ -12,7 +12,7 @@ import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
-import com.liboshuai.slr.module.engine.framework.state.StateDescContainer;
+import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
 import com.liboshuai.slr.module.engine.function.DorisAsyncFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
@@ -52,7 +52,7 @@ public class EngineApplication {
                 ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
         ).uid("async-doris");
         // 获取规则广播流
-        BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(StateDescContainer.BROADCAST_RULE_MAP_STATE_DESC);
+        BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象

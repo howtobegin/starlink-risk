@@ -4,6 +4,7 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
+import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
 import groovy.lang.GroovyClassLoader;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.common.time.Time;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.liboshuai.slr.module.engine.framework.state.StateDescContainer.*;
+import static com.liboshuai.slr.module.engine.framework.state.CommonStateDesc.*;
 
 /**
  * 计算引擎核心function
@@ -149,23 +149,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
         RuntimeContext runtimeContext = getRuntimeContext();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
-        String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
-        smallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
-        );
-        String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
-        lastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
-        );
-        String latestEventThresholdMapStateName = "latestEventThresholdMapStateName_" + ruleCode + "_" + ruleVersion;
-        latestEventThresholdMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG)
-        );
-        String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
-                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
-        );
+        smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+        lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+        latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
+        bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
+
 //        logState("之前");
         smallInitMapState.clear();
         lastWarningTimeState.clear();

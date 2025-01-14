@@ -8,7 +8,7 @@ import org.apache.flink.api.common.state.MapStateDescriptor;
  * @Author: liboshuai
  * @Date: 2023-10-25 11:14
  **/
-public class StateDescContainer {
+public class CommonStateDesc {
 
     /**
      * 规则广播流状态定义

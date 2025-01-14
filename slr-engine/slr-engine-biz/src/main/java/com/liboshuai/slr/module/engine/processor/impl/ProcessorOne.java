@@ -8,14 +8,12 @@ import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
+import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
 import com.liboshuai.slr.module.engine.utils.*;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.MapState;
-import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
-import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.util.Collector;
@@ -75,29 +73,13 @@ public class ProcessorOne implements Processor {
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
         smallMap = new HashMap<>();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
-        String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
-        smallInitMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN)
-        );
-        String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
-        lastWarningTimeState = runtimeContext.getState(
-                new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG)
-        );
-        String latestEventThresholdMapStateName = "latestEventThresholdMapStateName_" + ruleCode + "_" + ruleVersion;
-        latestEventThresholdMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG)
-        );
-        String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        bigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG),
-                        Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
-        );
+        smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+        lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+        latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
+        bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
 
         // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-        String oldBigMapStateName = "oldBigMapState_" + ruleCode + "_" + ruleVersion;
-        oldBigMapState = runtimeContext.getMapState(
-                new MapStateDescriptor<>(oldBigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)))
-        );
+        oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
     }
 
     /**
