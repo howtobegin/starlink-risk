@@ -32,4 +32,11 @@ public class RuleEventAttrController {
         List<RuleEventAttrRespVO> ruleEventAttrRespVOList = ruleEventAttrService.list(eventCode);
         return success(ruleEventAttrRespVOList);
     }
+
+    @GetMapping("/checkUniqueEventAttrCode")
+    @Operation(summary = "检查事件属性编号是否唯一")
+    public CommonResult<Boolean> checkUniqueEventAttrCode(String eventAttrCode) {
+        Boolean result = ruleEventAttrService.checkUniqueEventAttrCode(eventAttrCode);
+        return success(result);
+    }
 }

@@ -229,4 +229,9 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         ruleTargetApiDTO.setRuleEventGroup(ruleEventApiDTOList);
     }
 
+    @Override
+    public Boolean checkUniqueTargetCode(String targetCode) {
+        return ruleTargetMapper.selectOneByTargetCode(targetCode) == null;
+    }
+
 }

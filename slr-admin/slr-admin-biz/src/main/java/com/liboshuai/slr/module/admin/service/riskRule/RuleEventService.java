@@ -12,4 +12,6 @@ public interface RuleEventService {
     void changeStatus(@Valid RuleEventChangeStatusReqVO ruleEventChangeStatusReqVO);
 
     List<RuleEventRespVO> list(@NotBlank String targetCode);
+
+    Boolean checkUniqueEventCode(String eventCode);
 }

@@ -85,4 +85,11 @@ public class RuleTargetController {
         ruleTargetService.refreshCache();
         return success();
     }
+
+    @GetMapping("/checkUniqueTargetCode")
+    @Operation(summary = "检查目标编号是否唯一")
+    public CommonResult<Boolean> checkUniqueTargetCode(String targetCode) {
+        Boolean result = ruleTargetService.checkUniqueTargetCode(targetCode);
+        return success(result);
+    }
 }

@@ -21,4 +21,9 @@ public class RuleEventAttrServiceImpl implements RuleEventAttrService {
         List<RuleEventAttrDO> ruleEventAttrDOList = ruleEventAttrMapper.selectListByEventCode(eventCode);
         return BeanUtils.toBean(ruleEventAttrDOList, RuleEventAttrRespVO.class);
     }
+
+    @Override
+    public Boolean checkUniqueEventAttrCode(String eventAttrCode) {
+        return ruleEventAttrMapper.selectListByEventCode(eventAttrCode) == null;
+    }
 }

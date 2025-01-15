@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface RuleEventAttrService {
     List<RuleEventAttrRespVO> list(@NotBlank String eventCode);
+
+    Boolean checkUniqueEventAttrCode(String eventAttrCode);
 }

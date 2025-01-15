@@ -84,4 +84,9 @@ public class RuleEventServiceImpl implements RuleEventService {
         List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCode(targetCode);
         return BeanUtils.toBean(ruleEventDOList, RuleEventRespVO.class);
     }
+
+    @Override
+    public Boolean checkUniqueEventCode(String eventCode) {
+        return ruleEventMapper.selectOneByEventCode(eventCode) == null;
+    }
 }

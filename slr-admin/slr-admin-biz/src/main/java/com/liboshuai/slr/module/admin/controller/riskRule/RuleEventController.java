@@ -43,4 +43,11 @@ public class RuleEventController {
         List<RuleEventRespVO> ruleEventRespVOList = ruleEventService.list(targetCode);
         return success(ruleEventRespVOList);
     }
+
+    @GetMapping("/checkUniqueEventCode")
+    @Operation(summary = "检查事件编号是否唯一")
+    public CommonResult<Boolean> checkUniqueEventCode(String eventCode) {
+        Boolean result = ruleEventService.checkUniqueEventCode(eventCode);
+        return success(result);
+    }
 }

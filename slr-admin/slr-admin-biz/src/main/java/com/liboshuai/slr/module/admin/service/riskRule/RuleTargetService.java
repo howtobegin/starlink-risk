@@ -27,4 +27,6 @@ public interface RuleTargetService {
     List<RuleTargetApiDTO> getCacheDetailList();
 
     void refreshCache();
+
+    Boolean checkUniqueTargetCode(String targetCode);
 }
