@@ -64,7 +64,7 @@ public class ProcessorOne implements Processor {
     private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
 
     // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> oldBigMapState;
+//    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> oldBigMapState;
 
     /**
      * 初始化方法，用于在运行时上下文中注册各种状态
@@ -85,14 +85,14 @@ public class ProcessorOne implements Processor {
             latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
             bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
             // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-            oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+//            oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
         } else {
             smallInitMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
             lastWarningTimeState = keyedStateStore.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
             latestEventThresholdMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
             bigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
             // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-            oldBigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+//            oldBigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
         }
     }
 
@@ -361,13 +361,13 @@ public class ProcessorOne implements Processor {
         log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
     }
 
-    private void logOldState(Long ruleCode, String currentKey) throws Exception {
-        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
-        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
-            bigMap.put(entry.getKey(), entry.getValue().f0);
-        }
-        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
-    }
+//    private void logOldState(Long ruleCode, String currentKey) throws Exception {
+//        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
+//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
+//            bigMap.put(entry.getKey(), entry.getValue().f0);
+//        }
+//        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+//    }
 
     /**
      * 构建预警信息的方法，提取重复逻辑
@@ -477,6 +477,7 @@ public class ProcessorOne implements Processor {
         Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
         if (Objects.nonNull(thresholdScaleFactor)) {
             Long latestThreshold = latestEventThresholdMapState.get(eventField);
+            // FIXME: 逻辑错误，应该对应条件预警触发后，才更新
             if (Objects.nonNull(latestThreshold)) {
                 eventThreshold = latestThreshold * thresholdScaleFactor;
             }
@@ -590,5 +591,4 @@ public class ProcessorOne implements Processor {
 
         return result;
     }
-
 }
