@@ -74,6 +74,13 @@ public class RuleInfoController {
         return success(true);
     }
 
+    @GetMapping("/refreshCache")
+    @Operation(summary = "刷新缓存")
+    public CommonResult<?> refreshCache() {
+        ruleInfoService.refreshCache();
+        return success();
+    }
+
     @GetMapping(value = "/validateFlink")
     @Operation(summary = "验证flink")
     public CommonResult<Boolean> validateFlink(Long ruleCode) {
