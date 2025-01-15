@@ -24,29 +24,26 @@ import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventAttrMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleTargetMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class RuleTargetServiceImpl implements RuleTargetService {
 
-    @Resource
-    private RuleTargetMapper ruleTargetMapper;
-    @Resource
-    private RuleEventMapper ruleEventMapper;
-    @Resource
-    private RuleEventAttrMapper ruleEventAttrMapper;
-    @Resource
-    private MultilevelCache multilevelCache;
+    private final RuleTargetMapper ruleTargetMapper;
+    private final RuleEventMapper ruleEventMapper;
+    private final RuleEventAttrMapper ruleEventAttrMapper;
+    private final MultilevelCache multilevelCache;
 
     @Override
     public PageResult<RuleTargetRespVO> page(RuleTargetPageReqVO ruleTargetPageReqVO) {

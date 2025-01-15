@@ -28,6 +28,7 @@ import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import com.liboshuai.slr.module.engine.utils.TimeUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,31 +44,20 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class RuleInfoServiceImpl implements RuleInfoService {
-    @Resource
-    private RuleInfoMapper ruleInfoMapper;
-    @Resource
-    private RuleModelMapper ruleModelMapper;
-    @Resource
-    private RuleCondMapper ruleCondMapper;
-    @Resource
-    private RuleEventMapper ruleEventMapper;
-    @Resource
-    private RuleEventAttrMapper ruleEventAttrMapper;
-    @Resource
-    private RuleEventAttrValueMapper ruleEventAttrValueMapper;
-    @Resource
-    private RuleTargetMapper ruleTargetMapper;
-    @Resource
-    private RuleJsonMapper ruleJsonMapper;
-    @Resource
-    private DorisEventMapper dorisEventMapper;
-    @Resource
-    private DorisEventConvert dorisEventConvert;
-    @Resource
-    private SnowflakeIdGenerator snowflakeIdGenerator;
-    @Resource
-    private AlertMessageApi alertMessageApi;
+    private final RuleInfoMapper ruleInfoMapper;
+    private final RuleModelMapper ruleModelMapper;
+    private final RuleCondMapper ruleCondMapper;
+    private final RuleEventMapper ruleEventMapper;
+    private final RuleEventAttrMapper ruleEventAttrMapper;
+    private final RuleEventAttrValueMapper ruleEventAttrValueMapper;
+    private final RuleTargetMapper ruleTargetMapper;
+    private final RuleJsonMapper ruleJsonMapper;
+    private final DorisEventMapper dorisEventMapper;
+    private final DorisEventConvert dorisEventConvert;
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
+    private final AlertMessageApi alertMessageApi;
 
     @Override
     public PageResult<RuleInfoRespVO> page(RuleInfoPageReqVO ruleInfoPageReqVO) {

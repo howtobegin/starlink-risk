@@ -12,17 +12,15 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleModelRespV
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleModelDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleModelMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleModelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-
 @Service
+@RequiredArgsConstructor
 public class RuleModelServiceImpl implements RuleModelService {
 
-    @Resource
-    private RuleModelMapper ruleModelMapper;
-    @Resource
-    private SnowflakeIdGenerator snowflakeIdGenerator;
+    private final RuleModelMapper ruleModelMapper;
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
     public PageResult<RuleModelRespVO> page(RuleModelPageReqVO ruleModelPageReqVO) {

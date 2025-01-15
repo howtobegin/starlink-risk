@@ -5,16 +5,16 @@ import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrR
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventAttrDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventAttrMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleEventAttrService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RuleEventAttrServiceImpl implements RuleEventAttrService {
 
-    @Resource
-    private RuleEventAttrMapper ruleEventAttrMapper;
+    private final RuleEventAttrMapper ruleEventAttrMapper;
 
     @Override
     public List<RuleEventAttrRespVO> list(String eventCode) {

@@ -24,6 +24,7 @@ import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEvent
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.common.Node;
@@ -32,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -41,22 +41,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class KafkaEventServiceImpl implements KafkaEventService {
 
-    @Resource
-    private KafkaEventConvert kafkaEventConvert;
-
-    @Resource
-    private KafkaEventProvider kafkaEventProvider;
-
-    @Resource
-    private KafkaEventStrategyHolder kafkaEventStrategyHolder;
-
-    @Resource
-    private RuleTargetApi ruleTargetApi;
-
-    @Resource
-    private KafkaEventErrorRepository kafkaEventErrorRepository;
+    private final KafkaEventConvert kafkaEventConvert;
+    private final KafkaEventProvider kafkaEventProvider;
+    private final KafkaEventStrategyHolder kafkaEventStrategyHolder;
+    private final RuleTargetApi ruleTargetApi;
+    private final KafkaEventErrorRepository kafkaEventErrorRepository;
 
     @Value("${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;

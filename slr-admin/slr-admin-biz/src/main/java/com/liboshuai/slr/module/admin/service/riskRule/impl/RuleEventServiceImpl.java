@@ -11,19 +11,18 @@ import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventDO;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.RuleEventMapper;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleEventService;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class RuleEventServiceImpl implements RuleEventService {
 
-    @Resource
-    private RuleEventMapper ruleEventMapper;
-    @Resource
-    private RuleTargetService ruleTargetService;
+    private final RuleEventMapper ruleEventMapper;
+    private final RuleTargetService ruleTargetService;
 
     @Override
     public void changeStatus(RuleEventChangeStatusReqVO ruleEventChangeStatusReqVO) {

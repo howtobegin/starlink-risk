@@ -11,11 +11,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -24,12 +24,12 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Slf4j
 @Validated
 @RestController
+@RequiredArgsConstructor
 @Tag(name = "风控规则信息")
 @RequestMapping("/ruleInfo")
 public class RuleInfoController {
 
-    @Resource
-    private RuleInfoService ruleInfoService;
+    private final RuleInfoService ruleInfoService;
 
     @PostMapping("/page")
     @Operation(summary = "分页")

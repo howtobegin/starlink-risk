@@ -10,20 +10,18 @@ import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessa
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageMongoDAO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageRepository;
 import com.liboshuai.slr.module.connector.service.alertMessage.AlertMessageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AlertMessageServiceImpl implements AlertMessageService {
 
-    @Resource
-    private AlertMessageMongoDAO alertMessageMongoDAO;
-    @Resource
-    private AlertMessageRepository alertMessageRepository;
-    @Resource
-    private AlertMessageConvert alertMessageConvert;
+    private final AlertMessageMongoDAO alertMessageMongoDAO;
+    private final AlertMessageRepository alertMessageRepository;
+    private final AlertMessageConvert alertMessageConvert;
 
     @Override
     public PageResult<AlertMessageRespDTO> page(AlertMessagePageReqDTO alertMessagePageReqDTO) {
