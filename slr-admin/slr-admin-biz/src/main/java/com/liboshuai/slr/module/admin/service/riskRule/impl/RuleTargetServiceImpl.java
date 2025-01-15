@@ -109,6 +109,11 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
+        ruleEventSaveReqVOList.forEach(ruleEventSaveReqVO -> {
+            if (Objects.isNull(ruleEventSaveReqVO.getEventStatus())) {
+                ruleEventSaveReqVO.setEventStatus(CommonStatusEnum.DRAFT.getCode());
+            }
+        });
         List<RuleEventDO> oldRuleEventDOList = ruleEventMapper.selectListByTargetCode(targetCode);
         List<String> oldRuleEventCodeList = oldRuleEventDOList.stream().map(RuleEventDO::getEventCode).collect(Collectors.toList());
         ruleEventMapper.deleteByKeyCode(targetCode);
