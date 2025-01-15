@@ -38,7 +38,7 @@ public class RuleCondSaveReqVO implements Serializable {
      */
     @NotBlank(message = "条件类型[condType]，不能为空")
     @InStringEnum(value = RuleCondTypeEnum.class, message = "条件类型[condType]，必须在指定范围 {value}")
-    @Schema(description = "条件类型", example = "RANGE", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "条件类型", example = "CYCLE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String condType;
 
     @Schema(description = "窗口值,仅在条件类型为周期时使用", example = "10", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
