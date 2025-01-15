@@ -61,7 +61,7 @@ public class KafkaEventListener {
             log.info("推送给预警平台时查询的规则信息：{}", ruleInfoDTO);
             // FIXME: 测试时，临时注释
 //            rsoAlarmRestApi.sendMsgToRso(
-//                    ruleInfoDTO.getAlertProjectNo(),k
+//                    ruleInfoDTO.getAlertProjectNo(),
 //                    ruleInfoDTO.getAlertLevel(),
 //                    LocalDateTimeUtils.convertLocalDateTime2Str(alertMessageApiDTO.getAlertTime()),
 //                    alertMessageApiDTO.getAlertMessage()
