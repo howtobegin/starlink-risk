@@ -69,7 +69,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         validateKafkaEventGroupReqVO(kafkaEventGroupReqVO, kafkaEventErrorRespVOList);
         // req转dto
         List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
-                .map(kafkaEventReqVO -> kafkaEventConvert.convertReq2Dto(kafkaEventReqVO)) // 转换为DTO
+                .map(kafkaEventConvert::convertReq2Dto) // 转换为DTO
                 .map(kafkaEventDTO -> kafkaEventDTO.setChannel(channel)) // 设置渠道
                 .collect(Collectors.toList());
         // 各渠道特别的数据处理逻辑
@@ -319,7 +319,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             List<String> reasons = new ArrayList<>();
 
             // 效验各字段值是否非空
-            checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventTime, reasons);
+            checkEventTimestamp(kafkaEventReqVO, KafkaEventReqVO::getEventTime, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetField, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getTargetValue, reasons);
             checkNotEmpty(kafkaEventReqVO, KafkaEventReqVO::getEventField, reasons);
@@ -345,10 +345,10 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     /**
      * 校验eventTimestamp字段值是否合法
      */
-    private <T> void checkEventTimestamp(KafkaEventDTO kafkaEventDTO, SFunction<T> getter, List<String> reasons) {
+    private <T> void checkEventTimestamp(KafkaEventReqVO kafkaEventReqVO, SFunction<T> getter, List<String> reasons) {
         try {
             Field field = ReflectUtils.findField(getter);
-            Long value = (Long) field.get(kafkaEventDTO);
+            Long value = (Long) field.get(kafkaEventReqVO);
             if (value == null || String.valueOf(value).length() != 13) {
                 reasons.add("[" + field.getName() + "]必须为13位毫秒级别时间戳");
             }
