@@ -77,6 +77,7 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "跨历史时间点", example = "2025-03-01 10:00:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime crossHistoryTimeline;
 
+    @Size(max = 256, message = "规则编号[ruleCode]，长度不能超过 256 个字符")
     @Schema(description = "规则编号", example = "1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long ruleCode;
 

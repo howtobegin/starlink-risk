@@ -51,9 +51,9 @@ public class RuleModelController {
     @Operation(summary = "新增")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "规则模型保存请求", required = true,
             content = @Content(schema = @Schema(implementation = RuleModelCreateReqVO.class)))
-    public CommonResult<String> create(@RequestBody @Valid RuleModelCreateReqVO ruleModelCreateReqVO) {
+    public CommonResult<Long> create(@RequestBody @Valid RuleModelCreateReqVO ruleModelCreateReqVO) {
         Long modelCode = ruleModelService.create(ruleModelCreateReqVO);
-        return success(String.valueOf(modelCode));
+        return success(modelCode);
     }
 
     @PostMapping(value = "/update")
