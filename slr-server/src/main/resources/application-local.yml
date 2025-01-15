@@ -83,6 +83,8 @@ slr-connector:
   kafka:
     provider_topic: slr_event
     consumer_topic: slr_alert
+  rso:
+    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
 
 slr-admin:
   file-path:

@@ -41,6 +41,10 @@ spring:
           url: jdbc:mysql://four:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
+        slave:
+          url: jdbc:mysql://one:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: root
+          password: Rongshu@2024
   redis:
     database: 0
     password: Rongshu@2024
@@ -48,12 +52,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - four:6379
-        - four:6380
-        - five:6379
-        - five:6380
-        - six:6379
-        - six:6380
+        - one:6379
+        - one:6380
+        - two:6379
+        - two:6380
+        - three:6379
+        - three:6380
     lettuce:
       pool:
         min-idle: 0
@@ -62,9 +66,9 @@ spring:
         max-wait: -1ms
   kafka:
     producer:
-      bootstrap-servers: four:9092,five:9092,six:9092
+      bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
-      bootstrap-servers: four:9092,five:9092,six:9092
+      bootstrap-servers: one:9092,two:9092,three:9092
       group-id: starlink_risk
   data:
     mongodb:
@@ -77,8 +81,10 @@ spring:
 
 slr-connector:
   kafka:
-    provider_topic: slr_event_data
-    consumer_topic: slr_alert_message
+    provider_topic: slr_event
+    consumer_topic: slr_alert
+  rso:
+    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
 
 slr-admin:
   file-path:
