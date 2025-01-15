@@ -41,7 +41,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 规则信息池：key-规则编号，value-规则信息对象（用于广播流）
      */
-    private final Map<Long, RuleInfoDTO> ruleInfoPool = new HashMap<>();
+    private final Map<Long, RuleInfoDTO> ruleInfoPool = new ConcurrentHashMap<>();
     /**
      * 规则运算机池：key-规则编号，value-运算机对象
      */
@@ -258,7 +258,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     private void loadProcessor(RuntimeContext runtimeContext, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
         if (ruleProcessorPool.containsKey(ruleCode)) {
-            log.warn("规则运算机已存在，无需再次加载，规则编号为: {}", ruleCode);
             return;
         }
         // 构建规则运算机
@@ -273,7 +272,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     private void loadProcessor(KeyedStateStore keyedStateStore, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
         if (ruleProcessorPool.containsKey(ruleCode)) {
-            log.warn("规则运算机已存在，无需再次恢复，规则编号为: {}", ruleCode);
             return;
         }
         // 构建规则运算机
@@ -319,6 +317,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
             throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
         }
+        // TODO: 优化，使用缓存池，避免每次都创建新的ClassLoader
         Class<?> aClass = groovyClassLoader.parseClass(ruleModelGroovyCode);
         Processor processor = (Processor) aClass.newInstance();
         if (Objects.nonNull(runtimeContext)) {
