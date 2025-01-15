@@ -7,7 +7,6 @@ import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
-import com.liboshuai.slr.module.engine.processor.impl.ProcessorOne;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -261,7 +260,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             return;
         }
         // 构建规则运算机
-        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
+        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
         log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
@@ -275,7 +274,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             return;
         }
         // 构建规则运算机
-        Processor processor = mockProcessor(null, keyedStateStore, ruleInfoDTO);
+        Processor processor = buildProcessor(null, keyedStateStore, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
         log.warn("恢复了一个规则运算机，规则编号为: {}", ruleCode);
@@ -329,15 +328,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     // mock运算机对象
-    private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
-        Processor processor = new ProcessorOne();
-        if (Objects.nonNull(runtimeContext)) {
-            processor.init(runtimeContext, null, ruleInfoDTO);
-        } else {
-            processor.init(null, keyedStateStore, ruleInfoDTO);
-        }
-        return processor;
-    }
+//    private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
+//        Processor processor = new ProcessorOne();
+//        if (Objects.nonNull(runtimeContext)) {
+//            processor.init(runtimeContext, null, ruleInfoDTO);
+//        } else {
+//            processor.init(null, keyedStateStore, ruleInfoDTO);
+//        }
+//        return processor;
+//    }
 
     /**
      * checkpoint时调用的方法
