@@ -16,7 +16,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RuleEventAttrDTO implements Serializable {
+public class RuleEventAttrApiDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -41,7 +41,7 @@ public class RuleEventAttrDTO implements Serializable {
 
     /**
      * 事件编号
-     * {@link RuleEventAttrDTO#getEventCode()}
+     * {@link RuleEventAttrApiDTO#getEventCode()}
      */
     private String eventCode;
 

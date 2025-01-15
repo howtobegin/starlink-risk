@@ -2,9 +2,9 @@ package com.liboshuai.slr.module.connector.service.alertMessage.impl;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqDTO;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqApiDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespApiDTO;
 import com.liboshuai.slr.module.connector.convert.alertMessage.AlertMessageConvert;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageMongoDAO;
@@ -24,13 +24,13 @@ public class AlertMessageServiceImpl implements AlertMessageService {
     private final AlertMessageConvert alertMessageConvert;
 
     @Override
-    public PageResult<AlertMessageRespDTO> page(AlertMessagePageReqDTO alertMessagePageReqDTO) {
-        PageResult<AlertMessageDO> alertMessageDOPageResult = alertMessageMongoDAO.selectPage(alertMessagePageReqDTO);
-        return BeanUtils.toBean(alertMessageDOPageResult, AlertMessageRespDTO.class);
+    public PageResult<AlertMessageRespApiDTO> page(AlertMessagePageReqApiDTO alertMessagePageReqApiDTO) {
+        PageResult<AlertMessageDO> alertMessageDOPageResult = alertMessageMongoDAO.selectPage(alertMessagePageReqApiDTO);
+        return BeanUtils.toBean(alertMessageDOPageResult, AlertMessageRespApiDTO.class);
     }
 
     @Override
-    public List<AlertMessageDTO> findByRuleCode(Long ruleCode) {
+    public List<AlertMessageApiDTO> findByRuleCode(Long ruleCode) {
         List<AlertMessageDO> alertMessageDOList = alertMessageRepository.findByRuleCode(ruleCode);
         return alertMessageConvert.batchConvertMongo2Dto(alertMessageDOList);
     }

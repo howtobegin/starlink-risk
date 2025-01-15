@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.connector.dal.mongo;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqApiDTO;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,26 +25,26 @@ public class AlertMessageMongoDAO {
      *
      * @return 分页结果
      */
-    public PageResult<AlertMessageDO> selectPage(AlertMessagePageReqDTO alertMessagePageReqDTO) {
+    public PageResult<AlertMessageDO> selectPage(AlertMessagePageReqApiDTO alertMessagePageReqApiDTO) {
         Query query = new Query();
 
         List<Criteria> criteriaList = new ArrayList<>();
 
-        String channel = alertMessagePageReqDTO.getChannel();
+        String channel = alertMessagePageReqApiDTO.getChannel();
         if (channel != null && !channel.isEmpty()) {
             criteriaList.add(Criteria.where("channel").is(channel));
         }
-        String ruleCode = alertMessagePageReqDTO.getRuleCode();
+        String ruleCode = alertMessagePageReqApiDTO.getRuleCode();
         if (ruleCode != null && !ruleCode.isEmpty()) {
             criteriaList.add(Criteria.where("ruleCode").is(ruleCode));
         }
-        String alertMessage = alertMessagePageReqDTO.getAlertMessage();
+        String alertMessage = alertMessagePageReqApiDTO.getAlertMessage();
         if (alertMessage != null && !alertMessage.isEmpty()) {
             // 使用正则表达式进行模糊查询，'i'表示不区分大小写
             criteriaList.add(Criteria.where("alertMessage").regex(alertMessage, "i"));
         }
-        LocalDateTime alertTimeStart = alertMessagePageReqDTO.getAlertTimeStart();
-        LocalDateTime alertTimeEnd = alertMessagePageReqDTO.getAlertTimeEnd();
+        LocalDateTime alertTimeStart = alertMessagePageReqApiDTO.getAlertTimeStart();
+        LocalDateTime alertTimeEnd = alertMessagePageReqApiDTO.getAlertTimeEnd();
         if (alertTimeStart != null && alertTimeEnd != null) {
             criteriaList.add(Criteria.where("alertTime").gte(alertTimeStart).lte(alertTimeEnd));
         } else if (alertTimeStart != null) {
@@ -58,8 +58,8 @@ public class AlertMessageMongoDAO {
             query.addCriteria(criteria);
         }
 
-        int pageNo = alertMessagePageReqDTO.getPageNo();
-        int pageSize = alertMessagePageReqDTO.getPageSize();
+        int pageNo = alertMessagePageReqApiDTO.getPageNo();
+        int pageSize = alertMessagePageReqApiDTO.getPageSize();
         // 设置分页参数
         // 页码从0开始，需要减1
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(Sort.Direction.DESC, "alertTime"));

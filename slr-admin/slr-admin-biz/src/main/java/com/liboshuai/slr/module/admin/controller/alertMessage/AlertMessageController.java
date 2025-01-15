@@ -6,8 +6,8 @@ import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.module.admin.controller.alertMessage.vo.AlertMessagePageReqVO;
 import com.liboshuai.slr.module.admin.controller.alertMessage.vo.AlertMessageRespVO;
 import com.liboshuai.slr.module.connector.api.alertMessage.AlertMessageApi;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqDTO;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqApiDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespApiDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,8 +39,8 @@ public class AlertMessageController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "预警消息列表请求", required = true,
             content = @Content(schema = @Schema(implementation = AlertMessagePageReqVO.class)))
     public CommonResult<PageResult<AlertMessageRespVO>> page(@RequestBody @Valid AlertMessagePageReqVO alertMessagePageReqVO) {
-        AlertMessagePageReqDTO alertMessagePageReqDTO = BeanUtils.toBean(alertMessagePageReqVO, AlertMessagePageReqDTO.class);
-        PageResult<AlertMessageRespDTO> alertMessageRespDTOPageResult = alertMessageApi.page(alertMessagePageReqDTO);
+        AlertMessagePageReqApiDTO alertMessagePageReqApiDTO = BeanUtils.toBean(alertMessagePageReqVO, AlertMessagePageReqApiDTO.class);
+        PageResult<AlertMessageRespApiDTO> alertMessageRespDTOPageResult = alertMessageApi.page(alertMessagePageReqApiDTO);
         PageResult<AlertMessageRespVO> alertMessageRespVOPageResult = BeanUtils.toBean(alertMessageRespDTOPageResult, AlertMessageRespVO.class);
         return success(alertMessageRespVOPageResult);
     }

@@ -24,5 +24,9 @@ public interface RuleInfoService {
 
     RuleInfoDTO buildRuleInfoDTO(Long ruleCode);
 
+    void putCacheRuleInfo(Long ruleCode);
+
+    RuleInfoDTO getCacheRuleInfo(Long ruleCode);
+
     Boolean validateFlink(Long ruleCode);
 }

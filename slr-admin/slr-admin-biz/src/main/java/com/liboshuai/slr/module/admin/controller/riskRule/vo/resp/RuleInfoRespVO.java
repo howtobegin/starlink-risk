@@ -2,9 +2,7 @@ package com.liboshuai.slr.module.admin.controller.riskRule.vo.resp;
 
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
+import com.liboshuai.slr.module.engine.enums.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -56,6 +54,18 @@ public class RuleInfoRespVO extends BaseRespVO {
      */
     @Schema(description = "预警间隔单位", example = "分钟")
     private String alertIntervalUnit;
+
+    /**
+     * {@link AlertProjectNoEnum}
+     */
+    @Schema(description = "预警项目编号", example = "game")
+    private String alertProjectNo;
+
+    /**
+     * {@link AlertLevelEnum}
+     */
+    @Schema(description = "预警等级", example = "4")
+    private String alertLevel;
 
     @Schema(description = "预警消息", example = "触发xxx预警啦！")
     private String alertMessage;

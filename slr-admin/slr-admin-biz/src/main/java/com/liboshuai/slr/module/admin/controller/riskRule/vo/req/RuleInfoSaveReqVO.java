@@ -2,9 +2,7 @@ package com.liboshuai.slr.module.admin.controller.riskRule.vo.req;
 
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
+import com.liboshuai.slr.module.engine.enums.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -71,6 +69,22 @@ public class RuleInfoSaveReqVO implements Serializable {
     @InStringEnum(value = TimeUnitEnum.class, message = "预警间隔单位[alertIntervalUnit]，必须在指定范围 {value}")
     @Schema(description = "预警间隔单位", example = "分钟", requiredMode = Schema.RequiredMode.REQUIRED)
     private String alertIntervalUnit;
+
+    /**
+     * {@link AlertProjectNoEnum}
+     */
+    @NotBlank(message = "预警项目编号[alertProjectNo]，不能为空")
+    @InStringEnum(value = AlertProjectNoEnum.class, message = "预警项目编号[alertProjectNo]，必须在指定范围 {value}")
+    @Schema(description = "预警项目编号", example = "game")
+    private String alertProjectNo;
+
+    /**
+     * {@link AlertLevelEnum}
+     */
+    @NotBlank(message = "预警等级[alertLevel]，不能为空")
+    @InStringEnum(value = AlertLevelEnum.class, message = "预警等级[alertLevel]，必须在指定范围 {value}")
+    @Schema(description = "预警等级", example = "4")
+    private String alertLevel;
 
     @NotBlank(message = "预警消息[alertMessage]，不能为空")
     @Schema(description = "预警消息", example = "触发xxx预警啦！", requiredMode = Schema.RequiredMode.REQUIRED)

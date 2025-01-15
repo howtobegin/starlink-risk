@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RuleTargetDTO implements Serializable {
+public class RuleTargetApiDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -48,5 +48,5 @@ public class RuleTargetDTO implements Serializable {
     /**
      * 规则事件组
      */
-    private List<RuleEventDTO> ruleEventGroup;
+    private List<RuleEventApiDTO> ruleEventGroup;
 }

@@ -1,12 +1,10 @@
 package com.liboshuai.slr.module.connector.api.alertMessage.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.liboshuai.slr.framework.common.pojo.PageDTO;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 /**
@@ -17,13 +15,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class AlertMessageRespDTO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class AlertMessagePageReqApiDTO extends PageDTO {
 
     private static final long serialVersionUID = 1;
 
     /**
      * 渠道
      */
+    @NotBlank(message = "渠道[channel]，不能为空")
     private String channel;
 
     /**
@@ -37,7 +37,12 @@ public class AlertMessageRespDTO implements Serializable {
     private String alertMessage;
 
     /**
-     * 预警时间
+     * 预警时间开始
      */
-    private LocalDateTime alertTime;
+    private LocalDateTime alertTimeStart;
+
+    /**
+     * 预警时间结束
+     */
+    private LocalDateTime alertTimeEnd;
 }

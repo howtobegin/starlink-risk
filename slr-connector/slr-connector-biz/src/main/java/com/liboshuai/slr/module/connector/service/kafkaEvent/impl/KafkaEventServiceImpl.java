@@ -6,9 +6,9 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
 import com.liboshuai.slr.module.admin.api.riskRule.RuleTargetApi;
-import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrDTO;
-import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventDTO;
-import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventApiDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrApiDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetApiDTO;
 import com.liboshuai.slr.module.connector.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventErrorRespVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
@@ -100,10 +100,10 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     public void validateKafkaEventGroupReqVO(KafkaEventGroupReqVO kafkaEventGroupReqVO,
                                              List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList) {
         String channel = kafkaEventGroupReqVO.getChannel();
-        List<RuleTargetDTO> ruleTargetDTOList = ruleTargetApi.getCacheDetailList();
+        List<RuleTargetApiDTO> ruleTargetApiDTOList = ruleTargetApi.getCacheDetailList();
 
         // 如果规则库为空，记录错误并抛出异常
-        if (CollectionUtils.isEmpty(ruleTargetDTOList)) {
+        if (CollectionUtils.isEmpty(ruleTargetApiDTOList)) {
             String message = "因上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据";
             log.error(message);
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
@@ -118,12 +118,12 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         }
 
         // 根据 channel 和 targetField 组织规则库，便于快速查找
-        Map<String, Map<String, RuleTargetDTO>> ruleMap = ruleTargetDTOList.stream()
-                .collect(Collectors.groupingBy(RuleTargetDTO::getChannel,
-                        Collectors.toMap(RuleTargetDTO::getTargetField, ruleTargetDTO -> ruleTargetDTO)));
+        Map<String, Map<String, RuleTargetApiDTO>> ruleMap = ruleTargetApiDTOList.stream()
+                .collect(Collectors.groupingBy(RuleTargetApiDTO::getChannel,
+                        Collectors.toMap(RuleTargetApiDTO::getTargetField, ruleTargetDTO -> ruleTargetDTO)));
 
         // 获取对应 channel 的规则
-        Map<String, RuleTargetDTO> targetFieldMap = ruleMap.get(channel);
+        Map<String, RuleTargetApiDTO> targetFieldMap = ruleMap.get(channel);
         if (targetFieldMap == null) {
             String message = String.format("渠道 [%s] 在规则库中不存在或未上线", channel);
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
@@ -151,13 +151,13 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             Map<String, String> eventAttrMap = eventReqVO.getEventAttrMap();
 
             // 查找对应的目标规则
-            RuleTargetDTO ruleTarget = targetFieldMap.get(targetField);
+            RuleTargetApiDTO ruleTarget = targetFieldMap.get(targetField);
             if (ruleTarget == null) {
                 String message = String.format("渠道 [%s] 中的目标 [%s] 在规则库中不存在或未上线", channel, targetField);
                 reasons.add(message);
             } else {
                 // 查找对应的事件规则
-                List<RuleEventDTO> ruleEventGroup = ruleTarget.getRuleEventGroup();
+                List<RuleEventApiDTO> ruleEventGroup = ruleTarget.getRuleEventGroup();
                 if (CollectionUtils.isEmpty(ruleEventGroup)) {
                     // 记录错误原因
                     String message = String.format("渠道 [%s] 目标 [%s] 的规则事件组在规则库中不存在或未上线，无法处理事件字段 [%s]",
@@ -176,8 +176,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                     continue;
                 }
 
-                Optional<RuleEventDTO> matchingRuleEventOpt = ruleEventGroup.stream()
-                        .filter(ruleEventDTO -> ruleEventDTO.getEventField().equals(eventField))
+                Optional<RuleEventApiDTO> matchingRuleEventOpt = ruleEventGroup.stream()
+                        .filter(ruleEventApiDTO -> ruleEventApiDTO.getEventField().equals(eventField))
                         .findFirst();
 
                 if (!matchingRuleEventOpt.isPresent()) {
@@ -185,17 +185,17 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                             channel, targetField, eventField);
                     reasons.add(message);
                 } else {
-                    RuleEventDTO ruleEvent = matchingRuleEventOpt.get();
+                    RuleEventApiDTO ruleEvent = matchingRuleEventOpt.get();
 
                     // 获取规则中的属性字段
-                    List<RuleEventAttrDTO> ruleEventAttrGroup = ruleEvent.getRuleEventAttrGroup();
+                    List<RuleEventAttrApiDTO> ruleEventAttrGroup = ruleEvent.getRuleEventAttrGroup();
                     if (CollectionUtils.isEmpty(ruleEventAttrGroup)) {
                         // 如果规则中没有属性字段，继续下一个事件
                         index++;
                         continue;
                     }
                     Set<String> ruleAttrFields = ruleEventAttrGroup.stream()
-                            .map(RuleEventAttrDTO::getAttrField)
+                            .map(RuleEventAttrApiDTO::getAttrField)
                             .collect(Collectors.toSet());
 
                     if (CollectionUtils.isEmpty(eventAttrMap)) {

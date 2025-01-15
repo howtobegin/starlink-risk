@@ -1,9 +1,9 @@
 package com.liboshuai.slr.module.connector.rest.rsoAlarm;
 
+import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.util.date.DateUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.connector.rest.rsoAlarm.vo.RroAlarmRequest;
-import com.liboshuai.slr.module.connector.rest.rsoAlarm.vo.RsoAlarmResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,17 +33,18 @@ public class RsoAlarmRestApi {
     /**
      * 发送消息到荣数运营平台
      * 预警类型默认业务预警
-     * 预警级别默认二级预警: 告警方式为(电话+微信)
+     * 预警级别默认四级预警: 告警方式为微信
      *
      * @param projectNo    在荣数运营中配置的项目编号
      * @param warningLevel 预警等级
+     * @param warningTime  预警时间
      * @param alertMessage 需要告警的消息 (最大300个字节,超过300部分进行截取)
-     * @return RSOAlarmMessageResponse 发送响应结果
      */
-    public RsoAlarmResponse sendMsgToRso(String projectNo, String warningLevel, String waningTime, String alertMessage) {
+    @Async(DefaultConstants.CONNECTOR_ASYNC_EXECUTOR)
+    public void sendMsgToRso(String projectNo, String warningLevel, String warningTime, String alertMessage) {
         if (StringUtils.isBlank(alertMessage) || StringUtils.isBlank(projectNo) || StringUtils.isBlank(rsoAlertAddress)) {
             log.error("发送参数为空，请检查项目编号、请求地址或告警信息是否为空。");
-            return null;
+            return;
         }
 
         // 按长度限制处理告警消息
@@ -51,17 +53,13 @@ public class RsoAlarmRestApi {
         }
 
         try {
-            RroAlarmRequest alarmMessageDTO = createAlertMessageRequest(projectNo, warningLevel, waningTime, alertMessage);
+            RroAlarmRequest alarmMessageDTO = createAlertMessageRequest(projectNo, warningLevel, warningTime, alertMessage);
 
             // 使用 RestTemplate 发起 POST 请求并处理响应
             String responseJson = sendPostForJson(rsoAlertAddress, alarmMessageDTO);
-
-            return StringUtils.isNotBlank(responseJson)
-                    ? JsonUtils.parseObject(responseJson, RsoAlarmResponse.class)
-                    : null;
+            log.info("接收到来自荣数运营平台的响应：{}", responseJson);
         } catch (Exception e) {
             log.error("发送消息到荣数运营平台失败。", e);
-            return null;
         }
     }
 

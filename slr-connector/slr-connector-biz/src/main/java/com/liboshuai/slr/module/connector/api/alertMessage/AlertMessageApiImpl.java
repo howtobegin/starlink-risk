@@ -1,9 +1,9 @@
 package com.liboshuai.slr.module.connector.api.alertMessage;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqDTO;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessagePageReqApiDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageRespApiDTO;
 import com.liboshuai.slr.module.connector.service.alertMessage.AlertMessageService;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +17,12 @@ public class AlertMessageApiImpl implements AlertMessageApi {
     private AlertMessageService alertMessageService;
 
     @Override
-    public PageResult<AlertMessageRespDTO> page(AlertMessagePageReqDTO alertMessagePageReqDTO) {
-        return alertMessageService.page(alertMessagePageReqDTO);
+    public PageResult<AlertMessageRespApiDTO> page(AlertMessagePageReqApiDTO alertMessagePageReqApiDTO) {
+        return alertMessageService.page(alertMessagePageReqApiDTO);
     }
 
     @Override
-    public List<AlertMessageDTO> findByRuleCode(Long ruleCode) {
+    public List<AlertMessageApiDTO> findByRuleCode(Long ruleCode) {
         return alertMessageService.findByRuleCode(ruleCode);
     }
 }

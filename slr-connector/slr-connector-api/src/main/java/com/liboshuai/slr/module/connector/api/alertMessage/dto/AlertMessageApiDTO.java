@@ -18,7 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class AlertMessageDTO implements Serializable {
+public class AlertMessageApiDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 

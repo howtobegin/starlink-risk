@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.admin.api.riskRule;
 
-import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetApiDTO;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleTargetService;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ public class RuleTargetApiImpl implements RuleTargetApi {
     private RuleTargetService ruleTargetService;
 
     @Override
-    public List<RuleTargetDTO> getCacheDetailList() {
+    public List<RuleTargetApiDTO> getCacheDetailList() {
         return ruleTargetService.getCacheDetailList();
     }
 }

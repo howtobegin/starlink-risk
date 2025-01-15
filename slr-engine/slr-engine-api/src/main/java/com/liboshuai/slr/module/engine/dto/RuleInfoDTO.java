@@ -1,9 +1,7 @@
 package com.liboshuai.slr.module.engine.dto;
 
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
+import com.liboshuai.slr.module.engine.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,6 +69,18 @@ public class RuleInfoDTO implements Serializable {
      * {@link TimeUnitEnum}
      */
     private String alertIntervalUnit;
+
+    /**
+     * 预警项目编号
+     * {@link AlertProjectNoEnum}
+     */
+    private String alertProjectNo;
+
+    /**
+     * 预警等级
+     * {@link AlertLevelEnum}
+     */
+    private String alertLevel;
 
     /**
      * 预警消息

@@ -3,6 +3,7 @@ package com.liboshuai.slr.module.admin.service.riskRule.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.Master;
 import com.baomidou.dynamic.datasource.annotation.Slave;
+import com.liboshuai.slr.framework.common.constants.CacheKeyConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
@@ -10,6 +11,7 @@ import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
+import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
@@ -21,7 +23,7 @@ import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.*;
 import com.liboshuai.slr.module.admin.dal.mysql.riskRule.*;
 import com.liboshuai.slr.module.admin.service.riskRule.RuleInfoService;
 import com.liboshuai.slr.module.connector.api.alertMessage.AlertMessageApi;
-import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageDTO;
+import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
@@ -58,6 +60,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private final DorisEventConvert dorisEventConvert;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
     private final AlertMessageApi alertMessageApi;
+    private final MultilevelCache multilevelCache;
 
     @Override
     public PageResult<RuleInfoRespVO> page(RuleInfoPageReqVO ruleInfoPageReqVO) {
@@ -141,6 +144,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = BeanUtils.toBean(ruleEventAttrValueSaveReqVOList, RuleEventAttrValueDO.class);
         ruleEventAttrValueMapper.deleteByCondCodes(condCodeList);
         ruleEventAttrValueMapper.insertBatch(ruleEventAttrValueDOList);
+        // 更新缓存
+        putCacheRuleInfo(ruleCode);
     }
 
     @Override
@@ -199,6 +204,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.NEW_STATUS_NOT_SUPPORT);
         }
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
+        // 更新缓存
+        putCacheRuleInfo(ruleCode);
     }
 
     /**
@@ -478,6 +485,31 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         ruleInfoRespVO.setRuleCondGroup(ruleCondGroup);
     }
 
+    @Override
+    public void putCacheRuleInfo(Long ruleCode) {
+        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
+        if (Objects.isNull(ruleInfoDO)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
+        }
+        RuleInfoDTO ruleInfoDTO = BeanUtils.toBean(ruleInfoDO, RuleInfoDTO.class);
+        multilevelCache.put(CacheKeyConstants.RULE_INFO, ruleInfoDTO);
+    }
+
+    @Override
+    public RuleInfoDTO getCacheRuleInfo(Long ruleCode) {
+        RuleInfoDTO ruleInfoDTO = multilevelCache.get(CacheKeyConstants.RULE_INFO, RuleInfoDTO.class);
+        if (Objects.nonNull(ruleInfoDTO)) {
+            return ruleInfoDTO;
+        }
+        RuleInfoDO ruleInfoDO = ruleInfoMapper.selectOneByRuleCode(ruleCode);
+        if (Objects.isNull(ruleInfoDO)) {
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
+        }
+        ruleInfoDTO = BeanUtils.toBean(ruleInfoDO, RuleInfoDTO.class);
+        multilevelCache.put(CacheKeyConstants.RULE_INFO, ruleInfoDTO);
+        return ruleInfoDTO;
+    }
+
     /**
      * 验证flink规则运算是否正确
      * 通过查询doris事件表，并进行模拟滑动窗口计算得到预警信息，然后对比mongo中的预警信息，以此验证flink规则运算是否正确
@@ -533,28 +565,28 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap = kafkaEventDTOList.stream()
                 .collect(Collectors.groupingBy(KafkaEventDTO::getTargetValue));
         // 最终生成的风控信息集合
-        List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
+        List<AlertMessageApiDTO> alertMessageApiDTOS = new ArrayList<>();
         // 遍历每个targetValue下的数据，进行风控规则判断
-        process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertMessageDTOS);
+        process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertMessageApiDTOS);
         // 查询mongo中对应规则产生的预警信息
-        List<AlertMessageDTO> mongoAlertMessageDtoList = alertMessageApi.findByRuleCode(ruleCode);
-        if (CollectionUtils.isEmpty(alertMessageDTOS) && CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+        List<AlertMessageApiDTO> mongoAlertMessageApiDtoList = alertMessageApi.findByRuleCode(ruleCode);
+        if (CollectionUtils.isEmpty(alertMessageApiDTOS) && CollectionUtils.isEmpty(mongoAlertMessageApiDtoList)) {
             log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
             return true;
         }
-        if (CollectionUtils.isEmpty(alertMessageDTOS)) {
+        if (CollectionUtils.isEmpty(alertMessageApiDTOS)) {
             log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
             return false;
         }
-        if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+        if (CollectionUtils.isEmpty(mongoAlertMessageApiDtoList)) {
             log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
             return false;
         }
-        int processSize = alertMessageDTOS.size();
-        int mongoSize = mongoAlertMessageDtoList.size();
+        int processSize = alertMessageApiDTOS.size();
+        int mongoSize = mongoAlertMessageApiDtoList.size();
         log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
         // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
-        return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
+        return compareAlerts(alertMessageApiDTOS, mongoAlertMessageApiDtoList);
     }
 
     /**
@@ -562,7 +594,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
      */
     private void process(Long ruleCode, Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap,
                          long windowSize, long windowStep, RuleCondDTO ruleCondDTO, Long alertInterval,
-                         String channel, String targetField, String eventField, List<AlertMessageDTO> alertMessageDTOS) {
+                         String channel, String targetField, String eventField, List<AlertMessageApiDTO> alertMessageApiDTOS) {
         for (Map.Entry<String, List<KafkaEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
             String targetValue = entry.getKey();
             List<KafkaEventDTO> kafkaEventDTOS = entry.getValue();
@@ -606,6 +638,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                         .mapToLong(eventDO -> Long.parseLong(eventDO.getEventValue()))
                         .sum();
                 // 计算阈值
+                // FIXME: 逻辑错误，应该对应条件预警触发后，才更新
                 Long eventThreshold = ruleCondDTO.getThreshold();
                 Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
                 if (Objects.nonNull(thresholdScaleFactor)) {
@@ -618,7 +651,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 boolean shouldAlert = (eventValueSum > eventThreshold) &&
                         (alertInterval == null || (windowEndTimeStamp - lastAlertTimestamp >= alertInterval));
                 if (shouldAlert) {
-                    AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
+                    AlertMessageApiDTO alertMessageApiDTO = AlertMessageApiDTO.builder()
                             .channel(channel)
                             .ruleCode(ruleCode)
                             .targetField(targetField)
@@ -626,7 +659,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                             .eventValueGroup(Collections.singletonMap(eventField, eventValueSum))
                             .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(windowEndTimeStamp))
                             .build();
-                    alertMessageDTOS.add(alertMessageDTO);
+                    alertMessageApiDTOS.add(alertMessageApiDTO);
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
                     lastAlertTimestamp = windowEndTimeStamp;
                 }
@@ -643,7 +676,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         return TimeUtil.toMillis(alertIntervalValue, TimeUnitEnum.fromEnUnit(alertIntervalUnit));
     }
 
-    private Boolean compareAlerts(List<AlertMessageDTO> generatedAlerts, List<AlertMessageDTO> mongoAlerts) {
+    private Boolean compareAlerts(List<AlertMessageApiDTO> generatedAlerts, List<AlertMessageApiDTO> mongoAlerts) {
         if (CollectionUtils.isEmpty(generatedAlerts) && CollectionUtils.isEmpty(mongoAlerts)) {
             log.info("计算得出的预警信息条数与Mongo中的预警信息条数都为0");
             return true;
@@ -658,16 +691,16 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
 
         // 确保 AlertMessageDTO 重写了 equals 和 hashCode 方法
-        List<AlertMessageDTO> sortedGeneratedAlerts = generatedAlerts.stream()
-                .sorted(Comparator.comparing(AlertMessageDTO::getAlertTime))
+        List<AlertMessageApiDTO> sortedGeneratedAlerts = generatedAlerts.stream()
+                .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
-        List<AlertMessageDTO> sortedMongoAlerts = mongoAlerts.stream()
-                .sorted(Comparator.comparing(AlertMessageDTO::getAlertTime))
+        List<AlertMessageApiDTO> sortedMongoAlerts = mongoAlerts.stream()
+                .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
 
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
-            AlertMessageDTO generatedAlert = sortedGeneratedAlerts.get(i);
-            AlertMessageDTO mongoAlert = sortedMongoAlerts.get(i);
+            AlertMessageApiDTO generatedAlert = sortedGeneratedAlerts.get(i);
+            AlertMessageApiDTO mongoAlert = sortedMongoAlerts.get(i);
             mongoAlert.setAlertMessage(null);
             mongoAlert.setAlertTime(mongoAlert.getAlertTime().withSecond(0).withNano(0));
             if (!generatedAlert.equals(mongoAlert)) {

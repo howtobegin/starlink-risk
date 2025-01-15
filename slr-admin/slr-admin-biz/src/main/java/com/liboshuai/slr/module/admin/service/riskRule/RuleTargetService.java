@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.admin.service.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetDTO;
+import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetApiDTO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleTargetRespVO;
@@ -22,9 +22,9 @@ public interface RuleTargetService {
 
     List<RuleTargetRespVO> list(@NotBlank String channel);
 
-    List<RuleTargetDTO> putCacheDetailList();
+    List<RuleTargetApiDTO> putCacheDetailList();
 
-    List<RuleTargetDTO> getCacheDetailList();
+    List<RuleTargetApiDTO> getCacheDetailList();
 
     void refreshCache();
 }
