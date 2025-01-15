@@ -477,9 +477,7 @@ public class ProcessorOne implements Processor {
         Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
         if (Objects.nonNull(thresholdScaleFactor)) {
             Long latestThreshold = latestEventThresholdMapState.get(eventField);
-            if (Objects.isNull(latestThreshold)) {
-                eventThreshold = eventThreshold * thresholdScaleFactor;
-            } else {
+            if (Objects.nonNull(latestThreshold)) {
                 eventThreshold = latestThreshold * thresholdScaleFactor;
             }
             latestEventThresholdMapState.put(eventField, eventThreshold);

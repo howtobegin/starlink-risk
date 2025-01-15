@@ -609,9 +609,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 Long eventThreshold = ruleCondDTO.getThreshold();
                 Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
                 if (Objects.nonNull(thresholdScaleFactor)) {
-                    if (Objects.isNull(latestThreshold)) {
-                        eventThreshold = eventThreshold * thresholdScaleFactor;
-                    } else {
+                    if (Objects.nonNull(latestThreshold)) {
                         eventThreshold = latestThreshold * thresholdScaleFactor;
                     }
                     latestThreshold = eventThreshold;
