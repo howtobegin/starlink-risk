@@ -571,6 +571,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         if (CollectionUtils.isEmpty(dorisEventDOList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
         }
+        // 当最后一条数据的窗口结束了，才能进行验证
         DorisEventDO dorisEventDO = dorisEventDOList.get(dorisEventDOList.size() - 1);
         LocalDateTime eventTime = dorisEventDO.getEventTime();
         long flinkProcessEndTime = LocalDateTimeUtils.convertLocalDateTime2Timestamp(eventTime) + windowSize;

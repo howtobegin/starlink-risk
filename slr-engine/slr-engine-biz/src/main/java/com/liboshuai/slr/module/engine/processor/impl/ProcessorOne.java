@@ -24,6 +24,7 @@
 //
 //import java.util.*;
 //
+//
 /// **
 // * 运算机one
 // */
@@ -309,6 +310,10 @@
 //     */
 //    @Override
 //    public boolean onTimer(String currentKey, long timestamp, Collector<ResultDTO> out) throws Exception {
+//        boolean debug = false;
+//        if (Objects.equals(currentKey, "GAME:userId:U000000001") && Objects.equals(ruleInfoDTO.getRuleCode(), 1873910811026657280L)) {
+//            debug = true;
+//        }
 //        if (Objects.isNull(ruleInfoDTO)) {
 //            throw new BusinessException("运算机 ruleInfoDTO 必须非空");
 //        }
@@ -361,13 +366,13 @@
 //        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
 //    }
 //
-/// /    private void logOldState(Long ruleCode, String currentKey) throws Exception {
-/// /        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
-/// /        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
-/// /            bigMap.put(entry.getKey(), entry.getValue().f0);
-/// /        }
-/// /        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
-/// /    }
+////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
+////        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
+////        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
+////            bigMap.put(entry.getKey(), entry.getValue().f0);
+////        }
+////        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+////    }
 //
 //    /**
 //     * 构建预警信息的方法，提取重复逻辑
