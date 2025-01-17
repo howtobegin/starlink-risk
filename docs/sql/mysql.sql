@@ -14,6 +14,12 @@
  Date: 15/01/2025 15:36:00
 */
 
+-- CREATE database `starlink_risk`;
+-- GRANT ALL PRIVILEGES ON `starlink_risk`.* TO 'lbs'@'%';
+-- GRANT REPLICATION CLIENT ON *.* TO 'lbs'@'%';
+-- GRANT REPLICATION SLAVE ON *.* TO 'lbs'@'%';
+-- FLUSH PRIVILEGES;
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
