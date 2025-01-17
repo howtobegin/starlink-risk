@@ -21,8 +21,8 @@ public class MockController {
 
     @GetMapping("/createEventFileBatchMode")
     @Operation(summary = "创建事件数据文件（文件内容为批量上送模式）")
-    public CommonResult<String> createEventFileBatchMode(long totalCount) {
-        mockService.createEventFileBatchMode(totalCount);
+    public CommonResult<String> createEventFileBatchMode(Long totalCount, Long maxEntries) {
+        mockService.createEventFileBatchMode(totalCount, maxEntries);
         return CommonResult.success("事件日志文件开始生成，请等待......");
     }
 }

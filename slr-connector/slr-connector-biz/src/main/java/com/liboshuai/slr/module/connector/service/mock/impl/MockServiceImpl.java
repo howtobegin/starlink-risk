@@ -69,7 +69,7 @@ public class MockServiceImpl implements MockService {
     @Override
     @TakeTime
     @Async(DefaultConstants.CONNECTOR_ASYNC_EXECUTOR)
-    public void createEventFileBatchMode(long totalCount) {
+    public void createEventFileBatchMode(Long totalCount, Long maxEntries) {
         log.info("开始生成事件文件，目标条数: {}", totalCount);
         long generatedCount = 0;
 
