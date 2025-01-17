@@ -110,13 +110,13 @@ public class MockServiceImpl implements MockService {
         Map<String, String> eventAttrMap = new HashMap<>();
 
         String eventField;
-        if ("GAME" .equals(channel)) {
+        if ("GAME".equals(channel)) {
             eventField = "lottery";
             builder.eventField(eventField);
             // Populate eventAttrMap with campaign and bank info
             eventAttrMap.put("campaignId", generateCampaignId());
             eventAttrMap.put("campaignName", generateCampaignName());
-        } else if ("HJF" .equals(channel)) {
+        } else if ("HJF".equals(channel)) {
             // Randomly choose between orderAmount and orderCount
             eventField = random.nextBoolean() ? "orderAmount" : "orderCount";
             builder.eventField(eventField);
@@ -127,7 +127,8 @@ public class MockServiceImpl implements MockService {
             throw new IllegalArgumentException("Invalid channel: " + channel);
         }
 
-        builder.targetField("userId")
+        builder.eventTime(System.currentTimeMillis())
+                .targetField("userId")
                 .targetValue(generateUserId())
                 .eventValue(String.valueOf(random.nextInt(11)))
         ;
