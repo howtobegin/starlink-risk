@@ -58,7 +58,6 @@ public class KafkaEventListener {
             validAlertMessageApiDTOList.add(alertMessageApiDTO);
             // 将预警信息异步推送给微信预警平台
             RuleInfoApiDTO ruleInfoDTO = ruleInfoApi.getCacheRuleInfo(alertMessageApiDTO.getRuleCode());
-            log.info("推送给预警平台时查询的规则信息：{}", ruleInfoDTO);
             // FIXME: 测试时，临时注释
 //            rsoAlarmRestApi.sendMsgToRso(
 //                    ruleInfoDTO.getAlertProjectNo(),
