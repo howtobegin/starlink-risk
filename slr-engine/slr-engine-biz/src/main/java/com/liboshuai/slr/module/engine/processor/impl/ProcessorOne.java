@@ -24,9 +24,6 @@
 //import java.util.*;
 //
 //
-/// **
-// * 运算机one
-// */
 //public class ProcessorOne implements Processor {
 //
 //    private static final Logger log = LoggerFactory.getLogger(ProcessorOne.class);
