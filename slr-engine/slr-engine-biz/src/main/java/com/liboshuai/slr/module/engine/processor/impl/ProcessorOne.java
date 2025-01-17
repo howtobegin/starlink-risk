@@ -7,7 +7,6 @@
 //import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
 //import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
 //import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
-//import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 //import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 //import com.liboshuai.slr.module.engine.processor.Processor;
 //import com.liboshuai.slr.module.engine.utils.*;
@@ -109,11 +108,12 @@
 //    public void processElement(String currentKey, long currentEventTimestamp, KafkaEventDTO kafkaEventDTO,
 //                               Collector<ResultDTO> out) throws Exception {
 //        if (Objects.isNull(ruleInfoDTO)) {
-//            throw new BusinessException("运算机 ruleInfoDTO 必须非空");
+//            log.warn("因规则信息为空，故跳过此次计算！当前事件数据：{}", kafkaEventDTO);
+//            return;
 //        }
 //        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.ONLINE.getCode())
 //                && !Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-//            log.warn("加载到运算机池中的规则状态必须为'已上线'或'下线待审核'！规则编号：{}", ruleInfoDTO.getRuleCode());
+//            log.warn("因规则[{}]的状态不为'已上线'或'下线待审核'，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
 //            return;
 //        }
 //        // 事件与规则渠道匹配不上，则直接跳过
@@ -127,13 +127,14 @@
 //        // 获取规则条件
 //        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup();
 //        if (condGroupList == null || condGroupList.isEmpty()) {
-//            throw new BusinessException("运算机 condGroupList 必须非空");
+//            log.warn("因规则[{}]的条件组为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
+//            return;
 //        }
 //        // 此模型仅支持条件为周期类型的规则
 //        for (RuleCondDTO condGroupDTO : condGroupList) {
 //            String type = condGroupDTO.getCondType();
 //            if (!Objects.equals(type, RuleCondTypeEnum.PERIODIC.getCode())) {
-//                log.warn("ProcessorOne 模型仅支持条件为周期类型的规则！规则编号：{}", ruleInfoDTO.getRuleCode());
+//                log.warn("因规则[{}]的条件类型不为周期类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
 //                return;
 //            }
 //        }
@@ -197,9 +198,8 @@
 //                    String initValue = RedisUtil.hget(redisKey, redisHashKey);
 //                    RedisUtil.hdel(redisKey, redisHashKey);
 //                    if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
-//                        throw new BusinessException(
-//                                String.format("从redis获取初始值必须非空, redisKey:%s, hashKey: %s", redisKey, redisHashKey)
-//                        );
+//                        log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, kafkaEventDTO);
+//                        return;
 //                    }
 //                    Map<String, Tuple2<Long, KafkaEventDTO>> stringTuple2Map = smallMap.get(currentKey);
 //                    stringTuple2Map.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO));
@@ -276,13 +276,13 @@
 //            if (Objects.isNull(kafkaEventAttrMap) || kafkaEventAttrMap.isEmpty()) {
 //                // 规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求
 //                log.warn("规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求！" +
-//                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
+//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
 //                return false;
 //            }
 //            if (!kafkaEventAttrMap.containsKey(attrField)) {
 //                // kafka事件属性不包含规则中事件属性，则表明不符合匹配
 //                log.warn("kafka数据事件属性map并不包含规则配置的事件属性Field，故直接判定为不符合规则要求！" +
-//                        "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
+//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
 //                return false;
 //            }
 //            String kafkaEventAttributeValue = kafkaEventAttrMap.get(attrField);
@@ -310,21 +310,19 @@
 //     */
 //    @Override
 //    public boolean onTimer(String currentKey, long timestamp, Collector<ResultDTO> out) throws Exception {
-//        boolean debug = false;
-//        if (Objects.equals(currentKey, "GAME:userId:U000000001") && Objects.equals(ruleInfoDTO.getRuleCode(), 1873910811026657280L)) {
-//            debug = true;
-//        }
 //        if (Objects.isNull(ruleInfoDTO)) {
-//            throw new BusinessException("运算机 ruleInfoDTO 必须非空");
+//            log.warn("因规则信息为空，故跳过此次计算！");
+//            return true;
 //        }
 //        // 获取规则条件
-//        List<RuleCondDTO> groupGroup = ruleInfoDTO.getRuleCondGroup();
-//        if (groupGroup == null || groupGroup.isEmpty()) {
-//            throw new BusinessException("运算机 groupGroup 必须非空");
+//        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
+//        if (ruleCondGroup == null || ruleCondGroup.isEmpty()) {
+//            log.warn("因规则[{}]的条件组为空，故跳过此次计算！", ruleInfoDTO.getRuleCode());
+//            return false;
 //        }
 //        // 将规则条件根据事件编号存储到map中，方便后续操作
 //        Map<String, RuleCondDTO> ruleConditionMapByEventField = new HashMap<>();
-//        for (RuleCondDTO ruleCondDTO : groupGroup) {
+//        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
 //            ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
 //        }
 //        // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
@@ -591,7 +589,8 @@
 //                }
 //            }
 //        } else {
-//            throw new IllegalArgumentException("Unsupported condition operator: " + conditionOperator);
+//            log.warn("因规则[{}]的条件组合操作符非法，故跳过此次计算！", ruleInfoDTO.getRuleCode());
+//            return false;
 //        }
 //
 //        return result;
