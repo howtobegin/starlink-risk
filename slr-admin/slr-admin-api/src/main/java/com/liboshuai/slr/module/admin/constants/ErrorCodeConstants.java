@@ -22,7 +22,7 @@ public interface ErrorCodeConstants {
     ErrorCode RULE_TARGET_CODE_EXISTS = new ErrorCode(20009, "规则目标编号[{}]已经存在了");
     ErrorCode RULE_EVENT_CODE_EXISTS = new ErrorCode(20010, "规则事件编号[{}]已经存在了");
     ErrorCode RULE_TARGET_ID_NOT_NULL = new ErrorCode(20011, "规则目标[id]不能为空");
-    ErrorCode DORIS_HISTORY_EVENT_NOT_NULL = new ErrorCode(20012, "Doris历史事件数据不能为空");
+    ErrorCode RULE_EVENT_NOT_NULL = new ErrorCode(20012, "规则事件不能为空");
     ErrorCode RULE_EVENT_ID_NOT_NULL = new ErrorCode(20013, "规则事件[id]不能为空");
     ErrorCode RULE_TARGET_ID_NOT_EXISTS = new ErrorCode(20014, "id为[{}]规则目标不存在");
     ErrorCode RULE_EVENT_ID_NOT_EXISTS = new ErrorCode(20015, "id为[{}]规则事件不存在");
