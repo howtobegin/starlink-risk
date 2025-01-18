@@ -45,4 +45,5 @@ public interface ErrorCodeConstants {
     ErrorCode ONLY_SUPPORT_NOT_ONLINE_RULE = new ErrorCode(20032, "仅支持非上线规则");
     ErrorCode ONLY_SUPPORT_NULL_ATTR_RULE = new ErrorCode(20033, "仅支持无事件属性规则");
     ErrorCode FLINK_PROCESS_NOT_END = new ErrorCode(20034, "此规则的flink预警未完全结束，结束时间为: {}");
+    ErrorCode DORIS_HISTORY_EVENT_IS_NULL = new ErrorCode(20035, "doris历史事件数据不能为空");
 }

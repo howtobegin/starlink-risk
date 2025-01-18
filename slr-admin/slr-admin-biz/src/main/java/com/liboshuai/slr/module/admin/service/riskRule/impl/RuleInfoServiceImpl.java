@@ -569,7 +569,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 根据渠道、目标字段、事件字段查询doris历史事件数据
         List<DorisEventDO> dorisEventDOList = dorisEventMapper.selectListByKey(channel, targetField, eventField);
         if (CollectionUtils.isEmpty(dorisEventDOList)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.DORIS_HISTORY_EVENT_IS_NULL);
         }
         // 当最后一条数据的窗口结束了，才能进行验证
         DorisEventDO dorisEventDO = dorisEventDOList.get(dorisEventDOList.size() - 1);
