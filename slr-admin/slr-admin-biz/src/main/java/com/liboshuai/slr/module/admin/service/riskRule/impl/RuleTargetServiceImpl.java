@@ -107,7 +107,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         // 更新 规则事件信息
         List<RuleEventSaveReqVO> ruleEventSaveReqVOList = ruleTargetSaveReqVO.getRuleEventGroup();
         if (CollectionUtils.isEmpty(ruleEventSaveReqVOList)) {
-            throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_EVENT_NOT_NULL);
+            throw ServiceExceptionUtil.exception(ErrorCodeConstants.DORIS_HISTORY_EVENT_NOT_NULL);
         }
         ruleEventSaveReqVOList.forEach(ruleEventSaveReqVO -> {
             if (Objects.isNull(ruleEventSaveReqVO.getEventStatus())) {
