@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -230,29 +231,55 @@ public class JsonUtils {
     }
 
     /**
-     * 将 Map 数据（键为下划线命名）转换为 Java 实体类（驼峰命名）
+     * 将包含下划线命名的 Map 转换为 JSON 字符串，并将键转换为驼峰命名
      *
-     * @param structMap 要转换的 Map
-     * @param clazz     Java 实体类的 Class
-     * @param <T>       Java 实体类类型
-     * @return 转换后的实体类对象
+     * @param structMap 包含下划线命名的 Map
+     * @return 驼峰命名键的 JSON 字符串
      */
-    public static <T> T toEntityFromUnderscoreMap(Map<String, String> structMap, Class<T> clazz) {
+    public static String toCamelCaseJson(Map<String, ?> structMap) {
         if (structMap == null || structMap.isEmpty()) {
-            return null;
+            return "{}"; // 返回空的 JSON 字符串
         }
         try {
-            // 创建临时 ObjectMapper，并设置命名策略为下划线转驼峰
-            ObjectMapper mapper = objectMapper.copy();
-            mapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE);
-            // 将 Map 转换为 JSON 字符串
-            String jsonString = mapper.writeValueAsString(structMap);
-            // 将 JSON 字符串反序列化为目标实体类
-            return mapper.readValue(jsonString, clazz);
-        } catch (IOException e) {
-            log.error("Failed to convert structMap to entity, structMap: {}", structMap, e);
+            // 创建新的 Map，用于存储驼峰命名的键值对
+            Map<String, Object> camelCaseMap = new HashMap<>();
+            structMap.forEach((key, value) -> {
+                // 将下划线命名的键转换为驼峰命名
+                String camelCaseKey = underscoreToCamelCase(key);
+                camelCaseMap.put(camelCaseKey, value);
+            });
+            // 将驼峰命名的 Map 转换为 JSON 字符串
+            return objectMapper.writeValueAsString(camelCaseMap);
+        } catch (Exception e) {
+            log.error("Error in converting Map to camelCase JSON, structMap: {}", structMap, e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 将下划线命名的字符串转换为驼峰命名
+     *
+     * @param underscoreName 下划线命名的字符串
+     * @return 驼峰命名的字符串
+     */
+    private static String underscoreToCamelCase(String underscoreName) {
+        if (underscoreName == null || underscoreName.isEmpty()) {
+            return underscoreName;
+        }
+        StringBuilder result = new StringBuilder();
+        boolean toUpperCase = false; // 标记下一个字符是否需要大写
+        for (int i = 0; i < underscoreName.length(); i++) {
+            char ch = underscoreName.charAt(i);
+            if (ch == '_') {
+                toUpperCase = true; // 下划线后面一个字母需要大写
+            } else if (toUpperCase) {
+                result.append(Character.toUpperCase(ch));
+                toUpperCase = false;
+            } else {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 
     /**
