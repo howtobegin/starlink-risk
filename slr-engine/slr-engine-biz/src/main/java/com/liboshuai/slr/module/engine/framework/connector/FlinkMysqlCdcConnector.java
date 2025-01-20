@@ -60,12 +60,12 @@ public class FlinkMysqlCdcConnector {
                     mysqlCdcDTOBuilder.op(opJsonNode.asText());
                     // 赋值 before 值
                     JsonNode beforeJsonNode = jsonNode.get("before");
-                    log.info("beforeJsonNode.asText(): {}", beforeJsonNode.asText());
-                    mysqlCdcDTOBuilder.before(beforeJsonNode.asText());
+                    log.info("beforeJsonNode: {}", JsonUtils.toJsonString(beforeJsonNode));
+                    mysqlCdcDTOBuilder.before(JsonUtils.toJsonString(beforeJsonNode));
                     // 赋值 after 值
                     JsonNode afterJsonNode = jsonNode.get("after");
-                    log.info("afterJsonNode.asText(): {}", afterJsonNode.asText());
-                    mysqlCdcDTOBuilder.after(afterJsonNode.asText());
+                    log.info("afterJsonNode: {}", JsonUtils.toJsonString(afterJsonNode));
+                    mysqlCdcDTOBuilder.after(JsonUtils.toJsonString(afterJsonNode));
                     return mysqlCdcDTOBuilder.build();
                 }
         );
