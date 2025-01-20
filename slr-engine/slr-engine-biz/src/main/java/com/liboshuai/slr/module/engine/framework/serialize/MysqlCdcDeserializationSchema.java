@@ -1,20 +1,23 @@
 package com.liboshuai.slr.module.engine.framework.serialize;
 
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.dto.CdcSourceDTO;
 import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
+import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Field;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Schema;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Struct;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.json.JsonConverter;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.source.SourceRecord;
 import com.ververica.cdc.debezium.DebeziumDeserializationSchema;
 import io.debezium.data.Envelope;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.util.Collector;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSchema<MysqlCdcDTO> {
 
     private static final long serialVersionUID = -4554108517291370408L;
@@ -46,12 +49,17 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
     private String getDataJsonAsString(SourceRecord sourceRecord, String fieldName) {
         Struct value = (Struct) sourceRecord.value();
         Struct struct = value.getStruct(fieldName);
+        Map<String, String> structMap = new HashMap<>();
         if (struct != null) {
+            // 获取Struct中包含所有字段名，遍历即可
             Schema schema = struct.schema();
-            // 使用 JsonConverter 将 Struct 转换为 JSON 字节数组
-            byte[] bytes = jsonConverter.fromConnectData(sourceRecord.topic(), schema, struct);
-            // 将字节数组转换为字符串
-            return new String(bytes, StandardCharsets.UTF_8);
+            for (Field field : schema.fields()) {
+                String k = field.name();
+                String v = struct.get(field).toString();
+                structMap.put(k, v);
+            }
+            log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toJsonString(structMap));
+            return JsonUtils.toJsonString(structMap);
         }
         return null;
     }
