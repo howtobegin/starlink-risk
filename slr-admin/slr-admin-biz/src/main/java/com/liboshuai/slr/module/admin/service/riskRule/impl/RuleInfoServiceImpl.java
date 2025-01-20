@@ -11,6 +11,7 @@ import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
@@ -713,11 +714,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<AlertMessageApiDTO> sortedGeneratedAlerts = generatedAlerts.stream()
                 .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
-        log.info("sortedGeneratedAlerts: {}", sortedGeneratedAlerts);
+        log.info("sortedGeneratedAlerts: {}", JsonUtils.toJsonString(sortedGeneratedAlerts));
         List<AlertMessageApiDTO> sortedMongoAlerts = mongoAlerts.stream()
                 .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
-        log.info("sortedMongoAlerts: {}", sortedMongoAlerts);
+        log.info("sortedMongoAlerts: {}", JsonUtils.toJsonString(sortedMongoAlerts));
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
             AlertMessageApiDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertMessageApiDTO mongoAlert = sortedMongoAlerts.get(i);
