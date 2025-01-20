@@ -1,10 +1,12 @@
 package com.liboshuai.slr.module.engine.dto;
 
+import com.liboshuai.slr.module.engine.type.MysqlCdcDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.apache.flink.api.common.typeinfo.TypeInfo;
 
 import java.io.Serializable;
 
@@ -13,6 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TypeInfo(MysqlCdcDtoType.class)
 public class MysqlCdcDTO implements Serializable {
 
     private static final long serialVersionUID = -5669551177148147064L;

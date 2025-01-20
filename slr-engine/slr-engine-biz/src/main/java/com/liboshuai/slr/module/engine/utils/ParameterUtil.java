@@ -18,7 +18,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 /**
  * 配置信息读取类
@@ -175,11 +174,8 @@ public class ParameterUtil {
             StreamExecutionEnvironment env,
             ParameterTool parameterTool
     ) throws IOException, URISyntaxException {
-        // 非生产环境，禁用Kryo序列化器
-        String flinEnvActive = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE);
-        if (!Objects.equals(flinEnvActive, "prod")) {
-            env.getConfig().disableGenericTypes();
-        }
+        // 禁用Kryo序列化器
+        env.getConfig().disableGenericTypes();
         //并行度设置
         env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
         // 启用 checkpoint，并设置时间间隔为 1 分钟

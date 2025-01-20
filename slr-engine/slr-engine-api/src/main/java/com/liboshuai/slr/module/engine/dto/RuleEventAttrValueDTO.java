@@ -2,11 +2,13 @@ package com.liboshuai.slr.module.engine.dto;
 
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrOpEnum;
 import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
+import com.liboshuai.slr.module.engine.type.RuleEventAttrValueDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.apache.flink.api.common.typeinfo.TypeInfo;
 
 import java.io.Serializable;
 
@@ -18,6 +20,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TypeInfo(RuleEventAttrValueDtoType.class)
 public class RuleEventAttrValueDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 

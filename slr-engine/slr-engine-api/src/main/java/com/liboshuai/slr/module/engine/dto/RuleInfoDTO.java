@@ -2,11 +2,13 @@ package com.liboshuai.slr.module.engine.dto;
 
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.module.engine.enums.*;
+import com.liboshuai.slr.module.engine.type.RuleInfoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.apache.flink.api.common.typeinfo.TypeInfo;
 
 import java.io.Serializable;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+@TypeInfo(RuleInfoType.class)
 public class RuleInfoDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -1,0 +1,24 @@
+package com.liboshuai.slr.module.engine.type;
+
+import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
+import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.dto.ResultDTO;
+import com.liboshuai.slr.module.engine.dto.RuleKeyHistoryDTO;
+import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ResultDtoType extends TypeInfoFactory<ResultDTO> {
+    @Override
+    public TypeInformation<ResultDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
+        Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
+        typeInformationMap.put("kafkaEventDTO", Types.POJO(KafkaEventDTO.class));
+        typeInformationMap.put("ruleKeyHistoryDTO", Types.POJO(RuleKeyHistoryDTO.class));
+        typeInformationMap.put("alertMessageDTO", Types.POJO(AlertMessageDTO.class));
+        return Types.POJO(ResultDTO.class, typeInformationMap);
+    }
+}
