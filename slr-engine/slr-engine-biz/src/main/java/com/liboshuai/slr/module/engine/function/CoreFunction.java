@@ -196,12 +196,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             bigMap.put(next.getKey(), next.getValue());
         }
 
-        log.warn("========================================清理状态值-{}========================================", status);
-        log.warn("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
-        log.warn("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
-        log.warn("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
-        log.warn("bigMap: {}", JsonUtils.toJsonString(bigMap));
-        log.warn("========================================清理状态值-{}========================================", status);
+        log.info("========================================清理状态值-{}========================================", status);
+        log.info("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
+        log.info("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
+        log.info("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
+        log.info("bigMap: {}", JsonUtils.toJsonString(bigMap));
+        log.info("========================================清理状态值-{}========================================", status);
     }
 
     @Override
@@ -216,11 +216,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 变更之前的数据
         RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
         Long ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
+        RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleCdcDTOBefore.getRuleJson(), RuleInfoDTO.class);
+        log.info("ruleInfoDTOBefore: {}", JsonUtils.toJsonString(ruleInfoDTOBefore));
         // 变更之后的数据
         RuleJsonDTO ruleCdcDTOAfter = ruleCdcDTO.getAfter();
         Long ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
-        String ruleJsonAfter = ruleCdcDTOAfter.getRuleJson();
-        RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleJsonAfter, RuleInfoDTO.class);
+        RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleCdcDTOAfter.getRuleJson(), RuleInfoDTO.class);
+        log.info("ruleInfoDTOAfter: {}", JsonUtils.toJsonString(ruleInfoDTOAfter));
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
@@ -235,7 +237,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
             removeProcessor(ruleCodeBefore);
         }
-        log.warn("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
+        log.info("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
 
     /**
@@ -249,7 +251,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         ruleProcessorPool.remove(ruleCode);
         ruleInfoPool.remove(ruleCode);
-        log.warn("下线一个规则运算机，规则编号为: {}", ruleCode);
+        log.info("下线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -263,7 +265,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
-        log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
+        log.info("上线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -277,7 +279,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         Processor processor = buildProcessor(null, keyedStateStore, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
-        log.warn("恢复了一个规则运算机，规则编号为: {}", ruleCode);
+        log.info("恢复了一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -362,6 +364,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoListState.get()) {
             loadProcessor(functionInitializationContext.getKeyedStateStore(), ruleInfoDTO.getRuleCode(), ruleInfoDTO);
         }
-        log.warn("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
+        log.info("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
 }

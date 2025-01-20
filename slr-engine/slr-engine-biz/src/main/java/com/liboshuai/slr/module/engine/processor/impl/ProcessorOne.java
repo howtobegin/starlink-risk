@@ -343,7 +343,7 @@
 //            // 构建预警信息
 //            AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
 //            // 记录日志
-//            log.warn("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+//            log.info("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
 //            // 收集结果
 //            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
 //            out.collect(resultDTO);
@@ -358,7 +358,7 @@
 //        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue().f0);
 //        }
-//        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+//        log.info("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
 //    }
 //
 ////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
@@ -366,7 +366,7 @@
 ////        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> entry : oldBigMapState.entries()) {
 ////            bigMap.put(entry.getKey(), entry.getValue().f0);
 ////        }
-////        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+////        log.info("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
 ////    }
 //
 //    /**
