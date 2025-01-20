@@ -3,7 +3,6 @@ package com.liboshuai.slr.module.engine.function;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
-import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
@@ -279,9 +278,11 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         // 构建规则运算机
         Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
-        ruleProcessorPool.put(ruleCode, processor);
-        ruleInfoPool.put(ruleCode, ruleInfoDTO);
-        log.info("上线一个规则运算机，规则编号为: {}", ruleCode);
+        if (Objects.nonNull(processor)) {
+            ruleProcessorPool.put(ruleCode, processor);
+            ruleInfoPool.put(ruleCode, ruleInfoDTO);
+            log.info("上线一个规则运算机，规则编号为: {}", ruleCode);
+        }
     }
 
     /**
@@ -340,7 +341,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private Processor buildProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
         String ruleModelGroovyCode = ruleInfoDTO.getModelGroovy();
         if (StringUtils.isNullOrWhitespaceOnly(ruleModelGroovyCode)) {
-            throw new BusinessException("运算机模型代码 ruleModelGroovyCode 必须非空");
+            log.warn("构造运算机失败，groovy代码必须非空！");
+            return null;
         }
         // TODO: 优化，使用缓存池，避免每次都创建新的ClassLoader
         Class<?> aClass = groovyClassLoader.parseClass(ruleModelGroovyCode);
