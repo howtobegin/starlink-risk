@@ -16,6 +16,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSchema<MysqlCdcDTO> {
@@ -55,7 +56,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
             Schema schema = struct.schema();
             for (Field field : schema.fields()) {
                 String k = field.name();
-                String v = struct.get(field).toString();
+                String v = Objects.isNull(struct.get(field)) ? null : struct.get(field).toString();
                 structMap.put(k, v);
             }
             log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toJsonString(structMap));
