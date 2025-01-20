@@ -1,14 +1,17 @@
 package com.liboshuai.slr.module.engine.framework.connector;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
-import com.liboshuai.slr.module.engine.framework.serialize.MysqlCdcDeserializationSchema;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
+import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**
@@ -32,7 +35,7 @@ public class FlinkMysqlConnector {
         String database = parameterTool.get(ParameterConstants.MYSQL_DATABASE);
         String table = parameterTool.get(ParameterConstants.MYSQL_TABLE_RULEJSON);
 
-        MySqlSource<MysqlCdcDTO> ruleCdcSource = MySqlSource.<MysqlCdcDTO>builder()
+        MySqlSource<String> ruleCdcSource = MySqlSource.<String>builder()
                 .hostname(hostname)
                 .port(Integer.parseInt(port))
                 .username(username)
@@ -40,9 +43,26 @@ public class FlinkMysqlConnector {
                 .databaseList(database)
                 .tableList(database + DefaultConstants.POINT + table)
                 .startupOptions(StartupOptions.initial())
-                .deserializer(new MysqlCdcDeserializationSchema())
+                .deserializer(new JsonDebeziumDeserializationSchema())
                 .build();
-
-        return env.fromSource(ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]");
+        DataStreamSource<String> dataStreamSource = env.fromSource(
+                ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]"
+        );
+        return dataStreamSource.map(
+                json -> {
+                    MysqlCdcDTO.MysqlCdcDTOBuilder mysqlCdcDTOBuilder = MysqlCdcDTO.builder();
+                    JsonNode jsonNode = JsonUtils.parseTree(json);
+                    // 赋值 op
+                    JsonNode opJsonNode = jsonNode.get("op");
+                    mysqlCdcDTOBuilder.op(opJsonNode.toString());
+                    // 赋值 before 值
+                    JsonNode beforeJsonNode = jsonNode.get("before");
+                    mysqlCdcDTOBuilder.before(beforeJsonNode.toString());
+                    // 赋值 after 值
+                    JsonNode afterJsonNode = jsonNode.get("after");
+                    mysqlCdcDTOBuilder.after(afterJsonNode.toString());
+                    return mysqlCdcDTOBuilder.build();
+                }
+        );
     }
 }

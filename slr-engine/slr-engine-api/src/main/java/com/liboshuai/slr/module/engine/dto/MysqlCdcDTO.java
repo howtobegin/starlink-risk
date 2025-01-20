@@ -17,10 +17,6 @@ public class MysqlCdcDTO implements Serializable {
 
     private static final long serialVersionUID = -5669551177148147064L;
     /**
-     * 库名、表名
-     */
-    private CdcSourceDTO source;
-    /**
      * 之前的数据
      */
     private String before;
