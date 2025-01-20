@@ -221,7 +221,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         Long ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
         RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleCdcDTOBefore.getRuleJson(), RuleInfoDTO.class);
-        log.info("ruleInfoDTOBefore: {}", JsonUtils.toJsonString(ruleInfoDTOBefore));
+        log.info("ruleCdcDTOBefore.getRuleJson(): {}", ruleCdcDTOBefore.getRuleJson());
+        log.info("ruleInfoDTOBefore: {}", ruleInfoDTOBefore);
         // 变更之后的数据
         RuleJsonDTO ruleCdcDTOAfter = JsonUtils.parseObject(mysqlCdcDTO.getAfter(), RuleJsonDTO.class);
         if (Objects.isNull(ruleCdcDTOAfter)) {
@@ -229,7 +230,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         Long ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
         RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleCdcDTOAfter.getRuleJson(), RuleInfoDTO.class);
-        log.info("ruleInfoDTOAfter: {}", JsonUtils.toJsonString(ruleInfoDTOAfter));
+        log.info("ruleCdcDTOAfter.getRuleJson(): {}", ruleCdcDTOBefore.getRuleJson());
+        log.info("ruleInfoDTOAfter: {}", ruleInfoDTOAfter);
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
