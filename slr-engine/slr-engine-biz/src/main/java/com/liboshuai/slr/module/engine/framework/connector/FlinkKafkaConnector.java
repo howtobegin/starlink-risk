@@ -3,6 +3,7 @@ package com.liboshuai.slr.module.engine.framework.connector;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
@@ -48,7 +49,7 @@ public class FlinkKafkaConnector {
                 KAFKA_SOURCE,
                 WatermarkStrategy.noWatermarks(),
                 "kafka-[" + topic + "]"
-        ).uid("kafka-source-" + topic);
+        ).returns(Types.STRING).uid("kafka-source-" + topic);
     }
 
     public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {

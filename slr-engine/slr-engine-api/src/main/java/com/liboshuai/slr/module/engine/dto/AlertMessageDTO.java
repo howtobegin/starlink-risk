@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -40,8 +39,9 @@ public class AlertMessageDTO implements Serializable {
     /**
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
+     * 注意不要使用 LocalDateTime，这样无法使用 POJO 序列化，严重降低性能
      */
-    private LocalDateTime alertTime;
+    private String alertTime;
     /**
      * 目标字段
      */

@@ -20,6 +20,7 @@ import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
@@ -50,27 +51,36 @@ public class EngineApplication {
         // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
                 ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
-        ).uid("async-doris");
+        ).returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象
-                .map(jsonValue -> com.liboshuai.slr.framework.common.util.json.JsonUtils.parseObject(jsonValue, KafkaEventDTO.class)).uid("kafkaEventDTO-process")
+                .map(jsonValue -> JsonUtils.parseObject(jsonValue, KafkaEventDTO.class))
+                .uid("kafkaEventDTO-process").returns(Types.POJO(KafkaEventDTO.class))
                 // 过滤掉非法的事件
-                .filter(new KafkaEventFilterFunction()).uid("kafkaEventDTO-filter");
+                .filter(new KafkaEventFilterFunction())
+                .returns(Types.POJO(KafkaEventDTO.class))
+                .uid("kafkaEventDTO-filter");
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
-                .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks()).uid("register-watermark")
+                .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())
+                .returns(Types.POJO(KafkaEventDTO.class)).uid("register-watermark")
+                // 合并数据清洗流
                 .union(clearKafkaEventDtoSO)
-                .keyBy(new KafkaEventKeyBy())// keyBy分组
-                .connect(broadcastStream)// 连接规则配置流
-                .process(new CoreFunction()).uid("core-function");
+                // keyBy分组
+                .keyBy(new KafkaEventKeyBy())
+                // 连接规则配置流
+                .connect(broadcastStream)
+                // 核心处理逻辑
+                .process(new CoreFunction())
+                .returns(Types.POJO(ResultDTO.class)).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-//        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
+        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
         // 将规则状态的历史key记录数据写入doris
-//        writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
+        writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
         writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
@@ -81,8 +91,12 @@ public class EngineApplication {
      */
     private static void writeAlertMessageToKafka(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
-                .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO())).uid("alert-message-filter")
-                .map(resultDTO -> JsonUtils.toJsonString(resultDTO.getAlertMessageDTO())).uid("alert-message-map");
+                // 非法数据过滤
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertMessageDTO()))
+                .returns(Types.POJO(ResultDTO.class)).uid("alert-message-filter")
+                // 实体类转json
+                .map(resultDTO -> JsonUtils.toJsonString(resultDTO.getAlertMessageDTO()))
+                .returns(Types.STRING).uid("alert-message-map");
         FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
     }
 
@@ -92,9 +106,12 @@ public class EngineApplication {
      */
     private static void writeRuleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
-                .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO())).uid("rule-key-history-filter")
+                // 非法数据过滤
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO()))
+                .returns(Types.POJO(ResultDTO.class)).uid("rule-key-history-filter")
+                // 实体类转json
                 .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
-                .uid("rule-key-history-map");
+                .returns(Types.STRING).uid("rule-key-history-map");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableKey = parameterTool.get(ParameterConstants.DORIS_TABLE_KEY);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableKey, ruleKeyHistoryDtoStreamOperator, parameterTool);
@@ -105,12 +122,15 @@ public class EngineApplication {
      */
     private static void writeKafkaEventToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> toDorisStreamOperator = resultDtoStreamOperator
+                // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getKafkaEventDTO()))
+                .returns(Types.POJO(ResultDTO.class)).uid("doris-event-filter")
+                // 实体类转json
                 .map(resultDTO -> {
                     KafkaEventDTO kafkaEventDTO = resultDTO.getKafkaEventDTO();
                     DorisEventDTO dorisEventDTO = EventConvert.INSTANCE.kafkaDto2DorisDto(kafkaEventDTO);
                     return JsonUtils.toJsonStringWithUpperSnakeCaseKeys(dorisEventDTO);// 转为大写下划线，适配doris表结构字段
-                }).uid("toDoris-process");
+                }).returns(Types.STRING).uid("toDoris-process");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);
