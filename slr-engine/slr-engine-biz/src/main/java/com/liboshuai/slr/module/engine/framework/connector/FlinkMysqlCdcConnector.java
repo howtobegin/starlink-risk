@@ -54,6 +54,7 @@ public class FlinkMysqlCdcConnector {
                     log.info("MysqlCdc的json数据: {}", json);
                     MysqlCdcDTO.MysqlCdcDTOBuilder mysqlCdcDTOBuilder = MysqlCdcDTO.builder();
                     JsonNode jsonNode = JsonUtils.parseTree(json);
+                    log.info("jsonNode: {}", jsonNode);
                     // 赋值 op
                     JsonNode opJsonNode = jsonNode.get("op");
                     log.info("opJsonNode.asText(): {}", opJsonNode.asText());
