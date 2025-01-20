@@ -1,6 +1,7 @@
 package com.liboshuai.slr.module.connector.dal.kafka.consumer;
 
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import com.liboshuai.slr.module.admin.api.riskRule.RuleInfoApi;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleInfoApiDTO;
 import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
@@ -8,6 +9,8 @@ import com.liboshuai.slr.module.connector.convert.alertMessage.AlertMessageConve
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageRepository;
 import com.liboshuai.slr.module.connector.rest.rsoAlarm.RsoAlarmRestApi;
+import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
+import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,21 +18,23 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class KafkaEventListener {
+public class AlertMessageListener {
 
     private final RuleInfoApi ruleInfoApi;
     private final RsoAlarmRestApi rsoAlarmRestApi;
     private final AlertMessageConvert alertMessageConvert;
     private final AlertMessageRepository alertMessageRepository;
+    private final KafkaEventService kafkaEventService;
 
     @KafkaListener(
             topics = "${slr-connector.kafka.consumer_topic}",
@@ -56,24 +61,56 @@ public class KafkaEventListener {
                 continue;
             }
             validAlertMessageApiDTOList.add(alertMessageApiDTO);
-            // 将预警信息异步推送给微信预警平台
-            RuleInfoApiDTO ruleInfoDTO = ruleInfoApi.getCacheRuleInfo(alertMessageApiDTO.getRuleCode());
-            // FIXME: 测试时，临时注释
-//            rsoAlarmRestApi.sendMsgToRso(
-//                    ruleInfoDTO.getAlertProjectNo(),
-//                    ruleInfoDTO.getAlertLevel(),
-//                    LocalDateTimeUtils.convertLocalDateTime2Str(alertMessageApiDTO.getAlertTime()),
-//                    alertMessageApiDTO.getAlertMessage()
-//            );
         }
-
+        List<AlertMessageApiDTO> finalAlertMessageApiDtoList = new ArrayList<>();
         if (!validAlertMessageApiDTOList.isEmpty()) {
+            // 从mongo中获取事件id与其对应的数据数据
+            Map<Long, KafkaEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertMessageApiDTOList);
+            // 遍历预警信息，补充事件数据并推送到微信预警平台
+            for (AlertMessageApiDTO alertMessageApiDTO : validAlertMessageApiDTOList) {
+                // 根据mongo中的事件数据补充预警信息
+                String alertMessage = alertMessageApiDTO.getAlertMessage();
+                Long eventId = alertMessageApiDTO.getEventId();
+                KafkaEventDTO kafkaEventDTO = eventIdAndKafkaEventMap.get(eventId);
+                alertMessage = TemplateUtil.replacePlaceholders(alertMessage, kafkaEventDTO);
+                // 将预警信息异步推送给微信预警平台
+                RuleInfoApiDTO ruleInfoDTO = ruleInfoApi.getCacheRuleInfo(alertMessageApiDTO.getRuleCode());
+                // FIXME: 测试时，临时注释
+//                rsoAlarmRestApi.sendMsgToRso(
+//                        ruleInfoDTO.getAlertProjectNo(),
+//                        ruleInfoDTO.getAlertLevel(),
+//                        LocalDateTimeUtils.convertLocalDateTime2Str(alertMessageApiDTO.getAlertTime()),
+//                        alertMessage
+//                );
+                // 添加到 finalAlertMessageApiDtoList 中
+                alertMessageApiDTO.setAlertMessage(alertMessage);
+                finalAlertMessageApiDtoList.add(alertMessageApiDTO);
+            }
             // 将预警消息批量保存到 MongoDB
-            List<AlertMessageDO> alertMessageDOList = alertMessageConvert.batchConvertDto2Mongo(validAlertMessageApiDTOList);
+            List<AlertMessageDO> alertMessageDOList = alertMessageConvert.batchConvertDto2Mongo(finalAlertMessageApiDtoList);
             alertMessageRepository.saveAll(alertMessageDOList);
         }
         // 手动提交偏移量
         ack.acknowledge();
+    }
+
+    /**
+     * 从mongo中获取事件id与其对应的数据数据
+     */
+    private Map<Long, KafkaEventDTO> findEventIdAndKafkaEventMap(List<AlertMessageApiDTO> validAlertMessageApiDTOList) {
+        Map<Long, KafkaEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
+        List<Long> eventIdList = validAlertMessageApiDTOList.stream().map(AlertMessageApiDTO::getEventId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(eventIdList)) {
+            List<KafkaEventDTO> kafkaEventDTOList = kafkaEventService.selectListByEventIds(eventIdList);
+            if (!CollectionUtils.isEmpty(kafkaEventDTOList)) {
+                eventIdAndKafkaEventMap = kafkaEventDTOList.stream().collect(Collectors.toMap(
+                        KafkaEventDTO::getEventId,
+                        Function.identity(),
+                        (existing, replacement) -> existing
+                ));
+            }
+        }
+        return eventIdAndKafkaEventMap;
     }
 
     /**

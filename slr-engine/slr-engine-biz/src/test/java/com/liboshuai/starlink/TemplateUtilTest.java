@@ -4,7 +4,7 @@
 //import com.liboshuai.slr.module.engine.dto.ProcessorDTO;
 //import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
 //import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-//import com.liboshuai.slr.module.engine.utils.TemplateUtil;
+//import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 //import lombok.AllArgsConstructor;
 //import lombok.Builder;
 //import lombok.Data;

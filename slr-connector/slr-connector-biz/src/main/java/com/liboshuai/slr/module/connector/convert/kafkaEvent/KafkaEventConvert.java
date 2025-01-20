@@ -14,4 +14,6 @@ public interface KafkaEventConvert {
     KafkaEventDTO convertReq2Dto(KafkaEventReqVO kafkaEventReqVO);
 
     List<KafkaEventDO> batchConvertDto2Do(List<KafkaEventDTO> kafkaEventDTOList);
+
+    List<KafkaEventDTO> batchConvertDo2Dto(List<KafkaEventDO> kafkaEventDOList);
 }

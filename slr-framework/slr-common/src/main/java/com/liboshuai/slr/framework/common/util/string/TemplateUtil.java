@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.engine.utils;
+package com.liboshuai.slr.framework.common.util.string;
 
 import org.apache.commons.text.StringSubstitutor;
 

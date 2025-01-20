@@ -16,6 +16,7 @@ import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGro
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.convert.kafkaEvent.KafkaEventConvert;
+import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventDO;
 import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventErrorDO;
 import com.liboshuai.slr.module.connector.dal.kafka.provider.KafkaEventProvider;
 import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventErrorRepository;
@@ -98,6 +99,12 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             kafkaEventErrorRepository.insert(kafkaEventErrorDO);
             throw ServiceExceptionUtil.exception(kafkaEventErrorRespVOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
         }
+    }
+
+    @Override
+    public List<KafkaEventDTO> selectListByEventIds(List<Long> eventIdList) {
+        List<KafkaEventDO> kafkaEventDOList = kafkaEventRepository.findAllByEventIdIn(eventIdList);
+        return kafkaEventConvert.batchConvertDo2Dto(kafkaEventDOList);
     }
 
     /**
