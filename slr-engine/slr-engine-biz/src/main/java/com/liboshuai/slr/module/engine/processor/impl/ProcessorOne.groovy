@@ -3,13 +3,17 @@
 //import com.liboshuai.slr.framework.common.constants.RedisKeyConstants
 //import com.liboshuai.slr.framework.common.enums.CommonStatusEnum
 //import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils
+//import com.liboshuai.slr.framework.common.util.string.TemplateUtil
 //import com.liboshuai.slr.module.engine.dto.*
 //import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum
 //import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum
 //import com.liboshuai.slr.module.engine.enums.TimeUnitEnum
 //import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc
 //import com.liboshuai.slr.module.engine.processor.Processor
-//import com.liboshuai.slr.module.engine.utils.*
+//import com.liboshuai.slr.module.engine.utils.CollectionUtil
+//import com.liboshuai.slr.module.engine.utils.RedisUtil
+//import com.liboshuai.slr.module.engine.utils.RuleEventAttrCompUtil
+//import com.liboshuai.slr.module.engine.utils.TimeUtil
 //import org.apache.flink.api.common.functions.RuntimeContext
 //import org.apache.flink.api.common.state.KeyedStateStore
 //import org.apache.flink.api.common.state.MapState
@@ -373,16 +377,15 @@
 //        String finalWarnMessage = TemplateUtil.replacePlaceholders(
 //                ruleInfoDTO.getAlertMessage(),
 //                ruleInfoDTO,
-//                processBigMapResult.f1,
 //                processBigMapResult.f2
 //        );
 //        return AlertMessageDTO.builder()
 //                .channel(ruleInfoDTO.getChannel())
 //                .ruleCode(ruleInfoDTO.getRuleCode())
+//                .eventId(processBigMapResult.f1)
 //                .alertMessage(finalWarnMessage)
 //                .alertTime(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
 //                .targetField(ruleInfoDTO.getTargetField())
-//                .targetValue(String.valueOf(processBigMapResult.f1))
 //                .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
 //                .build();
 //    }

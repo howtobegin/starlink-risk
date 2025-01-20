@@ -380,16 +380,15 @@ public class ProcessorOne implements Processor {
         String finalWarnMessage = TemplateUtil.replacePlaceholders(
                 ruleInfoDTO.getAlertMessage(),
                 ruleInfoDTO,
-                null,
                 processBigMapResult.f2
         );
         return AlertMessageDTO.builder()
                 .channel(ruleInfoDTO.getChannel())
                 .ruleCode(ruleInfoDTO.getRuleCode())
+                .eventId(processBigMapResult.f1)
                 .alertMessage(finalWarnMessage)
                 .alertTime(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
                 .targetField(ruleInfoDTO.getTargetField())
-                .targetValue(String.valueOf(processBigMapResult.f1))
                 .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
                 .build();
     }

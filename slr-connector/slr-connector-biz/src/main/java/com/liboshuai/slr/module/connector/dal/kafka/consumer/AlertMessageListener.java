@@ -82,8 +82,9 @@ public class AlertMessageListener {
 //                        LocalDateTimeUtils.convertLocalDateTime2Str(alertMessageApiDTO.getAlertTime()),
 //                        alertMessage
 //                );
-                // 添加到 finalAlertMessageApiDtoList 中
+                // 添加到 finalAlertMessageApiDtoList 中，并补充字段数据
                 alertMessageApiDTO.setAlertMessage(alertMessage);
+                alertMessageApiDTO.setTargetValue(kafkaEventDTO.getTargetValue());
                 finalAlertMessageApiDtoList.add(alertMessageApiDTO);
             }
             // 将预警消息批量保存到 MongoDB

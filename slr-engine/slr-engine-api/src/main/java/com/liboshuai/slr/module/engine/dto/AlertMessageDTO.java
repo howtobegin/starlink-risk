@@ -36,6 +36,10 @@ public class AlertMessageDTO implements Serializable {
      */
     private Long ruleCode;
     /**
+     * 事件id
+     */
+    private Long eventId;
+    /**
      * 预警消息
      */
     private String alertMessage;
