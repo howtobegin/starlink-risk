@@ -41,31 +41,11 @@ public class FlinkMysqlCdcConnector {
                 .databaseList(database)
                 .tableList(database + DefaultConstants.POINT + table)
                 .startupOptions(StartupOptions.initial())
+                // 请勿使用 JsonDebeziumDeserializationSchema，它对于long类型的序列化会出现乱码
                 .deserializer(new MysqlCdcDeserializationSchema())
                 .build();
         return env.fromSource(
                 ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]"
         );
-//        return dataStreamSource.map(
-//                json -> {
-//                    log.info("MysqlCdc的json数据: {}", json);
-//                    MysqlCdcDTO.MysqlCdcDTOBuilder mysqlCdcDTOBuilder = MysqlCdcDTO.builder();
-//                    JsonNode jsonNode = JsonUtils.parseTree(json);
-//                    log.info("jsonNode: {}", jsonNode);
-//                    // 赋值 op
-//                    JsonNode opJsonNode = jsonNode.get("op");
-//                    log.info("opJsonNode.asText(): {}", opJsonNode.asText());
-//                    mysqlCdcDTOBuilder.op(opJsonNode.asText());
-//                    // 赋值 before 值
-//                    JsonNode beforeJsonNode = jsonNode.get("before");
-//                    log.info("beforeJsonNode: {}", JsonUtils.toJsonString(beforeJsonNode));
-//                    mysqlCdcDTOBuilder.before(JsonUtils.toJsonString(beforeJsonNode));
-//                    // 赋值 after 值
-//                    JsonNode afterJsonNode = jsonNode.get("after");
-//                    log.info("afterJsonNode: {}", JsonUtils.toJsonString(afterJsonNode));
-//                    mysqlCdcDTOBuilder.after(JsonUtils.toJsonString(afterJsonNode));
-//                    return mysqlCdcDTOBuilder.build();
-//                }
-//        );
     }
 }

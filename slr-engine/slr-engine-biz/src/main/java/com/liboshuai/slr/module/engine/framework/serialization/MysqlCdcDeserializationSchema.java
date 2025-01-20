@@ -59,7 +59,6 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
                 String v = Objects.isNull(struct.get(field)) ? null : struct.get(field).toString();
                 structMap.put(k, v);
             }
-            log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toCamelCaseJson(structMap));
             return JsonUtils.toCamelCaseJson(structMap);
         }
         return null;
@@ -77,6 +76,8 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
     public void deserialize(SourceRecord sourceRecord, Collector<MysqlCdcDTO> collector) {
         // 创建 MysqlCdcDTO 对象
         MysqlCdcDTO mysqlCdcDTO = new MysqlCdcDTO();
+        // 获取 库名、表名信息
+        mysqlCdcDTO.setSource(getSource(sourceRecord));
         // 获取 before、after 数据的 JSON 字符串
         mysqlCdcDTO.setBefore(getDataJsonAsString(sourceRecord, "before"));
         mysqlCdcDTO.setAfter(getDataJsonAsString(sourceRecord, "after"));

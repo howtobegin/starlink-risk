@@ -220,9 +220,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             ruleCdcDTOBefore = new RuleJsonDTO();
         }
         Long ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
-        RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleCdcDTOBefore.getRuleJson(), RuleInfoDTO.class);
-        log.info("ruleCdcDTOBefore.getRuleJson(): {}", ruleCdcDTOBefore.getRuleJson());
-        log.info("ruleInfoDTOBefore: {}", ruleInfoDTOBefore);
         // 变更之后的数据
         RuleJsonDTO ruleCdcDTOAfter = JsonUtils.parseObject(mysqlCdcDTO.getAfter(), RuleJsonDTO.class);
         if (Objects.isNull(ruleCdcDTOAfter)) {
@@ -230,8 +227,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
         Long ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
         RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleCdcDTOAfter.getRuleJson(), RuleInfoDTO.class);
-        log.info("ruleCdcDTOAfter.getRuleJson(): {}", ruleCdcDTOBefore.getRuleJson());
-        log.info("ruleInfoDTOAfter: {}", ruleInfoDTOAfter);
         // 上下线规则运算机
         if (Envelope.Operation.CREATE.code().equals(op)) {
             // create: 只有发布上线规则的时候，才会出现创建操作，所以需要加载规则运算机
@@ -293,6 +288,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 加载规则运算机
      */
     private void loadProcessor(KeyedStateStore keyedStateStore, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
+        if (Objects.isNull(ruleCode)) {
+            log.warn("恢复规则运算机失败，传入的规则编号不能为空！");
+            return;
+        }
+        if (Objects.isNull(ruleInfoDTO)) {
+            log.warn("恢复规则运算机失败，传入的规则信息不能空！");
+            return;
+        }
         if (ruleProcessorPool.containsKey(ruleCode)) {
             return;
         }
