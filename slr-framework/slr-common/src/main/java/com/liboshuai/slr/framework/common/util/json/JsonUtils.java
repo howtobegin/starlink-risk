@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JSON 工具类
@@ -225,6 +226,32 @@ public class JsonUtils {
         } finally {
             // 恢复默认命名策略
             objectMapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.LOWER_CAMEL_CASE);
+        }
+    }
+
+    /**
+     * 将 Map 数据（键为下划线命名）转换为 Java 实体类（驼峰命名）
+     *
+     * @param structMap 要转换的 Map
+     * @param clazz     Java 实体类的 Class
+     * @param <T>       Java 实体类类型
+     * @return 转换后的实体类对象
+     */
+    public static <T> T toEntityFromUnderscoreMap(Map<String, String> structMap, Class<T> clazz) {
+        if (structMap == null || structMap.isEmpty()) {
+            return null;
+        }
+        try {
+            // 创建临时 ObjectMapper，并设置命名策略为下划线转驼峰
+            ObjectMapper mapper = objectMapper.copy();
+            mapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE);
+            // 将 Map 转换为 JSON 字符串
+            String jsonString = mapper.writeValueAsString(structMap);
+            // 将 JSON 字符串反序列化为目标实体类
+            return mapper.readValue(jsonString, clazz);
+        } catch (IOException e) {
+            log.error("Failed to convert structMap to entity, structMap: {}", structMap, e);
+            throw new RuntimeException(e);
         }
     }
 

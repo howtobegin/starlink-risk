@@ -59,7 +59,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
                 String v = Objects.isNull(struct.get(field)) ? null : struct.get(field).toString();
                 structMap.put(k, v);
             }
-            log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toJsonString(structMap));
+            log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toEntityFromUnderscoreMap(structMap, String.class));
             return JsonUtils.toJsonString(structMap);
         }
         return null;
