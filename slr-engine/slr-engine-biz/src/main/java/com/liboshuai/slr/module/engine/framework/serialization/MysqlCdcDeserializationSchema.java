@@ -60,7 +60,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
                 structMap.put(k, v);
             }
             log.info("fieldName: {}, structMap: {}", fieldName, JsonUtils.toCamelCaseJson(structMap));
-            return JsonUtils.toJsonString(structMap);
+            return JsonUtils.toCamelCaseJson(structMap);
         }
         return null;
     }
