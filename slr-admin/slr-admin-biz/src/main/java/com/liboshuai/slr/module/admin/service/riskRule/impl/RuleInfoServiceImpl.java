@@ -713,10 +713,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<AlertMessageApiDTO> sortedGeneratedAlerts = generatedAlerts.stream()
                 .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
+        log.info("sortedGeneratedAlerts: {}", sortedGeneratedAlerts);
         List<AlertMessageApiDTO> sortedMongoAlerts = mongoAlerts.stream()
                 .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
                 .collect(Collectors.toList());
-
+        log.info("sortedMongoAlerts: {}", sortedMongoAlerts);
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
             AlertMessageApiDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertMessageApiDTO mongoAlert = sortedMongoAlerts.get(i);
