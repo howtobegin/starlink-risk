@@ -7,8 +7,8 @@ import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.convert.EventConvert;
 import com.liboshuai.slr.module.engine.dto.DorisEventDTO;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
 import com.liboshuai.slr.module.engine.dto.ResultDTO;
-import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
@@ -45,14 +45,14 @@ public class EngineApplication {
         ParameterUtil.envWithConfig(env, parameterTool);
 
         // 获取规则配置数据流
-        DataStream<RuleCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
+        DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
         // 获取旧状态清理流
         // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
                 ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
         ).uid("async-doris");
         // 获取规则广播流
-        BroadcastStream<RuleCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
+        BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象

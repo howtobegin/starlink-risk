@@ -2,7 +2,7 @@ package com.liboshuai.slr.module.engine.framework.connector;
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
-import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
+import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
 import com.liboshuai.slr.module.engine.framework.serialize.MysqlCdcDeserializationSchema;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
@@ -20,7 +20,7 @@ public class FlinkMysqlConnector {
     /**
      * MySql cdc 读取数据
      */
-    public static DataStream<RuleCdcDTO> read(
+    public static DataStream<MysqlCdcDTO> read(
             StreamExecutionEnvironment env,
             ParameterTool parameterTool) {
 
@@ -32,7 +32,7 @@ public class FlinkMysqlConnector {
         String database = parameterTool.get(ParameterConstants.MYSQL_DATABASE);
         String table = parameterTool.get(ParameterConstants.MYSQL_TABLE_RULEJSON);
 
-        MySqlSource<RuleCdcDTO> ruleCdcSource = MySqlSource.<RuleCdcDTO>builder()
+        MySqlSource<MysqlCdcDTO> ruleCdcSource = MySqlSource.<MysqlCdcDTO>builder()
                 .hostname(hostname)
                 .port(Integer.parseInt(port))
                 .username(username)

@@ -1,89 +1,87 @@
 package com.liboshuai.slr.module.engine.framework.serialize;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.module.engine.dto.RuleCdcDTO;
-import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Field;
+import com.liboshuai.slr.module.engine.dto.CdcSourceDTO;
+import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Schema;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.data.Struct;
+import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.json.JsonConverter;
 import com.ververica.cdc.connectors.shaded.org.apache.kafka.connect.source.SourceRecord;
 import com.ververica.cdc.debezium.DebeziumDeserializationSchema;
 import io.debezium.data.Envelope;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.util.Collector;
 
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSchema<RuleCdcDTO> {
+public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSchema<MysqlCdcDTO> {
 
     private static final long serialVersionUID = -4554108517291370408L;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    // JsonConverter
+    private static final JsonConverter jsonConverter = new JsonConverter();
+
+    static {
+        // 配置 JsonConverter，不输出 Schema
+        Map<String, Object> configs = new HashMap<>();
+        configs.put("schemas.enable", false);
+        jsonConverter.configure(configs, false);
+    }
 
     /**
      * 获取数据库名、表名
      */
-    private ObjectNode getDatabaseTableJson(SourceRecord sourceRecord) {
+    private CdcSourceDTO getSource(SourceRecord sourceRecord) {
         String topic = sourceRecord.topic();
         String[] fields = topic.split("\\.");
         String database = fields[1];
         String tableName = fields[2];
-        ObjectNode ret = objectMapper.createObjectNode();
-        ret.put("database", database);
-        ret.put("table", tableName);
-        return ret;
+        return new CdcSourceDTO(database, tableName);
     }
 
     /**
-     * 获取before、after数据
+     * 使用 JsonConverter 获取 before、after 数据的 JSON 字符串
      */
-    public ObjectNode getDataJson(SourceRecord sourceRecord, String fieldName) {
+    private String getDataJsonAsString(SourceRecord sourceRecord, String fieldName) {
         Struct value = (Struct) sourceRecord.value();
         Struct struct = value.getStruct(fieldName);
-        ObjectNode ret = objectMapper.createObjectNode();
         if (struct != null) {
             Schema schema = struct.schema();
-            List<Field> fields = schema.fields();
-            for (Field field : fields) {
-                Object obj = struct.get(field);
-                ret.put(field.name(), obj != null ? obj.toString() : null);
-            }
+            // 使用 JsonConverter 将 Struct 转换为 JSON 字节数组
+            byte[] bytes = jsonConverter.fromConnectData(sourceRecord.topic(), schema, struct);
+            // 将字节数组转换为字符串
+            return new String(bytes, StandardCharsets.UTF_8);
         }
-        return ret;
+        return null;
     }
 
-    public String getOP(SourceRecord sourceRecord) {
+    /**
+     * 获取操作类型
+     */
+    private String getOP(SourceRecord sourceRecord) {
         Envelope.Operation operation = Envelope.operationFor(sourceRecord);
         return operation.code();
     }
 
     @Override
-    public void deserialize(SourceRecord sourceRecord, Collector<RuleCdcDTO> collector) {
-        //1.创建 JSON 对象用于存储最终数据
-        ObjectNode result = objectMapper.createObjectNode();
-        //2.获取库名、表名放入 source
-        ObjectNode databaseTableJson = getDatabaseTableJson(sourceRecord);
-        //3.获取"before"数据
-        ObjectNode beforeJson = getDataJson(sourceRecord, "before");
-        //4.获取"after"数据
-        ObjectNode afterJson = getDataJson(sourceRecord, "after");
-        //5.获取操作类型 CREATE UPDATE DELETE 进行符合 Debezium-op 的字母
-        String type = getOP(sourceRecord);
-        //6.将字段写入 JSON 对象
-        result.set("source", databaseTableJson);
-        result.set("before", beforeJson);
-        result.set("after", afterJson);
-        result.put("op", type);
-
-        // 7.将 JSON 转换为 RuleCdcDTO 对象
-        RuleCdcDTO ruleCdcDTO = JsonUtils.parseObjectFromUnderscore(result.toString(), RuleCdcDTO.class);
-        //8.输出数据
-        collector.collect(ruleCdcDTO);
+    public void deserialize(SourceRecord sourceRecord, Collector<MysqlCdcDTO> collector) {
+        // 创建 MysqlCdcDTO 对象
+        MysqlCdcDTO mysqlCdcDTO = new MysqlCdcDTO();
+        // 设置 source
+        mysqlCdcDTO.setSource(getSource(sourceRecord));
+        // 获取 before、after 数据的 JSON 字符串
+        mysqlCdcDTO.setBefore(getDataJsonAsString(sourceRecord, "before"));
+        mysqlCdcDTO.setAfter(getDataJsonAsString(sourceRecord, "after"));
+        // 设置操作类型
+        mysqlCdcDTO.setOp(getOP(sourceRecord));
+        // 输出数据
+        collector.collect(mysqlCdcDTO);
     }
 
     @Override
-    public TypeInformation<RuleCdcDTO> getProducedType() {
-        // 表示返回 RuleCdcDTO 类型
-        return TypeInformation.of(RuleCdcDTO.class);
+    public TypeInformation<MysqlCdcDTO> getProducedType() {
+        // 表示返回 MysqlCdcDTO 类型
+        return TypeInformation.of(MysqlCdcDTO.class);
     }
 }

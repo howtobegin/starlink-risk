@@ -6,7 +6,6 @@ import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.dto.*;
-import com.liboshuai.slr.module.engine.framework.exception.BusinessException;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -26,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEventDTO> {
+public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEventDTO> {
 
     private final ParameterTool parameterTool;
     // 连接池
@@ -76,8 +75,8 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
     }
 
     @Override
-    public void asyncInvoke(RuleCdcDTO ruleCdcDTO, ResultFuture<KafkaEventDTO> resultFuture) {
-        String op = ruleCdcDTO.getOp();
+    public void asyncInvoke(MysqlCdcDTO mysqlCdcDTO, ResultFuture<KafkaEventDTO> resultFuture) {
+        String op = mysqlCdcDTO.getOp();
         // 规则下线时，查询doris创建数据清洗流
         if (!Envelope.Operation.DELETE.code().equals(op)) {
             resultFuture.complete(Collections.emptyList());
@@ -87,11 +86,17 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
         // 执行异步操作
         executorService.submit(() -> {
             // 变更之前的数据
-            RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
+            RuleJsonDTO ruleCdcDTOBefore = JsonUtils.parseObject(mysqlCdcDTO.getBefore(), RuleJsonDTO.class);
+            if (Objects.isNull(ruleCdcDTOBefore)) {
+                ruleCdcDTOBefore = new RuleJsonDTO();
+            }
             String ruleJsonBefore = ruleCdcDTOBefore.getRuleJson();
             RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleJsonBefore, RuleInfoDTO.class);
             if (Objects.isNull(ruleInfoDTOBefore)) {
-                throw new BusinessException("Mysql Cdc 规则流 ruleCdcDTOBefore 必须非空");
+                log.warn("下线清理旧状态失败，MysqlCdc规则信息ruleInfoDTOBefore必须非空！");
+                // 提交空结果以防止 Flink 流处理阻塞
+                resultFuture.complete(Collections.emptyList());
+                return;
             }
             List<KafkaEventDTO> kafkaEventDTOList = new ArrayList<>();
             try (DruidPooledConnection connection = druidDataSource.getConnection();
@@ -127,7 +132,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<RuleCdcDTO, KafkaEvent
 //                log.warn("构建的数据清洗流：{}", kafkaEventDTOList);
                 resultFuture.complete(kafkaEventDTOList);
             } catch (Exception e) {
-                log.error("Error processing asyncInvoke for RuleInfoDTO: {}", ruleCdcDTO, e);
+                log.error("Error processing asyncInvoke for RuleInfoDTO: {}", mysqlCdcDTO, e);
                 // 可以根据需求选择是否提交空结果或有错误标识的结果
                 resultFuture.completeExceptionally(e);
             }

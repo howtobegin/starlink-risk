@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO> implements CheckpointedFunction {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO> implements CheckpointedFunction {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -80,7 +80,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     @Override
     public void processElement(KafkaEventDTO kafkaEventDTO,
-                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.ReadOnlyContext ctx,
+                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.ReadOnlyContext ctx,
                                Collector<ResultDTO> out) throws Exception {
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
@@ -205,21 +205,28 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     @Override
-    public void processBroadcastElement(RuleCdcDTO ruleCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.Context ctx,
+    public void processBroadcastElement(MysqlCdcDTO mysqlCdcDTO,
+                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.Context ctx,
                                         Collector<ResultDTO> out) throws Exception {
-        if (ruleCdcDTO == null) {
-            throw new BusinessException("Mysql Cdc 广播流 ruleCdcDTO 必须非空");
+        if (mysqlCdcDTO == null) {
+            log.warn("规则运算机上下线处理失败，MysqlCdc规则信息ruleCdcDTO必须非空！");
+            return;
         }
         // cdc 数据变更类型
-        String op = ruleCdcDTO.getOp();
+        String op = mysqlCdcDTO.getOp();
         // 变更之前的数据
-        RuleJsonDTO ruleCdcDTOBefore = ruleCdcDTO.getBefore();
+        RuleJsonDTO ruleCdcDTOBefore = JsonUtils.parseObject(mysqlCdcDTO.getBefore(), RuleJsonDTO.class);
+        if (Objects.isNull(ruleCdcDTOBefore)) {
+            ruleCdcDTOBefore = new RuleJsonDTO();
+        }
         Long ruleCodeBefore = ruleCdcDTOBefore.getRuleCode();
         RuleInfoDTO ruleInfoDTOBefore = JsonUtils.parseObject(ruleCdcDTOBefore.getRuleJson(), RuleInfoDTO.class);
         log.info("ruleInfoDTOBefore: {}", JsonUtils.toJsonString(ruleInfoDTOBefore));
         // 变更之后的数据
-        RuleJsonDTO ruleCdcDTOAfter = ruleCdcDTO.getAfter();
+        RuleJsonDTO ruleCdcDTOAfter = JsonUtils.parseObject(mysqlCdcDTO.getAfter(), RuleJsonDTO.class);
+        if (Objects.isNull(ruleCdcDTOAfter)) {
+            ruleCdcDTOAfter = new RuleJsonDTO();
+        }
         Long ruleCodeAfter = ruleCdcDTOAfter.getRuleCode();
         RuleInfoDTO ruleInfoDTOAfter = JsonUtils.parseObject(ruleCdcDTOAfter.getRuleJson(), RuleInfoDTO.class);
         log.info("ruleInfoDTOAfter: {}", JsonUtils.toJsonString(ruleInfoDTOAfter));
@@ -244,6 +251,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 移除规则运算机
      */
     private void removeProcessor(Long ruleCode) throws Exception {
+        if (Objects.isNull(ruleCode)) {
+            log.warn("移除规则运算机失败，传入的规则编号不能为空！");
+            return;
+        }
         Processor processor = ruleProcessorPool.get(ruleCode);
         if (Objects.isNull(processor)) {
             log.warn("规则运算机不存在，无需移除，规则编号为: {}", ruleCode);
@@ -258,6 +269,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 加载规则运算机
      */
     private void loadProcessor(RuntimeContext runtimeContext, Long ruleCode, RuleInfoDTO ruleInfoDTO) throws Exception {
+        if (Objects.isNull(ruleCode)) {
+            log.warn("上线规则运算机失败，传入的规则编号不能为空！");
+            return;
+        }
+        if (Objects.isNull(ruleInfoDTO)) {
+            log.warn("上线规则运算机失败，传入的规则信息不能空！");
+            return;
+        }
         if (ruleProcessorPool.containsKey(ruleCode)) {
             return;
         }
@@ -287,7 +306,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, RuleCdcDTO, ResultDTO>.OnTimerContext ctx,
+                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.OnTimerContext ctx,
                         Collector<ResultDTO> out) throws Exception {
         // 获取当前Key
         String currentKey = ctx.getCurrentKey();

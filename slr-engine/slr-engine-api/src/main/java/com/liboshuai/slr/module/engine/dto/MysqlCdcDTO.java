@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RuleCdcDTO implements Serializable {
+public class MysqlCdcDTO implements Serializable {
 
     private static final long serialVersionUID = -5669551177148147064L;
     /**
@@ -23,11 +23,11 @@ public class RuleCdcDTO implements Serializable {
     /**
      * 之前的数据
      */
-    private RuleJsonDTO before;
+    private String before;
     /**
      * 之后的数据
      */
-    private RuleJsonDTO after;
+    private String after;
     /**
      * 操作类型：r-查询；u-更新；d-删除；c-创建
      */
