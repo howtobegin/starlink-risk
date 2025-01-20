@@ -5,6 +5,7 @@ import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.module.admin.api.riskRule.RuleTargetApi;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventApiDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrApiDTO;
@@ -15,9 +16,10 @@ import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGro
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.convert.kafkaEvent.KafkaEventConvert;
-import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.KafkaEventErrorDO;
+import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventErrorDO;
 import com.liboshuai.slr.module.connector.dal.kafka.provider.KafkaEventProvider;
 import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventErrorRepository;
+import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventRepository;
 import com.liboshuai.slr.module.connector.enums.KafkaEventErrorLevelEnum;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategy;
@@ -49,6 +51,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     private final KafkaEventStrategyHolder kafkaEventStrategyHolder;
     private final RuleTargetApi ruleTargetApi;
     private final KafkaEventErrorRepository kafkaEventErrorRepository;
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
+    private final KafkaEventRepository kafkaEventRepository;
 
     @Value("${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;
@@ -75,8 +79,12 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         // 各渠道特别的数据处理逻辑
         KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
         kafkaEventStrategy.processAfter(kafkaEventDTOList);
+        // 生成事件id
+        kafkaEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(snowflakeIdGenerator.nextId()));
         // 异步推送数据到kafka
         kafkaEventProvider.batchSend(kafkaEventDTOList);
+        // 保存数据到mongo
+        kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(kafkaEventDTOList));
         // 存在非法数据错误原因，则抛出异常
         if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
             // 构建错误数据对象，并存入 mongodb

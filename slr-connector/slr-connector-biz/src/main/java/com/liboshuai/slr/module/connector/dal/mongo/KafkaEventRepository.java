@@ -1,11 +1,10 @@
 package com.liboshuai.slr.module.connector.dal.mongo;
 
-import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventErrorDO;
+import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventDO;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface KafkaEventErrorRepository extends MongoRepository<KafkaEventErrorDO, String> {
-
+public interface KafkaEventRepository extends MongoRepository<KafkaEventDO, String> {
 
 }

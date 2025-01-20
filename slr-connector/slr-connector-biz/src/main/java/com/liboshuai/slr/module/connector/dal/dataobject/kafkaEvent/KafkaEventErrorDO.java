@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.connector.dal.dataobject.alertMessage;
+package com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent;
 
 import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
