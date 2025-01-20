@@ -11,7 +11,6 @@ import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
-import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
@@ -709,16 +708,25 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             log.info("计算得出 / Mongo 中的预警信息条数不一致！计算: {}, Mongo: {}", generatedAlerts.size(), mongoAlerts.size());
             return false;
         }
-
-        // 确保 AlertMessageDTO 重写了 equals 和 hashCode 方法
+        // 对计算生成的预警信息与mongo中的预警信息进行排序
         List<AlertMessageApiDTO> sortedGeneratedAlerts = generatedAlerts.stream()
-                .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
+                .sorted(
+                        Comparator.comparing(AlertMessageApiDTO::getChannel)      // 按照 channel 排序
+                                .thenComparing(AlertMessageApiDTO::getRuleCode)       // 然后按 ruleCode 排序
+                                .thenComparing(AlertMessageApiDTO::getTargetField)   // 然后按 targetField 排序
+                                .thenComparing(AlertMessageApiDTO::getTargetValue)   // 然后按 targetValue 排序
+                                .thenComparing(AlertMessageApiDTO::getAlertTime)     // 最后按 alertTime 排序
+                )
                 .collect(Collectors.toList());
-        log.info("sortedGeneratedAlerts: {}", JsonUtils.toJsonString(sortedGeneratedAlerts));
         List<AlertMessageApiDTO> sortedMongoAlerts = mongoAlerts.stream()
-                .sorted(Comparator.comparing(AlertMessageApiDTO::getAlertTime))
+                .sorted(
+                        Comparator.comparing(AlertMessageApiDTO::getChannel)      // 按照 channel 排序
+                                .thenComparing(AlertMessageApiDTO::getRuleCode)       // 然后按 ruleCode 排序
+                                .thenComparing(AlertMessageApiDTO::getTargetField)   // 然后按 targetField 排序
+                                .thenComparing(AlertMessageApiDTO::getTargetValue)   // 然后按 targetValue 排序
+                                .thenComparing(AlertMessageApiDTO::getAlertTime)     // 最后按 alertTime 排序
+                )
                 .collect(Collectors.toList());
-        log.info("sortedMongoAlerts: {}", JsonUtils.toJsonString(sortedMongoAlerts));
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
             AlertMessageApiDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertMessageApiDTO mongoAlert = sortedMongoAlerts.get(i);
