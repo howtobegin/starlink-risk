@@ -8,6 +8,7 @@ import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -15,10 +16,10 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**
- * @Author: liboshuai
- * @Date: 2023-10-25 13:11
+ * MysqlCdc 数据源
  **/
-public class FlinkMysqlConnector {
+@Slf4j
+public class FlinkMysqlCdcConnector {
 
     /**
      * MySql cdc 读取数据
@@ -50,6 +51,7 @@ public class FlinkMysqlConnector {
         );
         return dataStreamSource.map(
                 json -> {
+                    log.info("MysqlCdc的json数据: {}", json);
                     MysqlCdcDTO.MysqlCdcDTOBuilder mysqlCdcDTOBuilder = MysqlCdcDTO.builder();
                     JsonNode jsonNode = JsonUtils.parseTree(json);
                     // 赋值 op

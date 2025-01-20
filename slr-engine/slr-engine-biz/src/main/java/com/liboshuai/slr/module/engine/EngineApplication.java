@@ -11,7 +11,7 @@ import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
 import com.liboshuai.slr.module.engine.dto.ResultDTO;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
-import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlConnector;
+import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlCdcConnector;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
 import com.liboshuai.slr.module.engine.function.DorisAsyncFunction;
@@ -45,7 +45,7 @@ public class EngineApplication {
         ParameterUtil.envWithConfig(env, parameterTool);
 
         // 获取规则配置数据流
-        DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlConnector.read(env, parameterTool);
+        DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlCdcConnector.read(env, parameterTool);
         // 获取旧状态清理流
         // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
