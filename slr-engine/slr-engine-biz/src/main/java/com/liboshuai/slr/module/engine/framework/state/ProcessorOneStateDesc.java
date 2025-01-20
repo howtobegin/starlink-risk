@@ -1,6 +1,5 @@
 package com.liboshuai.slr.module.engine.framework.state;
 
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -26,9 +25,9 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG);
     }
 
-    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, Long>> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(KafkaEventDTO.class)));
+        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.LONG));
     }
 
 }

@@ -13,6 +13,7 @@ public class DorisEventDtoType extends TypeInfoFactory<DorisEventDTO> {
     @Override
     public TypeInformation<DorisEventDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
+        typeInformationMap.put("eventId", Types.LONG);
         typeInformationMap.put("eventTime", Types.STRING);
         typeInformationMap.put("channel", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);

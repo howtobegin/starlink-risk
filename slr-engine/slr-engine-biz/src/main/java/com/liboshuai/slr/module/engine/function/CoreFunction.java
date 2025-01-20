@@ -66,7 +66,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Long> lastWarningTimeState;
     private MapState<String, Long> latestEventThresholdMapState;
-    private MapState<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> bigMapState;
 
     /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
@@ -189,10 +189,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             latestEventThresholdMap.put(next.getKey(), next.getValue());
         }
 
-        Map<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> bigMap = new HashMap<>();
-        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>>> oldBigMapStateIterator = bigMapState.iterator();
+        Map<Tuple2<String, Long>, Tuple2<Long, Long>> bigMap = new HashMap<>();
+        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>>> oldBigMapStateIterator = bigMapState.iterator();
         while (oldBigMapStateIterator.hasNext()) {
-            Map.Entry<Tuple2<String, Long>, Tuple2<Long, KafkaEventDTO>> next = oldBigMapStateIterator.next();
+            Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> next = oldBigMapStateIterator.next();
             bigMap.put(next.getKey(), next.getValue());
         }
 

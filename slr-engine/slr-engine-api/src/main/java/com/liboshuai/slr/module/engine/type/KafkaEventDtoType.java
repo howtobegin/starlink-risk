@@ -14,6 +14,7 @@ public class KafkaEventDtoType extends TypeInfoFactory<KafkaEventDTO> {
     @Override
     public TypeInformation<KafkaEventDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
+        typeInformationMap.put("eventId", Types.LONG);
         typeInformationMap.put("eventTime", Types.LONG);
         typeInformationMap.put("channel", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);
