@@ -15,6 +15,7 @@ public class AlertMessageDtoType extends TypeInfoFactory<AlertMessageDTO> {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
         typeInformationMap.put("channel", Types.STRING);
         typeInformationMap.put("ruleCode", Types.LONG);
+        typeInformationMap.put("eventId", Types.LONG);
         typeInformationMap.put("alertMessage", Types.STRING);
         typeInformationMap.put("alertTime", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);
