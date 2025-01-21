@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -42,7 +41,7 @@ public class AlertMessageApiDTO implements Serializable {
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
-    private LocalDateTime alertTime;
+    private String alertTime;
     /**
      * 目标字段
      */

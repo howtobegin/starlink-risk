@@ -1,5 +1,6 @@
 package com.liboshuai.slr.module.connector.convert.alertMessage;
 
+import com.liboshuai.slr.framework.common.convert.LocalDateTimeMapper;
 import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import org.mapstruct.Mapper;
@@ -7,7 +8,7 @@ import org.mapstruct.MappingConstants;
 
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = LocalDateTimeMapper.class)
 public interface AlertMessageConvert {
 
     List<AlertMessageDO> batchConvertDto2Mongo(List<AlertMessageApiDTO> alertMessageApiDTOList);
