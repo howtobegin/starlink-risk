@@ -63,7 +63,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
      */
     @Override
     public void push(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
-        log.info("业务平台上送事件数据: {}", kafkaEventGroupReqVO);
+//        log.info("业务平台上送事件数据: {}", kafkaEventGroupReqVO);
         String channel = kafkaEventGroupReqVO.getChannel(); // 渠道
         List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList(); // 上送事件详情集合
         // 若存在非法数据，直接中止推送操作
