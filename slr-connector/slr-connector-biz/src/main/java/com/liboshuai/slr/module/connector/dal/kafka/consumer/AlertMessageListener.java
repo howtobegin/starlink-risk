@@ -72,6 +72,9 @@ public class AlertMessageListener {
                 String alertMessage = alertMessageApiDTO.getAlertMessage();
                 Long eventId = alertMessageApiDTO.getEventId();
                 KafkaEventDTO kafkaEventDTO = eventIdAndKafkaEventMap.get(eventId);
+                if (Objects.isNull(kafkaEventDTO)) {
+                    kafkaEventDTO = new KafkaEventDTO();
+                }
                 alertMessage = TemplateUtil.replacePlaceholders(alertMessage, kafkaEventDTO);
                 // 将预警信息异步推送给微信预警平台
                 RuleInfoApiDTO ruleInfoDTO = ruleInfoApi.getCacheRuleInfo(alertMessageApiDTO.getRuleCode());
