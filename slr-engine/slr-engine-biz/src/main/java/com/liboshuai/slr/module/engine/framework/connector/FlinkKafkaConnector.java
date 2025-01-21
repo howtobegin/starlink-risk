@@ -35,6 +35,7 @@ public class FlinkKafkaConnector {
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SOURCE_BROKERS);
         String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC);
         String group = parameterTool.get(ParameterConstants.KAFKA_SOURCE_GROUP);
+        int partition = parameterTool.getInt(ParameterConstants.KAFKA_SOURCE_TOPIC_PARTITION);
 
         KafkaSource<String> KAFKA_SOURCE = KafkaSource.<String>builder()
                 .setBootstrapServers(brokers)
@@ -49,12 +50,13 @@ public class FlinkKafkaConnector {
                 KAFKA_SOURCE,
                 WatermarkStrategy.noWatermarks(),
                 "kafka-[" + topic + "]"
-        ).returns(Types.STRING).uid("kafka-source-" + topic);
+        ).setParallelism(partition).returns(Types.STRING).uid("kafka-source-" + topic);
     }
 
     public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SINK_BROKERS);
-        String topic = parameterTool.get(ParameterConstants.KAFKA_SINK_TOPIC_ALERT);
+        String topic = parameterTool.get(ParameterConstants.KAFKA_SINK_TOPIC);
+        int partition = parameterTool.getInt(ParameterConstants.KAFKA_SINK_TOPIC_PARTITION);
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 10 * 60 * 1000 + "");
         KafkaSink<String> kafkaSink = KafkaSink.<String>builder()
@@ -70,7 +72,7 @@ public class FlinkKafkaConnector {
                 //设置交付保证-至少一次
                 .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();
-        dataStream.sinkTo(kafkaSink).name("kafka-[" + topic + "]").uid("kafka-[" + topic + "]");
+        dataStream.sinkTo(kafkaSink).setParallelism(partition).name("kafka-[" + topic + "]").uid("kafka-[" + topic + "]");
     }
 
 }

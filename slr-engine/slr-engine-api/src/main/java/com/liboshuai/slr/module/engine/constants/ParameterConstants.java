@@ -40,9 +40,11 @@ public interface ParameterConstants {
 
     String KAFKA_SOURCE_BROKERS = "kafka.source.brokers";
     String KAFKA_SOURCE_TOPIC = "kafka.source.topic";
+    String KAFKA_SOURCE_TOPIC_PARTITION = "kafka.source.topic.partition";
     String KAFKA_SOURCE_GROUP = "kafka.source.group";
     String KAFKA_SINK_BROKERS = "kafka.sink.brokers";
-    String KAFKA_SINK_TOPIC_ALERT = "kafka.sink.topic.alert";
+    String KAFKA_SINK_TOPIC = "kafka.sink.topic";
+    String KAFKA_SINK_TOPIC_PARTITION = "kafka.sink.topic.partition";
 
     /**
      * Doris 配置参数名称
