@@ -676,7 +676,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                             .targetField(targetField)
                             .targetValue(targetValue)
                             .eventValueGroup(Collections.singletonMap(eventField, eventValueSum))
-                            .alertTime(LocalDateTimeUtils.convertTimestamp2LocalDateTime(windowEndTimeStamp))
+                            .alertTime(LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp))
                             .build();
                     alertMessageApiDTOS.add(alertMessageApiDTO);
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
@@ -731,7 +731,6 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             AlertMessageApiDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertMessageApiDTO mongoAlert = sortedMongoAlerts.get(i);
             mongoAlert.setAlertMessage(null);
-            mongoAlert.setAlertTime(mongoAlert.getAlertTime().withSecond(0).withNano(0));
             if (!generatedAlert.equals(mongoAlert)) {
                 log.info("预警信息内容不一致！计算: {}, Mongo: {}", generatedAlert, mongoAlert);
                 return false;
