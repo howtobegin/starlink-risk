@@ -10,7 +10,9 @@ import com.liboshuai.slr.module.admin.api.riskRule.RuleTargetApi;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventApiDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrApiDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetApiDTO;
-import com.liboshuai.slr.module.connector.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.connector.common.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.connector.common.enums.KafkaEventErrorLevelEnum;
+import com.liboshuai.slr.module.connector.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventErrorRespVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
@@ -21,7 +23,6 @@ import com.liboshuai.slr.module.connector.dal.dataobject.kafkaEvent.KafkaEventEr
 import com.liboshuai.slr.module.connector.dal.kafka.provider.KafkaEventProvider;
 import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventErrorRepository;
 import com.liboshuai.slr.module.connector.dal.mongo.KafkaEventRepository;
-import com.liboshuai.slr.module.connector.enums.KafkaEventErrorLevelEnum;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategy;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
@@ -31,7 +32,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.common.Node;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -84,8 +87,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         kafkaEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(snowflakeIdGenerator.nextId()));
         // 异步推送数据到kafka
         kafkaEventProvider.batchSend(kafkaEventDTOList);
-        // 保存数据到mongo
-        kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(kafkaEventDTOList));
+        // 异步保存事件数据到mongo
+        ((KafkaEventService) AopContext.currentProxy()).batchSaveEventToMongo(kafkaEventDTOList);
         // 存在非法数据错误原因，则抛出异常
         if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
             // 构建错误数据对象，并存入 mongodb
@@ -431,6 +434,12 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             log.error("Failed to connect to Kafka cluster", e);
             return new KafkaInfoRespVO(bootstrapServers, false, e.getMessage(), null, null, null);
         }
+    }
+
+    @Override
+    @Async(AsyncExecutorConstants.SAVE_EVENT_TO_MONGO_ASYNC_EXECUTOR)
+    public void batchSaveEventToMongo(List<KafkaEventDTO> kafkaEventDTOList) {
+        kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(kafkaEventDTOList));
     }
 
 }

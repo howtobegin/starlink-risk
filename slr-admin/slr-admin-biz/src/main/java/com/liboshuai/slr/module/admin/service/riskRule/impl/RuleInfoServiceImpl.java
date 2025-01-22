@@ -14,7 +14,7 @@ import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
-import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.admin.common.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.*;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleCondRespVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventAttrValueRespVO;

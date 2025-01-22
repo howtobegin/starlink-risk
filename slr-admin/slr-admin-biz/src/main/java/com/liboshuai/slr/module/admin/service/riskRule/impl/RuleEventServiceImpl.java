@@ -4,7 +4,7 @@ import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.admin.common.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventChangeStatusReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.module.admin.dal.dataobject.riskRule.RuleEventDO;

@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.connector.service.mock.impl;
 
-import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
+import com.liboshuai.slr.module.connector.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.module.connector.service.mock.MockService;
@@ -68,7 +68,7 @@ public class MockServiceImpl implements MockService {
 
     @Override
     @TakeTime
-    @Async(DefaultConstants.CONNECTOR_ASYNC_EXECUTOR)
+    @Async(AsyncExecutorConstants.MOCK_EVENT_FILE_ASYNC_EXECUTOR)
     public void createEventFileBatchMode(Long totalCount, Long maxEntries) {
         log.info("开始生成事件文件，目标条数: {}", totalCount);
         long generatedCount = 0;

@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.connector.constants;
+package com.liboshuai.slr.module.connector.common.constants;
 
 
 import com.liboshuai.slr.framework.common.exception.ErrorCode;

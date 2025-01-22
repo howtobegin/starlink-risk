@@ -1,8 +1,8 @@
 package com.liboshuai.slr.module.connector.rest.rsoAlarm;
 
-import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.util.date.DateUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+import com.liboshuai.slr.module.connector.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.module.connector.rest.rsoAlarm.vo.RroAlarmRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class RsoAlarmRestApi {
      * @param warningTime  预警时间
      * @param alertMessage 需要告警的消息 (最大300个字节,超过300部分进行截取)
      */
-    @Async(DefaultConstants.CONNECTOR_ASYNC_EXECUTOR)
+    @Async(AsyncExecutorConstants.SEND_MSG_TO_RSO_ASYNC_EXECUTOR)
     public void sendMsgToRso(String projectNo, String warningLevel, String warningTime, String alertMessage) {
         if (StringUtils.isBlank(alertMessage) || StringUtils.isBlank(projectNo) || StringUtils.isBlank(rsoAlertAddress)) {
             log.error("发送参数为空，请检查项目编号、请求地址或告警信息是否为空。");

@@ -2,7 +2,7 @@ package com.liboshuai.slr.module.admin.util.mock;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.liboshuai.slr.module.admin.enums.mock.*;
+import com.liboshuai.slr.module.admin.common.enums.mock.*;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -4,7 +4,7 @@ import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
-import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.admin.common.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelCreateReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelPageReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleModelUpdateReqVO;

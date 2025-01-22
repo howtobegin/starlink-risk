@@ -22,4 +22,9 @@ public interface KafkaEventService {
      * 获取Kafka信息，包含是否可连接，并获取broker列表、topic列表、消费组列表等
      */
     KafkaInfoRespVO kafkaInfo();
+
+    /**
+     * 批量保存事件到mongo
+     */
+    void batchSaveEventToMongo(List<KafkaEventDTO> kafkaEventDTOList);
 }

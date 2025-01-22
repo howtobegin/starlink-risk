@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.admin.enums.mock;
+package com.liboshuai.slr.module.admin.common.enums.mock;
 
 /**
  * 事件级别

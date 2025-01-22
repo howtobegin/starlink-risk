@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.admin.constants;
+package com.liboshuai.slr.module.admin.common.constants;
 
 
 import com.liboshuai.slr.framework.common.exception.ErrorCode;

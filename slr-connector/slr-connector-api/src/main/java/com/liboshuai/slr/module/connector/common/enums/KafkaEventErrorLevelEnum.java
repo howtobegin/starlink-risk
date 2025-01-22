@@ -1,4 +1,4 @@
-package com.liboshuai.slr.module.connector.enums;
+package com.liboshuai.slr.module.connector.common.enums;
 
 import com.liboshuai.slr.framework.common.core.StringArrayValuable;
 import lombok.Getter;

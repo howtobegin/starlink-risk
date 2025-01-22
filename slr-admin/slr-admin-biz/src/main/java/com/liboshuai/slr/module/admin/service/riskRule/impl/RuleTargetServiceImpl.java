@@ -9,7 +9,7 @@ import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventApiDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleEventAttrApiDTO;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleTargetApiDTO;
-import com.liboshuai.slr.module.admin.constants.ErrorCodeConstants;
+import com.liboshuai.slr.module.admin.common.constants.ErrorCodeConstants;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleEventSaveReqVO;
 import com.liboshuai.slr.module.admin.controller.riskRule.vo.req.RuleTargetPageReqVO;
