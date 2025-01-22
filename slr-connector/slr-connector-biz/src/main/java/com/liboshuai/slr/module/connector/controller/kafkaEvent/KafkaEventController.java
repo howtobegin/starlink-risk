@@ -1,7 +1,6 @@
 package com.liboshuai.slr.module.connector.controller.kafkaEvent;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
-import com.liboshuai.slr.framework.ratelimiter.core.annotation.RateLimiter;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.module.connector.controller.kafkaEvent.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
@@ -31,7 +30,6 @@ public class KafkaEventController {
     /**
      * 业务平台上送事件数据到 kafka
      */
-    @RateLimiter(count = 3000)
     @PostMapping("/push")
     @Operation(summary = "推送")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "事件数据推送请求", required = true,
