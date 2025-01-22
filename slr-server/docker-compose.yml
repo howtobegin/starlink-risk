@@ -1,7 +1,7 @@
-version: '2.1'
+version: '3'
 
 services:
-  slr_server:
+  slr-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,7 +17,10 @@ services:
       - "one:10.0.0.91"
       - "two:10.0.0.92"
       - "three:10.0.0.93"
-    mem_limit: 8g
+    deploy:
+      resources:
+        limits:
+          memory: 9g
 
 volumes:
   data:
