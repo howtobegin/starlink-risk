@@ -43,6 +43,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -440,6 +441,14 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     @Async(AsyncExecutorConstants.SAVE_EVENT_TO_MONGO_ASYNC_EXECUTOR)
     public void batchSaveEventToMongo(List<KafkaEventDTO> kafkaEventDTOList) {
         kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(kafkaEventDTOList));
+    }
+
+    @Override
+    public void deleteOldEventFromMongo() {
+        // 删除一天前的数据
+        long currentTimeMillis = System.currentTimeMillis();
+        long oneDayAgo = currentTimeMillis - TimeUnit.DAYS.toMillis(1);
+        kafkaEventRepository.deleteByEventTimeBefore(oneDayAgo);
     }
 
 }

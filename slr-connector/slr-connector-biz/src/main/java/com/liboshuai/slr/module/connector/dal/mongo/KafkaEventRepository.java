@@ -10,4 +10,6 @@ import java.util.List;
 public interface KafkaEventRepository extends MongoRepository<KafkaEventDO, String> {
 
     List<KafkaEventDO> findAllByEventIdIn(List<Long> eventIdList);
+
+    void deleteByEventTimeBefore(long eventTime);
 }
