@@ -24,11 +24,6 @@ public interface KafkaEventService {
     KafkaInfoRespVO kafkaInfo();
 
     /**
-     * 批量保存事件到mongo
-     */
-    void batchSaveEventToMongo(List<KafkaEventDTO> kafkaEventDTOList);
-
-    /**
      * 删除mongo中过期事件数据
      */
     void deleteOldEventFromMongo();
