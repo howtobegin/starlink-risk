@@ -13,9 +13,9 @@ services:
       - logs:/slr-server/logs
       - data:/slr-server/data
     extra_hosts:
-      - "docker:10.0.0.90"
-      - "one:10.0.0.91"
-      - "two:10.0.0.92"
+      - "docker:10.0.0.95"
+      - "one:10.0.0.98"
+      - "two:10.0.0.99"
       - "three:10.0.0.93"
     deploy:
       resources:
