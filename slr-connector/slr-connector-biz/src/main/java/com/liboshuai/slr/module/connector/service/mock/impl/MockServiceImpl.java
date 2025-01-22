@@ -92,7 +92,7 @@ public class MockServiceImpl implements MockService {
                 // 创建批次对象
                 KafkaEventGroupReqVO batch = KafkaEventGroupReqVO.builder()
                         .channel(channel)
-                        .kafkaEventReqVOList(eventList)
+                        .kafkaEventGroup(eventList)
                         .build();
 
                 // 将批次写入文件

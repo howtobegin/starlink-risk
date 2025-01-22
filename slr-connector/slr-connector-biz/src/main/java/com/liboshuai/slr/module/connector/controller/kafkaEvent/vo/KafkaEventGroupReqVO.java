@@ -25,5 +25,5 @@ public class KafkaEventGroupReqVO implements Serializable {
     private String channel;
 
     @Schema(description = "事件组", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<KafkaEventReqVO> kafkaEventReqVOList;
+    private List<KafkaEventReqVO> kafkaEventGroup;
 }

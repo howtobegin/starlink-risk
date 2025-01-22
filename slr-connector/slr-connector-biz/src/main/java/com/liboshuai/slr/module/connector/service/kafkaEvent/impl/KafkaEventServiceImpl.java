@@ -65,7 +65,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     public void push(KafkaEventGroupReqVO kafkaEventGroupReqVO) {
 //        log.info("业务平台上送事件数据: {}", kafkaEventGroupReqVO);
         String channel = kafkaEventGroupReqVO.getChannel(); // 渠道
-        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList(); // 上送事件详情集合
+        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventGroup(); // 上送事件详情集合
         // 若存在非法数据，直接中止推送操作
         validateAndAbortPush(kafkaEventGroupReqVO);
         // 只过滤掉非法数据继续推荐，并给出非法数据错误原因
@@ -152,7 +152,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
-        List<KafkaEventReqVO> eventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
+        List<KafkaEventReqVO> eventReqVOList = kafkaEventGroupReqVO.getKafkaEventGroup();
 
         // 使用 Iterator 安全地遍历并修改列表
         Iterator<KafkaEventReqVO> iterator = eventReqVOList.iterator();
@@ -277,11 +277,11 @@ public class KafkaEventServiceImpl implements KafkaEventService {
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
-        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventReqVOList();
+        List<KafkaEventReqVO> kafkaEventReqVOList = kafkaEventGroupReqVO.getKafkaEventGroup();
 
         // 判断事件数据集合是否为空
         if (CollUtil.isEmpty(kafkaEventReqVOList)) {
-            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
+            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventGroup);
             String message = String.format("字段 [%s]: 事件数据集合不能为空", fieldName);
             // 构建错误数据对象，并存入 mongodb
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
@@ -298,7 +298,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         // 判断单次上送数据集合元素个数超量
         int maxSize = 10;
         if (kafkaEventReqVOList.size() > maxSize) {
-            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventReqVOList);
+            String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventGroup);
             String message = String.format("字段 [%s]: 元素个数必须小于等于 [%d]", fieldName, maxSize);
             // 构建错误数据对象，并存入 mongodb
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()
