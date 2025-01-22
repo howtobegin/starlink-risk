@@ -14,8 +14,9 @@ ENV JAVA_OPTS="-Xms8g -Xmx8g"
 ## 应用参数
 ENV ARGS=""
 
-## 暴露后端项目的 48888 端口
+## 暴露后端项目的 48888 端口 和 xxl-job 执行执行器端口
 EXPOSE 48888
+EXPOSE 9999
 
 ## 挂载目录
 VOLUME /slr-server/logs/

@@ -9,6 +9,7 @@ services:
     restart: always
     ports:
       - "48888:48888"
+      - "9999:9999"
     volumes:
       - logs:/slr-server/logs
       - data:/slr-server/data
