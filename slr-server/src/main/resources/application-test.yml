@@ -88,7 +88,7 @@ xxl:
     executor:
       appname: starlink-risk
       address:
-      ip: docker
+      ip:
       port: 9999
       logpath: /slr-server/logs/xxl-job/jobhandler
       logretentiondays: 30
