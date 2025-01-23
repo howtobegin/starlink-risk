@@ -37,7 +37,7 @@ public class AlertMessageListener {
     private final KafkaEventService kafkaEventService;
 
     @KafkaListener(
-            topics = "${slr-connector.kafka.consumer.topic}",
+            topics = "${slr-connector.kafka.alert.topic}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory",
             errorHandler = "kafkaConsumerExceptionHandler"
