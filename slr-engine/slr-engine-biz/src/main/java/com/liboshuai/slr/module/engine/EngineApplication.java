@@ -2,16 +2,15 @@ package com.liboshuai.slr.module.engine;
 
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.convert.EventConvert;
-import com.liboshuai.slr.module.engine.dto.DorisEventDTO;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
-import com.liboshuai.slr.module.engine.dto.ResultDTO;
+import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlCdcConnector;
+import com.liboshuai.slr.module.engine.framework.connector.FlinkRedisConnector;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
@@ -21,6 +20,7 @@ import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
@@ -78,9 +78,9 @@ public class EngineApplication {
                 .process(new CoreFunction())
                 .returns(Types.POJO(ResultDTO.class)).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-//        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
+        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
         // 将规则状态的历史key记录数据写入redis
-//        writeRuleKeyHistoryToRedis(resultDtoStreamOperator, parameterTool);
+        writeRuleKeyHistoryToRedis(resultDtoStreamOperator);
         // 将告警信息写入kafka
         writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
@@ -103,17 +103,23 @@ public class EngineApplication {
     /**
      * 将规则状态的历史key记录数据写入redis
      */
-    private static void writeRuleKeyHistoryToRedis(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
-        SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
+    private static void writeRuleKeyHistoryToRedis(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator) {
+        SingleOutputStreamOperator<Tuple2<String, String>> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO()))
                 .returns(Types.POJO(ResultDTO.class)).uid("rule-key-history-filter")
                 // 实体类转json
-                .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
-                .returns(Types.STRING).uid("rule-key-history-map");
-        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
-        String tableKey = parameterTool.get(ParameterConstants.DORIS_TABLE_KEY);
-        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableKey, ruleKeyHistoryDtoStreamOperator, parameterTool);
+                .map(resultDTO -> {
+                    RuleKeyHistoryDTO ruleKeyHistoryDTO = resultDTO.getRuleKeyHistoryDTO();
+                    String redisKey = String.join(RedisKeyConstants.REDIS_KEY_SPLIT,
+                            RedisKeyConstants.REDIS_KEY_PREFIX,
+                            ruleKeyHistoryDTO.getRuleCode().toString(),
+                            ruleKeyHistoryDTO.getRuleVersion().toString(),
+                            ruleKeyHistoryDTO.getChannel(),
+                            ruleKeyHistoryDTO.getTargetField());
+                    return Tuple2.of(redisKey, ruleKeyHistoryDTO.getTargetValue());
+                }).returns(Types.TUPLE(Types.STRING, Types.STRING)).uid("rule-key-history-map");
+        FlinkRedisConnector.writeByBahirWithSet(ruleKeyHistoryDtoStreamOperator);
     }
 
     /**

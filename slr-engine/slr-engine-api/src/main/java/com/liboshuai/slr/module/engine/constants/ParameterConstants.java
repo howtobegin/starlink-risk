@@ -61,7 +61,6 @@ public interface ParameterConstants {
     String DORIS_PASSWORD = "doris.password";
     String DORIS_DATABASE = "doris.database";
     String DORIS_TABLE_EVENT = "doris.table.event";
-    String DORIS_TABLE_KEY = "doris.table.key";
 
     /**
      * Mysql 配置参数
