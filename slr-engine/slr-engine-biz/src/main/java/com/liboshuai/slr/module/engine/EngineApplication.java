@@ -48,7 +48,6 @@ public class EngineApplication {
         // 获取规则配置数据流
         DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlCdcConnector.read(env, parameterTool);
         // 获取旧状态清理流
-        // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
                 ruleDS, new RedisAsyncFunction(), 1, TimeUnit.MINUTES, 100
         ).returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
