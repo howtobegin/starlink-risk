@@ -1,5 +1,5 @@
 spring:
-  # 数据源配置项
+  ############################## [数据源 配置项] ##############################
   autoconfigure:
     exclude:
       - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
@@ -45,6 +45,7 @@ spring:
           url: jdbc:mysql://one:9130/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
+  ############################## [redis 配置项] ##############################
   redis:
     database: 0
     password: Rongshu@2024
@@ -64,6 +65,7 @@ spring:
         max-idle: 8
         max-active: 8
         max-wait: -1ms
+  ############################## [kafka 配置项] ##############################
   kafka:
     producer:
       bootstrap-servers: one:9092,two:9092,three:9092
@@ -71,6 +73,7 @@ spring:
       bootstrap-servers: one:9092,two:9092,three:9092
       group-id: starlink_risk
   data:
+    ############################## [mongo 配置项] ##############################
     mongodb:
       host: docker
       port: 27018
@@ -93,13 +96,21 @@ xxl:
       logpath: /slr-server/logs/xxl-job/jobhandler
       logretentiondays: 30
 
+############################## [connector 配置项] ##############################
 slr-connector:
   kafka:
-    provider_topic: slr_event
-    consumer_topic: slr_alert
+    event:
+      topic: starlink_risk_event
+      partition: 6
+      replica: 3
+    alert:
+      topic: starlink_risk_alert
+      partition: 6
+      replica: 3
   rso:
     alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
 
+############################## [admin 配置项] ##############################
 slr-admin:
   file-path:
     event-log: /slr-server/data/event.log
