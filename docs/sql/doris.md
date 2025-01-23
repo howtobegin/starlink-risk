@@ -43,4 +43,4 @@ PROPERTIES
     "replication_allocation" = "tag.location.default:1" -- 单机模式启用
     -- "replication_allocation" = "tag.location.group_a:1,tag.location.group_b:1,tag.location.group_c:1" -- 集群模式启用
 );
-```
+````
