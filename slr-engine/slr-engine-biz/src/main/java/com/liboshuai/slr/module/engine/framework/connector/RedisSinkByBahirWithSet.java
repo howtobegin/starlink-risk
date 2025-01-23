@@ -23,12 +23,6 @@ public class RedisSinkByBahirWithSet implements RedisMapper<Tuple2<String, Strin
     public String getKeyFromData(Tuple2<String, String> tuple2) {
         // 来指定 Set 的名称，可以是固定值或从输入数据动态决定
         return tuple2.f0;
-//        return String.join(RedisKeyConstants.REDIS_KEY_SPLIT,
-//                RedisKeyConstants.REDIS_KEY_PREFIX,
-//                ruleKeyHistoryDTO.getRuleCode().toString(),
-//                ruleKeyHistoryDTO.getRuleVersion().toString(),
-//                ruleKeyHistoryDTO.getChannel(),
-//                ruleKeyHistoryDTO.getTargetField());
     }
 
     /**
