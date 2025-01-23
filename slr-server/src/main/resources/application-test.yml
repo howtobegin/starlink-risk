@@ -71,7 +71,7 @@ spring:
       bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
       bootstrap-servers: one:9092,two:9092,three:9092
-      group-id: starlink_risk
+      group-id: starlink_risk_server
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:

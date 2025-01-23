@@ -71,7 +71,7 @@ spring:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
     consumer:
       bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
-      group-id: starlink_risk
+      group-id: starlink_risk_server
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
