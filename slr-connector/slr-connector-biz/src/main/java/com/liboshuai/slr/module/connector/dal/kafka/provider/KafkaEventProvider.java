@@ -1,30 +1,29 @@
 package com.liboshuai.slr.module.connector.dal.kafka.provider;
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.module.connector.framework.properties.KafkaProperties;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class KafkaEventProvider {
 
-    @Resource
-    private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @Value("${slr-connector.kafka.provider_topic}")
-    private String providerTopic;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaProperties kafkaProperties;
 
     /**
      * 批量上送事件信息到kafka
      */
     public void batchSend(List<KafkaEventDTO> kafkaEventDTOList) {
+        String providerTopic = kafkaProperties.getEventTopic();
         if (CollectionUtils.isEmpty(kafkaEventDTOList)) {
             return;
         }
