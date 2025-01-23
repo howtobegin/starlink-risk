@@ -42,22 +42,21 @@ public class RsoAlarmRestApi {
      */
     @Async(AsyncExecutorConstants.SEND_MSG_TO_RSO_ASYNC_EXECUTOR)
     public void sendMsgToRso(String projectNo, String warningLevel, String warningTime, String alertMessage) {
+        log.info("发送消息到荣数运营平台的请求参数，projectNo: {}, warningLevel: {}, warningTime: {}, alertMessage: {}",
+                projectNo, warningLevel, warningTime, alertMessage);
         if (StringUtils.isBlank(alertMessage) || StringUtils.isBlank(projectNo) || StringUtils.isBlank(rsoAlertAddress)) {
             log.error("发送参数为空，请检查项目编号、请求地址或告警信息是否为空。");
             return;
         }
-
         // 按长度限制处理告警消息
         if (alertMessage.length() > ALERT_MESSAGE_MAX_LENGTH) {
             alertMessage = alertMessage.substring(0, ALERT_MESSAGE_MAX_LENGTH);
         }
-
         try {
             RroAlarmRequest alarmMessageDTO = createAlertMessageRequest(projectNo, warningLevel, warningTime, alertMessage);
-
             // 使用 RestTemplate 发起 POST 请求并处理响应
             String responseJson = sendPostForJson(rsoAlertAddress, alarmMessageDTO);
-            log.info("接收到来自荣数运营平台的响应：{}", responseJson);
+            log.info("发送消息到荣数运营平台的响应结果：{}", responseJson);
         } catch (Exception e) {
             log.error("发送消息到荣数运营平台失败。", e);
         }
