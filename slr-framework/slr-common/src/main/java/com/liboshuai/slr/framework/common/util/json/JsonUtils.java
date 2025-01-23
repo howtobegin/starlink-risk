@@ -26,12 +26,16 @@ import java.util.Map;
 public class JsonUtils {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper UPPER_SNAKE_CASE_MAPPER;
 
     static {
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // 忽略 null 值
         objectMapper.registerModules(new JavaTimeModule()); // 解决 LocalDateTime 的序列化
+
+        UPPER_SNAKE_CASE_MAPPER = objectMapper.copy();
+        UPPER_SNAKE_CASE_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_SNAKE_CASE);
     }
 
     /**
@@ -293,9 +297,7 @@ public class JsonUtils {
         if (object == null) {
             return null;
         }
-        ObjectMapper mapper = objectMapper.copy();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_SNAKE_CASE);
-        return mapper.writeValueAsString(object);
+        return UPPER_SNAKE_CASE_MAPPER.writeValueAsString(object);
     }
 
     public static boolean isJson(String text) {
