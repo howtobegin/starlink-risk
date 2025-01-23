@@ -8,13 +8,20 @@ package com.liboshuai.slr.module.engine.constants;
 
 public interface ParameterConstants {
 
+    /**
+     * 项目 配置参数
+     */
+    //当前环境
+    String FLINK_ENV_ACTIVE = "flink.env.active";
+    //根配置文件
+    String FLINK_ROOT_FILE = "flink.properties";
+    //不同环境配置文件
+    String FLINK_ENV_FILE = "flink-%s.properties";
 
-    /* **********************
-     *
-     * Flink 配置参数名称
-     *
-     * *********************/
 
+    /**
+     * Flink 配置参数
+     */
     //触发checkpoint时间间隔
     String FLINK_CHECKPOINT_INTERVAL = "flink.checkpoint.interval";
     //checkpoint超时
@@ -32,12 +39,9 @@ public interface ParameterConstants {
     //数据延迟的最大时间
     String FLINK_MAXOUTOFORDERNESS = "flink.maxOutOfOrderness";
 
-    /* **********************
-     *
-     * Kafka 配置参数名称
-     *
-     * *********************/
-
+    /**
+     * Kafka 配置参数
+     */
     String KAFKA_SOURCE_BROKERS = "kafka.source.brokers";
     String KAFKA_SOURCE_TOPIC = "kafka.source.topic";
     String KAFKA_SOURCE_TOPIC_PARTITION = "kafka.source.topic.partition";
@@ -59,13 +63,9 @@ public interface ParameterConstants {
     String DORIS_TABLE_EVENT = "doris.table.event";
     String DORIS_TABLE_KEY = "doris.table.key";
 
-
-    /* **********************
-     *
-     * Mysql 配置参数名称
-     *
-     * *********************/
-
+    /**
+     * Mysql 配置参数
+     */
     String MYSQL_HOSTNAME = "mysql.hostname";
     String MYSQL_PORT = "mysql.port";
     String MYSQL_USERNAME = "mysql.username";
@@ -73,12 +73,9 @@ public interface ParameterConstants {
     String MYSQL_DATABASE = "mysql.database";
     String MYSQL_TABLE_RULEJSON = "mysql.table.ruleJson";
 
-    /* **********************
-     *
-     * Redis 配置参数名称
-     *
-     * *********************/
-
+    /**
+     * Redis 配置参数
+     */
     String REDIS_CLUSTER_NODES = "redis.cluster.nodes";
     String REDIS_PASSWORD = "redis.password";
     String REDIS_CONNECTION_TIMEOUT = "redis.connectionTimeout";
@@ -90,23 +87,4 @@ public interface ParameterConstants {
     String REDIS_POOL_MAX_TOTAL = "redis.pool.maxTotal";
     String REDIS_POOL_MAX_IDLE = "redis.pool.maxIdle";
     String REDIS_POOL_MIN_IDLE = "redis.pool.minIdle";
-
-
-    /* **********************
-     *
-     * Flink环境 配置参数名称
-     *
-     * *********************/
-
-    //当前环境
-    String FLINK_ENV_ACTIVE = "flink.env.active";
-    /* **********************
-     *
-     * Flink 配置文件
-     *
-     * *********************/
-    //根配置文件
-    String FLINK_ROOT_FILE = "flink.properties";
-    //不同环境配置文件
-    String FLINK_ENV_FILE = "flink-%s.properties";
 }

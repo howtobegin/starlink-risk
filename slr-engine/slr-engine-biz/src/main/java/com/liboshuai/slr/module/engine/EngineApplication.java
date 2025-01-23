@@ -14,9 +14,9 @@ import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlCdcConnector;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
-import com.liboshuai.slr.module.engine.function.DorisAsyncFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
+import com.liboshuai.slr.module.engine.function.RedisAsyncFunction;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -50,7 +50,7 @@ public class EngineApplication {
         // 获取旧状态清理流
         // FIXME: doris写入后聚合会有延迟，导致可能存在极少的数据key没有及时被查询出来
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
-                ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
+                ruleDS, new RedisAsyncFunction(), 1, TimeUnit.MINUTES, 100
         ).returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
@@ -79,8 +79,8 @@ public class EngineApplication {
                 .returns(Types.POJO(ResultDTO.class)).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
 //        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
-        // 将规则状态的历史key记录数据写入doris
-//        writeRuleKeyHistoryToDoris(resultDtoStreamOperator, parameterTool);
+        // 将规则状态的历史key记录数据写入redis
+//        writeRuleKeyHistoryToRedis(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
         writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
@@ -101,10 +101,9 @@ public class EngineApplication {
     }
 
     /**
-     * 将规则状态的历史key记录数据写入doris
-     * TODO: 如果后续 doris 写入的性能成为瓶颈，可以替换为 redis
+     * 将规则状态的历史key记录数据写入redis
      */
-    private static void writeRuleKeyHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+    private static void writeRuleKeyHistoryToRedis(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO()))

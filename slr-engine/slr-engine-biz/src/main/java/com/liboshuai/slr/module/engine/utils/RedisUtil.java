@@ -22,7 +22,9 @@ public class RedisUtil {
 
     private static final JedisCluster jedisCluster;
 
-    // 初始化连接池
+    /**
+     * 初始化连接池
+     */
     static {
         // 节点信息
         String clusterNodes = ParameterUtil.getParameters().get(ParameterConstants.REDIS_CLUSTER_NODES);
@@ -56,7 +58,9 @@ public class RedisUtil {
         }
     }
 
-    // Key 操作
+    /**
+     * Key 操作
+     */
     public static boolean exists(String key) {
         return jedisCluster.exists(key);
     }
@@ -73,7 +77,9 @@ public class RedisUtil {
         jedisCluster.expire(key, seconds);
     }
 
-    // String 操作
+    /**
+     * String 操作
+     */
     public static String getString(String key) {
         return jedisCluster.get(key);
     }
@@ -86,7 +92,9 @@ public class RedisUtil {
         jedisCluster.setex(key, seconds, value);
     }
 
-    // List 操作
+    /**
+     * List 操作
+     */
     public static void lpush(String key, String... values) {
         jedisCluster.lpush(key, values);
     }
@@ -100,7 +108,9 @@ public class RedisUtil {
         jedisCluster.expire(key, seconds);
     }
 
-    // Set 操作
+    /**
+     * Set 操作
+     */
     public static void sadd(String key, String... members) {
         jedisCluster.sadd(key, members);
     }
@@ -114,7 +124,9 @@ public class RedisUtil {
         jedisCluster.expire(key, seconds);
     }
 
-    // Hash 操作
+    /**
+     * Hash 操作
+     */
     public static void hset(String key, String field, String value) {
         jedisCluster.hset(key, field, value);
     }
@@ -136,7 +148,9 @@ public class RedisUtil {
         jedisCluster.hdel(key, field);
     }
 
-    // ZSet 操作
+    /**
+     * ZSet 操作
+     */
     public static void zadd(String key, double score, String member) {
         jedisCluster.zadd(key, score, member);
     }
