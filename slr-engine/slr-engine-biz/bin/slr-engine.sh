@@ -11,7 +11,7 @@ function init() {
       echo -----------------------------------------------------------------------------------
       echo "------------------------------- ${flink_name} starting ---------------------------"
       echo -----------------------------------------------------------------------------------
-      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -Dtaskmanager.memory.managed.size=0m -c ${flink_main} ${flink_jar}
+      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -c ${flink_main} ${flink_jar}
 }
 
 function cancal() {
