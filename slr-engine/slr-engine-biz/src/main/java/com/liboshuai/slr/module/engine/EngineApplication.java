@@ -2,25 +2,25 @@ package com.liboshuai.slr.module.engine;
 
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
-import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.module.engine.constants.ParameterConstants;
 import com.liboshuai.slr.module.engine.convert.EventConvert;
-import com.liboshuai.slr.module.engine.dto.*;
+import com.liboshuai.slr.module.engine.dto.DorisEventDTO;
+import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.module.engine.dto.MysqlCdcDTO;
+import com.liboshuai.slr.module.engine.dto.ResultDTO;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkDorisConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkKafkaConnector;
 import com.liboshuai.slr.module.engine.framework.connector.FlinkMysqlCdcConnector;
-import com.liboshuai.slr.module.engine.framework.connector.FlinkRedisConnector;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.function.CoreFunction;
+import com.liboshuai.slr.module.engine.function.DorisAsyncFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventFilterFunction;
 import com.liboshuai.slr.module.engine.function.KafkaEventKeyBy;
-import com.liboshuai.slr.module.engine.function.RedisAsyncFunction;
 import com.liboshuai.slr.module.engine.utils.ParameterUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
@@ -49,7 +49,7 @@ public class EngineApplication {
         DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlCdcConnector.read(env, parameterTool);
         // 获取旧状态清理流
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
-                ruleDS, new RedisAsyncFunction(), 1, TimeUnit.MINUTES, 100
+                ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
         ).returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
@@ -78,8 +78,8 @@ public class EngineApplication {
                 .returns(Types.POJO(ResultDTO.class)).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
         writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
-        // 将规则状态的历史key记录数据写入redis
-        writeRuleKeyHistoryToRedis(resultDtoStreamOperator);
+        // 将规则状态历史写入doris，以便规则下线清除状态使用
+        writeStateHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
         writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
@@ -100,32 +100,26 @@ public class EngineApplication {
     }
 
     /**
-     * 将规则状态的历史key记录数据写入redis
+     * 将规则状态历史写入doris
      */
-    private static void writeRuleKeyHistoryToRedis(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator) {
-        SingleOutputStreamOperator<Tuple2<String, String>> ruleKeyHistoryDtoStreamOperator = resultDtoStreamOperator
+    private static void writeStateHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+        SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO()))
-                .returns(Types.POJO(ResultDTO.class)).uid("rule-key-history-filter")
+                .returns(Types.POJO(ResultDTO.class)).uid("state-history-filter")
                 // 实体类转json
-                .map(resultDTO -> {
-                    RuleKeyHistoryDTO ruleKeyHistoryDTO = resultDTO.getRuleKeyHistoryDTO();
-                    String redisKey = String.join(RedisKeyConstants.REDIS_KEY_SPLIT,
-                            RedisKeyConstants.REDIS_KEY_PREFIX,
-                            ruleKeyHistoryDTO.getRuleCode().toString(),
-                            ruleKeyHistoryDTO.getRuleVersion().toString(),
-                            ruleKeyHistoryDTO.getChannel(),
-                            ruleKeyHistoryDTO.getTargetField());
-                    return Tuple2.of(redisKey, ruleKeyHistoryDTO.getTargetValue());
-                }).returns(Types.TUPLE(Types.STRING, Types.STRING)).uid("rule-key-history-map");
-        FlinkRedisConnector.writeByBahirWithSet(ruleKeyHistoryDtoStreamOperator);
+                .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
+                .returns(Types.STRING).uid("state-history-map");
+        String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
+        String tableName = parameterTool.get(ParameterConstants.DORIS_TABLE_STATE);
+        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableName, streamOperator, parameterTool);
     }
 
     /**
      * 将kafka中的事件数据同步往 doris 中留存一份
      */
     private static void writeKafkaEventToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
-        SingleOutputStreamOperator<String> toDorisStreamOperator = resultDtoStreamOperator
+        SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getKafkaEventDTO()))
                 .returns(Types.POJO(ResultDTO.class)).uid("doris-event-filter")
@@ -136,8 +130,8 @@ public class EngineApplication {
                     return JsonUtils.toJsonStringWithUpperSnakeCaseKeys(dorisEventDTO);// 转为大写下划线，适配doris表结构字段
                 }).returns(Types.STRING).uid("toDoris-process");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
-        String tableEvent = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
-        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableEvent, toDorisStreamOperator, parameterTool);
+        String tableName = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
+        FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableName, streamOperator, parameterTool);
     }
 
 }
