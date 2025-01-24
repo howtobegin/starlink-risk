@@ -347,10 +347,10 @@ public class ProcessorOne implements Processor {
             // 构建预警信息
             AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
             // 记录日志
-//            log.info("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+            log.info("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
             // 收集结果
-//            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
-//            out.collect(resultDTO);
+            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
+            out.collect(resultDTO);
         }
 //        logOldState(ruleInfoDTO.getRuleCode(), currentKey);
 //        logState(ruleInfoDTO.getRuleCode(), currentKey);
