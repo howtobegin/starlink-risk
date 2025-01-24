@@ -12,7 +12,10 @@ function init() {
       echo -----------------------------------------------------------------------------------
       echo "------------------------------- ${flink_name} starting ---------------------------"
       echo -----------------------------------------------------------------------------------
-      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" \
+      ${flink_bin} run-application \
+      -p 10 \
+      -t yarn-application \
+      -Dyarn.application.name="${flink_name}" \
       -Dtaskmanager.memory.managed.size=0m \
       -Drest.flamegraph.enabled=true \
       -Dstate.backend.latency-track.keyed-state-enabled=true \
