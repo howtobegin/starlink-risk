@@ -20,6 +20,11 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN);
     }
 
+    public static ValueStateDescriptor<Boolean> getHasValueState(Long ruleCode, Long ruleVersion) {
+        String hahValueStateName = "hahValueState_" + ruleCode + "_" + ruleVersion;
+        return new ValueStateDescriptor<>(hahValueStateName, Types.BOOLEAN);
+    }
+
     public static ValueStateDescriptor<Long> getLastWarningTimeStateDesc(Long ruleCode, Long ruleVersion) {
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         return new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG);

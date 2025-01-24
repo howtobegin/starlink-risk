@@ -64,6 +64,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     // 上一个同规则的运算机残留状态
     private MapState<String, Tuple2<Long, Long>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
+    private ValueState<Boolean> hasValueState;
     private ValueState<Long> lastWarningTimeState;
     private MapState<String, Long> latestEventThresholdMapState;
     private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> bigMapState;
@@ -158,6 +159,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
         smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+        hasValueState = runtimeContext.getState(ProcessorOneStateDesc.getHasValueState(ruleCode, ruleVersion));
         lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
         latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
         bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
@@ -165,6 +167,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 //        logState("之前");
         smallMapState.clear();
         smallInitMapState.clear();
+        hasValueState.clear();
         lastWarningTimeState.clear();
         latestEventThresholdMapState.clear();
         bigMapState.clear();
@@ -189,6 +192,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
             smallInitMap.put(next.getKey(), next.getValue());
         }
 
+        Boolean hasValue = hasValueState.value();
+
         Long lastWarningTime = lastWarningTimeState.value();
 
         Map<String, Long> latestEventThresholdMap = new HashMap<>();
@@ -208,6 +213,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         log.info("========================================清理状态值-{}========================================", status);
         log.info("smallMap: {}", JsonUtils.toJsonString(smallMap));
         log.info("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
+        log.info("hasValue: {}", JsonUtils.toJsonString(hasValue));
         log.info("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
         log.info("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
         log.info("bigMap: {}", JsonUtils.toJsonString(bigMap));

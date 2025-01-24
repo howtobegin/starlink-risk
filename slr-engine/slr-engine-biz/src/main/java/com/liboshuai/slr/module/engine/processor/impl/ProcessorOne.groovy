@@ -15,9 +15,7 @@
 //import com.liboshuai.slr.module.engine.utils.RuleEventAttrCompUtil
 //import com.liboshuai.slr.module.engine.utils.TimeUtil
 //import org.apache.flink.api.common.functions.RuntimeContext
-//import org.apache.flink.api.common.state.KeyedStateStore
-//import org.apache.flink.api.common.state.MapState
-//import org.apache.flink.api.common.state.ValueState
+//import org.apache.flink.api.common.state.*
 //import org.apache.flink.api.java.tuple.Tuple2
 //import org.apache.flink.api.java.tuple.Tuple3
 //import org.apache.flink.util.Collector
@@ -45,6 +43,10 @@
 //     * （注意不要使用ListState，它查找指定元素的性能很差）
 //     */
 //    private MapState<String, Boolean> smallInitMapState;
+//    /**
+//     * 记录是否使用了状态
+//     */
+//    private ValueState<Boolean> hasValueState;
 //    /**
 //     * 规则最近一次触发预警时间
 //     */
@@ -75,24 +77,26 @@
 //        this.ruleInfoDTO = ruleInfoDTO;
 //        Long ruleCode = ruleInfoDTO.getRuleCode();
 //        Long ruleVersion = ruleInfoDTO.getRuleVersion();
-//        // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
-//        if (Objects.nonNull(runtimeContext)) {
-//            smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
-//            smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
-//            lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
-//            latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
-//            bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
-//            // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-////            oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
-//        } else {
-//            smallMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
-//            smallInitMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
-//            lastWarningTimeState = keyedStateStore.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
-//            latestEventThresholdMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
-//            bigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
-//            // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-////            oldBigMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
-//        }
+//
+//        boolean isRuntimeContextPresent = Objects.nonNull(runtimeContext);
+//
+//        smallMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
+//        smallInitMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
+//        hasValueState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getHasValueState(ruleCode, ruleVersion));
+//        lastWarningTimeState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+//        latestEventThresholdMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
+//        bigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
+//
+//        // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
+//        // oldBigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+//    }
+//
+//    private <K, V> MapState<K, V> getMapState(boolean isRuntimeContextPresent, RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, MapStateDescriptor<K, V> descriptor) {
+//        return isRuntimeContextPresent ? runtimeContext.getMapState(descriptor) : keyedStateStore.getMapState(descriptor);
+//    }
+//
+//    private <T> ValueState<T> getValueState(boolean isRuntimeContextPresent, RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, ValueStateDescriptor<T> descriptor) {
+//        return isRuntimeContextPresent ? runtimeContext.getState(descriptor) : keyedStateStore.getState(descriptor);
 //    }
 //
 //    /**
@@ -138,7 +142,7 @@
 //            }
 //        }
 //        // 计算规则条件值
-//        processRuleCondValue(currentKey, currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out);
+//        processRuleCondValue(currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out);
 //    }
 //
 //    /**
@@ -149,7 +153,7 @@
 //     * @param currentEventTimestamp 时间戳，用于非跨历史时间段的事件匹配
 //     * @param kafkaEventDTO         Kafka事件DTO
 //     */
-//    private void processRuleCondValue(String currentKey, long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
+//    private void processRuleCondValue(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
 //                                      KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
@@ -166,14 +170,18 @@
 //                continue;
 //            }
 //            // 规则状态的key历史记录
-//            RuleKeyHistoryDTO keyDTO = RuleKeyHistoryDTO.builder()
-//                    .ruleCode(ruleInfoDTO.getRuleCode())
-//                    .ruleVersion(ruleInfoDTO.getRuleVersion())
-//                    .channel(ruleInfoDTO.getChannel())
-//                    .targetField(kafkaEventDTO.getTargetField())
-//                    .targetValue(kafkaEventDTO.getTargetValue())
-//                    .build();
-//            out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
+//            Boolean hasState = hasValueState.value();
+//            if (Objects.isNull(hasState) || !hasState) {
+//                RuleKeyHistoryDTO keyDTO = RuleKeyHistoryDTO.builder()
+//                        .ruleCode(ruleInfoDTO.getRuleCode())
+//                        .ruleVersion(ruleInfoDTO.getRuleVersion())
+//                        .channel(ruleInfoDTO.getChannel())
+//                        .targetField(kafkaEventDTO.getTargetField())
+//                        .targetValue(kafkaEventDTO.getTargetValue())
+//                        .build();
+//                out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
+//                hasValueState.update(true);
+//            }
 //            // 状态值防空
 //            Tuple2<Long, Long> longLongTuple2 = smallMapState.get(kafkaEventDTO.getEventField());
 //            if (Objects.isNull(longLongTuple2)) {
