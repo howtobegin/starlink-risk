@@ -178,22 +178,24 @@ public class ParameterUtil {
         env.getConfig().disableGenericTypes();
         //并行度设置
         env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
-        // 启用 checkpoint，并设置时间间隔为 1 分钟
+        // 启用 checkpoint，并设置时间间隔
         env.enableCheckpointing(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_INTERVAL));
         CheckpointConfig checkpointConfig = env.getCheckpointConfig();
-        // checkpoint 必须在 1分钟内结束，否则被丢弃
+        // 两次 checkpoint 之间最少间隔时间
+        checkpointConfig.setMinPauseBetweenCheckpoints(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_MINPAUSEBETWEEN));
+        // checkpoint 超时时间
         checkpointConfig.setCheckpointTimeout(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_TIMEOUT));
         // 作业手动取消时，保留 checkpoint 数据（需手动清理）
         checkpointConfig.enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
-        // checkpoint 语义设置为 精确一致( EXACTLY_ONCE )
+        // checkpoint 语义
         checkpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-        // 最多允许 checkpoint 失败 3 次
+        // 最多允许 checkpoint 失败次数
         checkpointConfig.setTolerableCheckpointFailureNumber(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_FAILURENUMBER));
         // 同一时间只允许一个 checkpoint 进行
         checkpointConfig.setMaxConcurrentCheckpoints(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_MAXCONCURRENT));
         // 设置 checkpoint 存储位置
         setupCheckpointStorage(parameterTool, checkpointConfig);
-        //设置 StateBacked 为 rocksDB，并开启增量存储
+        // 设置状态后端
         env.setStateBackend(new HashMapStateBackend());
     }
 

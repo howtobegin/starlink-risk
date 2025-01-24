@@ -24,6 +24,8 @@ public interface ParameterConstants {
      */
     //触发checkpoint时间间隔
     String FLINK_CHECKPOINT_INTERVAL = "flink.checkpoint.interval";
+    // checkpoint两次最小间隔
+    String FLINK_CHECKPOINT_MINPAUSEBETWEEN = "flink.checkpoint.minPauseBetween";
     //checkpoint超时
     String FLINK_CHECKPOINT_TIMEOUT = "flink.checkpoint.timeout";
     //checkpoint允许失败次数
