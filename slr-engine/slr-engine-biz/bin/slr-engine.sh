@@ -12,6 +12,7 @@ function init() {
       echo "------------------------------- ${flink_name} starting ---------------------------"
       echo -----------------------------------------------------------------------------------
       ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" \
+      -Drest.flamegraph.enabled=true \
       -Dstate.backend.local-recovery=true \
       -Dstate.backend.rocksdb.predefined-options=SPINNING_DISK_OPTIMIZED_HIGH_MEM \
       -Dstate.backend.rocksdb.block.cache-size=512m \
