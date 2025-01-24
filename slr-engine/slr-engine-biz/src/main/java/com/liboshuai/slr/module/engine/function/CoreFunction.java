@@ -85,10 +85,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                                Collector<ResultDTO> out) throws Exception {
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
-        // 获取下线规则key信息
-        RuleKeyHistoryDTO ruleKeyHistoryDTO = kafkaEventDTO.getRuleKeyHistoryDTO();
-        if (Objects.nonNull(ruleKeyHistoryDTO)) {
-            clearOldState(ruleKeyHistoryDTO);
+        // 获取下线规则状态记录信息
+        StateHistoryDTO stateHistoryDTO = kafkaEventDTO.getStateHistoryDTO();
+        if (Objects.nonNull(stateHistoryDTO)) {
+            clearOldState(stateHistoryDTO);
             return;
         }
         // 设置事件时间为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
@@ -151,9 +151,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
     }
 
-    private void clearOldState(RuleKeyHistoryDTO ruleKeyHistoryDTO) throws Exception {
-        Long ruleCode = ruleKeyHistoryDTO.getRuleCode();
-        Long ruleVersion = ruleKeyHistoryDTO.getRuleVersion();
+    private void clearOldState(StateHistoryDTO stateHistoryDTO) throws Exception {
+        Long ruleCode = stateHistoryDTO.getRuleCode();
+        Long ruleVersion = stateHistoryDTO.getRuleVersion();
 
         RuntimeContext runtimeContext = getRuntimeContext();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖

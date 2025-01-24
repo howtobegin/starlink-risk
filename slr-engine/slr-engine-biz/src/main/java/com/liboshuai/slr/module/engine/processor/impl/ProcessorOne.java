@@ -91,7 +91,7 @@ public class ProcessorOne implements Processor {
         bigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
 
         // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-        // oldBigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+//         oldBigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
     }
 
     private <K, V> MapState<K, V> getMapState(boolean isRuntimeContextPresent, RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, MapStateDescriptor<K, V> descriptor) {
@@ -172,17 +172,17 @@ public class ProcessorOne implements Processor {
                 // 事件属性匹配不上，则直接跳过
                 continue;
             }
-            // 规则状态的key历史记录
+            // 规则状态历史的记录数据
             Boolean hasState = hasValueState.value();
             if (Objects.isNull(hasState) || !hasState) {
-                RuleKeyHistoryDTO keyDTO = RuleKeyHistoryDTO.builder()
+                StateHistoryDTO stateHistoryDTO = StateHistoryDTO.builder()
                         .ruleCode(ruleInfoDTO.getRuleCode())
                         .ruleVersion(ruleInfoDTO.getRuleVersion())
                         .channel(ruleInfoDTO.getChannel())
                         .targetField(kafkaEventDTO.getTargetField())
                         .targetValue(kafkaEventDTO.getTargetValue())
                         .build();
-                out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
+                out.collect(ResultDTO.builder().stateHistoryDTO(stateHistoryDTO).build());
                 hasValueState.update(true);
             }
             // 状态值防空
@@ -355,7 +355,7 @@ public class ProcessorOne implements Processor {
             // 构建预警信息
             AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
             // 记录日志
-            log.info("当前Key: {}, 最终推送的预警信息内容：{}", currentKey, alertMessageDTO);
+            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertMessageDTO, currentKey);
             // 收集结果
             ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
             out.collect(resultDTO);

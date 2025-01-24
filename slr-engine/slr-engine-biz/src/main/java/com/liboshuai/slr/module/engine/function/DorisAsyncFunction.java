@@ -112,7 +112,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEven
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         String targetValue = resultSet.getString("TARGET_VALUE");
-                        RuleKeyHistoryDTO ruleKeyHistoryDTO = RuleKeyHistoryDTO.builder()
+                        StateHistoryDTO stateHistoryDTO = StateHistoryDTO.builder()
                                 .ruleCode(ruleInfoDTOBefore.getRuleCode())
                                 .ruleVersion(ruleInfoDTOBefore.getRuleVersion())
                                 .channel(ruleInfoDTOBefore.getChannel())
@@ -123,7 +123,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEven
                                 .channel(ruleInfoDTOBefore.getChannel())
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
-                                .ruleKeyHistoryDTO(ruleKeyHistoryDTO)
+                                .stateHistoryDTO(stateHistoryDTO)
                                 .build();
                         kafkaEventDTOList.add(kafkaEventDTO);
                     }

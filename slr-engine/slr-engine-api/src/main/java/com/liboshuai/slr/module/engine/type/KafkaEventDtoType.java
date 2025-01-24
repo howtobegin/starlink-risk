@@ -1,7 +1,7 @@
 package com.liboshuai.slr.module.engine.type;
 
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.dto.RuleKeyHistoryDTO;
+import com.liboshuai.slr.module.engine.dto.StateHistoryDTO;
 import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -22,7 +22,7 @@ public class KafkaEventDtoType extends TypeInfoFactory<KafkaEventDTO> {
         typeInformationMap.put("eventField", Types.STRING);
         typeInformationMap.put("eventValue", Types.STRING);
         typeInformationMap.put("eventAttrMap", Types.MAP(Types.STRING, Types.STRING));
-        typeInformationMap.put("ruleKeyHistoryDTO", Types.POJO(RuleKeyHistoryDTO.class));
+        typeInformationMap.put("stateHistoryDTO", Types.POJO(StateHistoryDTO.class));
         return Types.POJO(KafkaEventDTO.class, typeInformationMap);
     }
 }

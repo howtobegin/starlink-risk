@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.engine.dto;
 
-import com.liboshuai.slr.module.engine.type.RuleKeyHistoryDtoType;
+import com.liboshuai.slr.module.engine.type.StateHistoryDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,15 +12,15 @@ import java.io.Serializable;
 
 
 /**
- * 记录规则状态的key历史记录
+ * 规则状态历史的记录数据
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(RuleKeyHistoryDtoType.class)
-public class RuleKeyHistoryDTO implements Serializable {
+@TypeInfo(StateHistoryDtoType.class)
+public class StateHistoryDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 

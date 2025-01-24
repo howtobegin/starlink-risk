@@ -105,10 +105,10 @@ public class EngineApplication {
     private static void writeStateHistoryToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
                 // 非法数据过滤
-                .filter(resultDTO -> Objects.nonNull(resultDTO.getRuleKeyHistoryDTO()))
+                .filter(resultDTO -> Objects.nonNull(resultDTO.getStateHistoryDTO()))
                 .returns(Types.POJO(ResultDTO.class)).uid("state-history-filter")
                 // 实体类转json
-                .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getRuleKeyHistoryDTO()))
+                .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getStateHistoryDTO()))
                 .returns(Types.STRING).uid("state-history-map");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableName = parameterTool.get(ParameterConstants.DORIS_TABLE_STATE);

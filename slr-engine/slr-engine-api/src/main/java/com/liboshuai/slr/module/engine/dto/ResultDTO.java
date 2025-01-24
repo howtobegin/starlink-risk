@@ -21,9 +21,18 @@ public class ResultDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
+    /**
+     * kafka事件数据
+     */
     private KafkaEventDTO kafkaEventDTO;
 
-    private RuleKeyHistoryDTO ruleKeyHistoryDTO;
+    /**
+     * 状态历史的记录数据
+     */
+    private StateHistoryDTO stateHistoryDTO;
 
+    /**
+     * 生成的预警信息
+     */
     private AlertMessageDTO alertMessageDTO;
 }
