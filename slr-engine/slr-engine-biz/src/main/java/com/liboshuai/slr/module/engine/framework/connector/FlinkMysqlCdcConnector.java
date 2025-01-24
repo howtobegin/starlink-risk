@@ -47,6 +47,6 @@ public class FlinkMysqlCdcConnector {
                 .build();
         return env.fromSource(
                 ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]"
-        ).returns(Types.POJO(MysqlCdcDTO.class));
+        ).setParallelism(1).returns(Types.POJO(MysqlCdcDTO.class));
     }
 }

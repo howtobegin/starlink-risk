@@ -45,28 +45,30 @@ public class EngineApplication {
         // 配置上下文环境
         ParameterUtil.envWithConfig(env, parameterTool);
 
+        // 获取kafka源topic分区数
+        int kafkaPartition = parameterTool.getInt(ParameterConstants.KAFKA_SOURCE_TOPIC_PARTITION);
         // 获取规则配置数据流
         DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlCdcConnector.read(env, parameterTool);
         // 获取旧状态清理流
         SingleOutputStreamOperator<KafkaEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
-                ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
-        ).returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
+                        ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
+                ).setParallelism(kafkaPartition)
+                .returns(Types.POJO(KafkaEventDTO.class)).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
         SingleOutputStreamOperator<KafkaEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为eventKafkaDTO对象
                 .map(jsonValue -> JsonUtils.parseObject(jsonValue, KafkaEventDTO.class))
-                .uid("kafkaEventDTO-process").returns(Types.POJO(KafkaEventDTO.class))
+                .setParallelism(kafkaPartition).returns(Types.POJO(KafkaEventDTO.class)).uid("kafkaEventDTO-process")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction())
-                .returns(Types.POJO(KafkaEventDTO.class))
-                .uid("kafkaEventDTO-filter");
+                .setParallelism(kafkaPartition).returns(Types.POJO(KafkaEventDTO.class)).uid("kafkaEventDTO-filter");
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())
-                .returns(Types.POJO(KafkaEventDTO.class)).uid("register-watermark")
+                .setParallelism(kafkaPartition).returns(Types.POJO(KafkaEventDTO.class)).uid("register-watermark")
                 // 合并数据清洗流
                 .union(clearKafkaEventDtoSO)
                 // keyBy分组
