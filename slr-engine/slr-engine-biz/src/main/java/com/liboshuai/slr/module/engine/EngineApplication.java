@@ -81,7 +81,7 @@ public class EngineApplication {
         // 将规则状态的历史key记录数据写入redis
 //        writeRuleKeyHistoryToRedis(resultDtoStreamOperator);
         // 将告警信息写入kafka
-        writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
+//        writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
     }
 
