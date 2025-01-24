@@ -77,9 +77,9 @@ public class EngineApplication {
                 .process(new CoreFunction())
                 .returns(Types.POJO(ResultDTO.class)).uid("core-function");
         // 将kafka中的事件数据同步往 doris 中留存一份
-        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
+//        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
         // 将规则状态的历史key记录数据写入redis
-        writeRuleKeyHistoryToRedis(resultDtoStreamOperator);
+//        writeRuleKeyHistoryToRedis(resultDtoStreamOperator);
         // 将告警信息写入kafka
         writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
