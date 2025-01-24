@@ -11,7 +11,18 @@ function init() {
       echo -----------------------------------------------------------------------------------
       echo "------------------------------- ${flink_name} starting ---------------------------"
       echo -----------------------------------------------------------------------------------
-      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -Dtaskmanager.memory.managed.size=0m -c ${flink_main} ${flink_jar}
+      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" \
+      -Dstate.backend.local-recovery=true \
+      -Dstate.backend.rocksdb.predefined-options=SPINNING_DISK_OPTIMIZED_HIGH_MEM \
+      -Dstate.backend.rocksdb.block.cache-size=512m \
+      -Dstate.backend.rocksdb.writebuffer.size=256m \
+      -Dstate.backend.rocksdb.compaction.level.max-size-level-base=640m \
+      -Dstate.backend.rocksdb.writebuffer.count=5 \
+      -Dstate.backend.rocksdb.thread.num=4 \
+      -Dstate.backend.rocksdb.writebuffer.number-to-merge=3 \
+      -Dstate.backend.rocksdb.memory.partitioned-index-filters=true \
+      -Dstate.backend.latency-track.keyed-state-enabled=true \
+      -c ${flink_main} ${flink_jar}
 }
 
 function cancal() {
