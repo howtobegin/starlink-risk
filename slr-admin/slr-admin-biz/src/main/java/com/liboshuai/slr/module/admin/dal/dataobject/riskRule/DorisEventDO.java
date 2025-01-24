@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TableName("starlink_risk_event")
+@TableName("starlink_risk_kafka_event")
 public class DorisEventDO implements Serializable {
     private static final long serialVersionUID = 1L;
 
