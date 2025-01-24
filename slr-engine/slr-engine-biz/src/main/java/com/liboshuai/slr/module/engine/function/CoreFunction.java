@@ -62,6 +62,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
+    private MapState<String, Tuple2<Long, Long>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Long> lastWarningTimeState;
     private MapState<String, Long> latestEventThresholdMapState;
@@ -155,12 +156,14 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
         RuntimeContext runtimeContext = getRuntimeContext();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
+        smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
         smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
         lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
         latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
         bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
 
 //        logState("之前");
+        smallMapState.clear();
         smallInitMapState.clear();
         lastWarningTimeState.clear();
         latestEventThresholdMapState.clear();
@@ -172,6 +175,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 打印状态值
      */
     private void logState(String status) throws Exception {
+        Map<String, Tuple2<Long, Long>> smallMap = new HashMap<>();
+        Iterator<Map.Entry<String, Tuple2<Long, Long>>> oldSmallMapIterator = smallMapState.iterator();
+        while (oldSmallMapIterator.hasNext()) {
+            Map.Entry<String, Tuple2<Long, Long>> next = oldSmallMapIterator.next();
+            smallMap.put(next.getKey(), next.getValue());
+        }
+
         Map<String, Boolean> smallInitMap = new HashMap<>();
         Iterator<Map.Entry<String, Boolean>> oldSmallInitMapIterator = smallInitMapState.iterator();
         while (oldSmallInitMapIterator.hasNext()) {
@@ -196,6 +206,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         }
 
         log.info("========================================清理状态值-{}========================================", status);
+        log.info("smallMap: {}", JsonUtils.toJsonString(smallMap));
         log.info("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
         log.info("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
         log.info("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));

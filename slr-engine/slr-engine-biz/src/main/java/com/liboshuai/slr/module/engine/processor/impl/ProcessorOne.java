@@ -37,10 +37,10 @@ public class ProcessorOne implements Processor {
      */
     private RuleInfoDTO ruleInfoDTO;
     /**
-     * - key: currentKey
-     * - value: key-eventField，value-f0为eventValue累加值，f1为最新的kafka事件id
+     * - key: eventField
+     * - value: f0为eventValue累加值，f1为最新的kafka事件id
      */
-    private Map<String, Map<String, Tuple2<Long, Long>>> smallMap;
+    private MapState<String, Tuple2<Long, Long>> smallMapState;
     /**
      * 记录对于事件条件是否初始化过
      * - key: eventField
@@ -78,9 +78,9 @@ public class ProcessorOne implements Processor {
         this.ruleInfoDTO = ruleInfoDTO;
         Long ruleCode = ruleInfoDTO.getRuleCode();
         Long ruleVersion = ruleInfoDTO.getRuleVersion();
-        smallMap = new HashMap<>();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         if (Objects.nonNull(runtimeContext)) {
+            smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
             smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
             lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
             latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
@@ -88,6 +88,7 @@ public class ProcessorOne implements Processor {
             // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
 //            oldBigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
         } else {
+            smallMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
             smallInitMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
             lastWarningTimeState = keyedStateStore.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
             latestEventThresholdMapState = keyedStateStore.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
@@ -177,8 +178,10 @@ public class ProcessorOne implements Processor {
                     .build();
             out.collect(ResultDTO.builder().ruleKeyHistoryDTO(keyDTO).build());
             // 状态值防空
-            Map<String, Tuple2<Long, Long>> eventFieldTuple2 = smallMap.computeIfAbsent(currentKey, k -> new HashMap<>());
-            eventFieldTuple2.putIfAbsent(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO.getEventId()));
+            Tuple2<Long, Long> longLongTuple2 = smallMapState.get(kafkaEventDTO.getEventField());
+            if (Objects.isNull(longLongTuple2)) {
+                smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO.getEventId()));
+            }
             // 规则事件值计算
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
                 String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
@@ -202,29 +205,26 @@ public class ProcessorOne implements Processor {
                         log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, kafkaEventDTO);
                         return;
                     }
-                    Map<String, Tuple2<Long, Long>> stringTuple2Map = smallMap.get(currentKey);
-                    stringTuple2Map.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO.getEventId()));
-                    smallMap.put(currentKey, stringTuple2Map);
+                    smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO.getEventId()));
                     smallInitMapState.put(kafkaEventDTO.getEventField(), true);
                 }
                 // 从redis初始化值后，正常处理数据
-                addEventValue(currentKey, kafkaEventDTO);
+                addEventValue(kafkaEventDTO);
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
                 if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
                     continue;
                 }
-                addEventValue(currentKey, kafkaEventDTO);
+                addEventValue(kafkaEventDTO);
             }
         }
     }
 
-    private void addEventValue(String currentKey, KafkaEventDTO kafkaEventDTO) {
-        Map<String, Tuple2<Long, Long>> stringTuple2Map = smallMap.get(currentKey);
-        Long currentValue = stringTuple2Map.get(kafkaEventDTO.getEventField()).f0;
+    private void addEventValue(KafkaEventDTO kafkaEventDTO) throws Exception {
+        Tuple2<Long, Long> longLongTuple2 = smallMapState.get(kafkaEventDTO.getEventField());
+        Long currentValue = longLongTuple2.f0;
         Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-        stringTuple2Map.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO.getEventId()));
-        smallMap.put(currentKey, stringTuple2Map);
+        smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO.getEventId()));
     }
 
 
@@ -327,7 +327,7 @@ public class ProcessorOne implements Processor {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
         // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
-        updateBigMapWithSmallMap(currentKey, timestamp);
+        updateBigMapWithSmallMap(timestamp);
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField);
         // 处理bigMapState
@@ -493,24 +493,18 @@ public class ProcessorOne implements Processor {
     /**
      * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
      */
-    private void updateBigMapWithSmallMap(String currentKey, long timestamp) throws Exception {
+    private void updateBigMapWithSmallMap(long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
-        Map<String, Tuple2<Long, Long>> stringTuple2Map = smallMap.get(currentKey);
-        if (Objects.isNull(stringTuple2Map) || stringTuple2Map.isEmpty()) {
-            return;
-        }
-        for (Map.Entry<String, Tuple2<Long, Long>> smallMapEntry : stringTuple2Map.entrySet()) { // 性能优化
+        for (Map.Entry<String, Tuple2<Long, Long>> smallMapEntry : smallMapState.entries()) {
             String eventField = smallMapEntry.getKey();
             Tuple2<Long, Long> tupleValue = smallMapEntry.getValue();
-
             // 创建新的 Tuple2 作为 bigMapState 的键
             Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
-
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, tupleValue);
         }
         // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
-        smallMap.remove(currentKey); // 性能优化
+        smallMapState.clear();
     }
 
     /**

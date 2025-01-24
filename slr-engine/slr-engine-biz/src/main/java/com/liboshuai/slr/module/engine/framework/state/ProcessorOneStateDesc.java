@@ -10,6 +10,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
  **/
 public class ProcessorOneStateDesc {
 
+    public static MapStateDescriptor<String, Tuple2<Long, Long>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
+        String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
+        return new MapStateDescriptor<>(smallMapStateName, Types.STRING, Types.TUPLE(Types.LONG, Types.LONG));
+    }
+
     public static MapStateDescriptor<String, Boolean> getSmallInitMapStateDesc(Long ruleCode, Long ruleVersion) {
         String smallInitMapStateName = "smallInitMapState_" + ruleCode + "_" + ruleVersion;
         return new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN);
@@ -29,5 +34,4 @@ public class ProcessorOneStateDesc {
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
         return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.LONG));
     }
-
 }
