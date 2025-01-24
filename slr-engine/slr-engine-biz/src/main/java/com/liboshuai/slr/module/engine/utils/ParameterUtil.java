@@ -176,8 +176,6 @@ public class ParameterUtil {
     ) throws IOException, URISyntaxException {
         // 禁用Kryo序列化器
         env.getConfig().disableGenericTypes();
-        //并行度设置
-        env.setParallelism(parameterTool.getInt(ParameterConstants.FLINK_PARALLELISM));
         // 启用 checkpoint，并设置时间间隔
         env.enableCheckpointing(parameterTool.getInt(ParameterConstants.FLINK_CHECKPOINT_INTERVAL));
         CheckpointConfig checkpointConfig = env.getCheckpointConfig();

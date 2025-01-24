@@ -36,8 +36,6 @@ public interface ParameterConstants {
     String FLINK_CHECKPOINT_HDFS_USERNAME = "flink.checkpoint.hdfs.username";
     // flink checkpoint 存储的路径
     String FLINK_CHECKPOINT_URL = "flink.checkpoint.url";
-    //并行度
-    String FLINK_PARALLELISM = "flink.parallelism";
     //数据延迟的最大时间
     String FLINK_MAXOUTOFORDERNESS = "flink.maxOutOfOrderness";
 
