@@ -16,6 +16,7 @@ function init() {
       -p 10 \
       -t yarn-application \
       -Dyarn.application.name="${flink_name}" \
+      -Dyarn.containers.vcores=10 \
       -Dtaskmanager.memory.managed.size=0m \
       -Drest.flamegraph.enabled=true \
       -Dstate.backend.latency-track.keyed-state-enabled=true \
