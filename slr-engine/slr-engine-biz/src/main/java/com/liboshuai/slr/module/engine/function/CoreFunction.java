@@ -1,13 +1,11 @@
 package com.liboshuai.slr.module.engine.function;
 
-import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.module.engine.dto.*;
 import com.liboshuai.slr.module.engine.framework.state.CommonStateDesc;
 import com.liboshuai.slr.module.engine.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.module.engine.processor.Processor;
-import com.liboshuai.slr.module.engine.utils.RedisUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +59,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 旧规则列表
      */
-    private final Map<Long, Boolean> oldRuleMap = new HashMap<>();
+    private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
     private MapState<String, Tuple2<Long, Long>> smallMapState;
@@ -78,6 +76,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     public void open(Configuration parameters) {
         groovyClassLoader = new GroovyClassLoader();
         RuntimeContext runtimeContext = getRuntimeContext();
+        oldRuleListState = runtimeContext.getMapState(CommonStateDesc.OLD_RULE_MAP_STATE_DESC);
     }
 
     @Override
@@ -106,18 +105,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
-            String redisKey = String.join(RedisKeyConstants.REDIS_KEY_SPLIT,
-                    currentKey,
-                    ruleCode.toString());
-            if (!oldRuleMap.containsKey(ruleCode)) {
-                String result = RedisUtil.getString(redisKey);
-                if (Objects.nonNull(result)) {
-                    oldRuleMap.put(ruleCode, true);
-                } else {
-                    oldRuleMap.put(ruleCode, false);
-                }
-            }
-            if (!oldRuleMap.get(ruleCode)) {
+            if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 List<KafkaEventDTO> historyKafkaEventDTOList = recentEventMap.get(currentKey);
                 if (CollectionUtil.isNullOrEmpty(historyKafkaEventDTOList)) {
@@ -126,8 +114,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
                 for (KafkaEventDTO historyKafkaEventDto : historyKafkaEventDTOList) {
                     processor.processElement(currentKey, currentProcessingTime, historyKafkaEventDto, out);
                 }
-                RedisUtil.setString(redisKey, "");
-                oldRuleMap.put(ruleCode, true);
+                oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
                 processor.processElement(currentKey, currentProcessingTime, kafkaEventDTO, out);

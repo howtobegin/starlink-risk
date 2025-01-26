@@ -22,9 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.ConfigOption;
-import org.apache.flink.configuration.ConfigOptions;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -47,15 +44,7 @@ public class EngineApplication {
         env.getConfig().setGlobalJobParameters(parameterTool);
         // 配置上下文环境
         ParameterUtil.envWithConfig(env, parameterTool);
-        // 将定时器的状态数据单独存储在JVM堆上
-        Configuration config = new Configuration();
-        ConfigOption<String> timerConfig =
-                ConfigOptions.key("state.backend.rocksdb.timer-service.factory")
-                        .stringType()
-                        .defaultValue("ROCKSDB")
-                        .withDescription("This determines the factory for timer service state implementation.");
-        config.set(timerConfig, "HEAP");
-        env.configure(config);
+
         // 获取kafka源topic分区数
         int kafkaPartition = parameterTool.getInt(ParameterConstants.KAFKA_SOURCE_TOPIC_PARTITION);
         // 获取规则配置数据流

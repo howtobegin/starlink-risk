@@ -8,21 +8,6 @@ flink_savepoint="hdfs:///flink/starlink-risk/slr-engine/savepoint"
 savepoint_log="/home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/savepoint.log"
 
 
-#function init() {
-#      echo -----------------------------------------------------------------------------------
-#      echo "------------------------------- ${flink_name} starting ---------------------------"
-#      echo -----------------------------------------------------------------------------------
-#      ${flink_bin} run-application \
-#      -p 10 \
-#      -t yarn-application \
-#      -Dyarn.application.name="${flink_name}" \
-#      -Dyarn.containers.vcores=10 \
-#      -Dtaskmanager.memory.managed.size=0m \
-#      -Drest.flamegraph.enabled=true \
-#      -Dstate.backend.latency-track.keyed-state-enabled=true \
-#      -c ${flink_main} ${flink_jar}
-#}
-
 function init() {
       echo -----------------------------------------------------------------------------------
       echo "------------------------------- ${flink_name} starting ---------------------------"
@@ -31,29 +16,31 @@ function init() {
       -p 10 \
       -t yarn-application \
       -Dyarn.application.name="${flink_name}" \
-      -Dtaskmanager.numberOfTaskSlots=5 \
       -Dyarn.containers.vcores=10 \
+      -Dtaskmanager.memory.managed.size=0m \
       -Drest.flamegraph.enabled=true \
-      -Dtaskmanager.memory.managed.fraction=0.8 \
-      -Dstate.backend.incremental=true \
-      -Dstate.backend.local-recovery=true \
       -Dstate.backend.latency-track.keyed-state-enabled=true \
-      -Dstate.backend.latency-track.state-name-as-variable=true \
-      -Dstate.backend.rocksdb.block.blocksize=256kb \
-      -Dstate.backend.rocksdb.block.cache-size=512mb \
-      -Dstate.backend.rocksdb.compaction.level.max-size-level-base=640mb \
-      -Dstate.backend.rocksdb.compaction.level.target-file-size-base=64mb \
-      -Dstate.backend.rocksdb.compaction.level.use-dynamic-size=true \
-      -Dstate.backend.rocksdb.compaction.style=LEVEL \
-      -Dstate.backend.rocksdb.files.open=-1 \
-      -Dstate.backend.rocksdb.thread.num=4 \
-      -Dstate.backend.rocksdb.write-batch-size=2mb \
-      -Dstate.backend.rocksdb.writebuffer.count=4 \
-      -Dstate.backend.rocksdb.writebuffer.number-to-merge=3 \
-      -Dstate.backend.rocksdb.writebuffer.size=256mb \
-      -Dstate.backend.rocksdb.memory.partitioned-index-filters=true \
       -c ${flink_main} ${flink_jar}
 }
+
+#function init() {
+#      echo -----------------------------------------------------------------------------------
+#      echo "------------------------------- ${flink_name} starting ---------------------------"
+#      echo -----------------------------------------------------------------------------------
+#      ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" \
+#      -Drest.flamegraph.enabled=true \
+#      -Dstate.backend.local-recovery=true \
+#      -Dstate.backend.latency-track.keyed-state-enabled=true \
+#      -Dstate.backend.rocksdb.predefined-options=SPINNING_DISK_OPTIMIZED_HIGH_MEM \
+#      -Dstate.backend.rocksdb.block.cache-size=512m \
+#      -Dstate.backend.rocksdb.writebuffer.size=256m \
+#      -Dstate.backend.rocksdb.compaction.level.max-size-level-base=640m \
+#      -Dstate.backend.rocksdb.writebuffer.count=5 \
+#      -Dstate.backend.rocksdb.thread.num=4 \
+#      -Dstate.backend.rocksdb.writebuffer.number-to-merge=3 \
+#      -Dstate.backend.rocksdb.memory.partitioned-index-filters=true \
+#      -c ${flink_main} ${flink_jar}
+#}
 
 function cancal() {
     echo ---------------------------------------------------------------------------------
