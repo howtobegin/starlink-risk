@@ -47,7 +47,7 @@ public class AlertMessageListener {
 
         for (ConsumerRecord<String, String> record : consumerRecordList) {
             String recordValue = record.value();
-            log.info("消费到预警消息：{}", recordValue);
+//            log.info("消费到预警消息：{}", recordValue);
             AlertMessageApiDTO alertMessageApiDTO = JsonUtils.parseObject(recordValue, AlertMessageApiDTO.class);
             if (alertMessageApiDTO == null) {
                 log.warn("无效的 AlertMessageDTO 数据：解析结果为空！原始数据：{}", recordValue);
