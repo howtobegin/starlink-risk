@@ -1,6 +1,6 @@
 package com.liboshuai.slr.module.engine.function;
 
-import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import org.apache.flink.api.java.functions.KeySelector;
 
@@ -14,6 +14,6 @@ public class KafkaEventKeyBy implements KeySelector<KafkaEventDTO, String> {
         String channel = kafkaEventDTO.getChannel();
         String targetField = kafkaEventDTO.getTargetField();
         String targetValue = kafkaEventDTO.getTargetValue();
-        return String.join(DefaultConstants.COLON, channel, targetField, targetValue);
+        return String.join(RedisKeyConstants.REDIS_KEY_SPLIT, channel, targetField, targetValue);
     }
 }
