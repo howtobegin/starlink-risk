@@ -14,7 +14,8 @@ public enum ChannelEnum implements StringArrayValuable {
 
     GAME("GAME", "游戏"),
     HJF("HJF", "花积分"),
-    MALL("MALL", "商场")
+    MALL("MALL", "商场"),
+    CLM("CLM", "积分")
     ;
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(ChannelEnum::getCode).toArray(String[]::new);
