@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.liboshuai.starlink</groupId>
         <artifactId>slr-server</artifactId>
-        <version>1.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>slr-server-api</artifactId>
     <packaging>jar</packaging>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <dependencies>
         <!-- slr-common -->
