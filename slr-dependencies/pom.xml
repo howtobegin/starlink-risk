@@ -114,22 +114,7 @@
             </dependency>
             <dependency>
                 <groupId>com.liboshuai.starlink</groupId>
-                <artifactId>slr-server-api</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.liboshuai.starlink</groupId>
                 <artifactId>slr-engine-api</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.liboshuai.starlink</groupId>
-                <artifactId>slr-admin-biz</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.liboshuai.starlink</groupId>
-                <artifactId>slr-connector-biz</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -137,10 +122,14 @@
                 <artifactId>slr-engine-biz</artifactId>
                 <version>${revision}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.liboshuai.starlink</groupId>
-                <artifactId>slr-server</artifactId>
+                <artifactId>slr-server-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.liboshuai.starlink</groupId>
+                <artifactId>slr-server-biz</artifactId>
                 <version>${revision}</version>
             </dependency>
 
