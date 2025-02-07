@@ -5,10 +5,10 @@ import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import com.liboshuai.slr.module.admin.api.riskRule.RuleInfoApi;
 import com.liboshuai.slr.module.admin.api.riskRule.dto.RuleInfoApiDTO;
 import com.liboshuai.slr.module.connector.api.alertMessage.dto.AlertMessageApiDTO;
+import com.liboshuai.slr.module.connector.client.rsoAlarm.RsoAlarmClient;
 import com.liboshuai.slr.module.connector.convert.alertMessage.AlertMessageConvert;
 import com.liboshuai.slr.module.connector.dal.dataobject.alertMessage.AlertMessageDO;
 import com.liboshuai.slr.module.connector.dal.mongo.AlertMessageRepository;
-import com.liboshuai.slr.module.connector.rest.rsoAlarm.RsoAlarmRestApi;
 import com.liboshuai.slr.module.connector.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import lombok.Getter;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class AlertMessageListener {
 
     private final RuleInfoApi ruleInfoApi;
-    private final RsoAlarmRestApi rsoAlarmRestApi;
+    private final RsoAlarmClient rsoAlarmClient;
     private final AlertMessageConvert alertMessageConvert;
     private final AlertMessageRepository alertMessageRepository;
     private final KafkaEventService kafkaEventService;

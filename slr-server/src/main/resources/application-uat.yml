@@ -1,8 +1,9 @@
 spring:
-  # 数据源配置项
+  ############################## [数据源 配置项] ##############################
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
+      # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
   datasource:
     druid: # Druid 【监控】相关的全局配置
       web-stat-filter:
@@ -38,54 +39,73 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://four:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          username: lbs
-          password: Rongshu@2024
+          url: jdbc:mysql://10.188.60.4:53376/dmuat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          username: dmuat
+          password: Dmuat_1234
         slave:
-          url: jdbc:mysql://one:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-          username: root
-          password: Rongshu@2024
+          url: jdbc:mysql://10.191.200.124:9030/rs_test_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: rsmall
+          password: Rsmall@123bdas
+  ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Rongshu@2024
+    password: common@Iml8329
     timeout: 5000
     cluster:
       max-redirects: 3
-      nodes:
-        - one:6379
-        - one:6380
-        - two:6379
-        - two:6380
-        - three:6379
-        - three:6380
+      nodes: 10.152.143.221:50022,10.152.143.222:50022,10.152.143.223:50022,10.152.143.221:50023,10.152.143.222:50023,10.152.143.223:50023
     lettuce:
       pool:
         min-idle: 0
         max-idle: 8
         max-active: 8
         max-wait: -1ms
+  ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
     consumer:
-      bootstrap-servers: one:9092,two:9092,three:9092
-      group-id: starlink_risk
+      bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
+      group-id: starlink_risk_server
   data:
+    ############################## [mongo 配置项] ##############################
     mongodb:
-      host: four
-      port: 27018
-      username: lbs
-      password: Rongshu@2024
-      database: starlink_risk
-      authentication-database: starlink_risk
+      host: 10.152.143.163
+      port: 54257
+      username: impReadWrite
+      password: DawnImp0513
+      database: imp_mongo
+      authentication-database: imp_mongo
 
+############################## [xxl-job 配置项] ##############################
+xxl:
+  job:
+    admin:
+      addresses: http://10.152.143.164:54810/xxl-job-admin
+    accessToken: Rongshu@2024
+    executor:
+      appname: starlink-risk
+      address:
+      ip:
+      port: 9888
+      logpath: /app/dmapp/slr/log/xxl-job/jobhandler
+      logretentiondays: 30
+
+############################## [connector 配置项] ##############################
 slr-connector:
   kafka:
-    provider_topic: slr_event
-    consumer_topic: slr_alert
+    event:
+      topic: starlink_risk_event
+      partition: 6
+      replica: 3
+    alert:
+      topic: starlink_risk_alert
+      partition: 6
+      replica: 3
   rso:
-    alert-address: http://10.150.10.2:50217/rso/messagePush/sendWarningMsg
+    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
 
+############################## [admin 配置项] ##############################
 slr-admin:
   file-path:
-    event-log: /slr-server/data/event.log
+    event-log: /app/dmapp/slr/data

@@ -1,6 +1,8 @@
 package com.liboshuai.slr.module.connector.controller.mock;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
+import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
 import com.liboshuai.slr.module.connector.service.mock.MockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,11 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class MockController {
 
     private final MockService mockService;
+    private final SnowflakeIdProperties snowflakeIdProperties;
+    private final SnowflakeIdGenerator snowflakeIdGenerator;
+
 
     @GetMapping("/createEventFileBatchMode")
     @Operation(summary = "创建事件数据文件（文件内容为批量上送模式）")
     public CommonResult<String> createEventFileBatchMode(Long totalCount, Long maxEntries) {
         mockService.createEventFileBatchMode(totalCount, maxEntries);
         return CommonResult.success("事件日志文件开始生成，请等待......");
+    }
+
+    @GetMapping("/testSnowflakeId")
+    @Operation(summary = "测试雪花id")
+    public CommonResult<Long> testSnowflakeId() {
+        log.info("snowflakeIdProperties: {}", snowflakeIdProperties);
+        return CommonResult.success(snowflakeIdGenerator.nextId());
     }
 }

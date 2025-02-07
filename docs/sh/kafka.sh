@@ -16,7 +16,7 @@ kafka-topics.sh --create \
 kafka-topics.sh --list --bootstrap-server ${宿主机IP}:9096,${宿主机IP}:9097,${宿主机IP}:9098
 
 # 向 slr_event topic 发送单条数据，模拟业务方数据生产
-kafka-console-producer.sh --broker-list ${宿主机IP}:9096,${宿主机IP}:9097,${宿主机IP}:9098 --topic slr_event
+kafka-console-producer.sh --broker-list ${宿主机IP}:9096,${宿主机IP}:9097,${宿主机IP}:9098 --topic starlink_risk_event
 
 # 消费 slr_alert top 数据，查看flink 生成的告警数据
-kafka-console-consumer.sh --bootstrap-server ${宿主机IP}:9096,${宿主机IP}:9097,${宿主机IP}:9098 --topic slr_alert
+kafka-console-consumer.sh --bootstrap-server ${宿主机IP}:9096,${宿主机IP}:9097,${宿主机IP}:9098 --topic starlink_risk_alert

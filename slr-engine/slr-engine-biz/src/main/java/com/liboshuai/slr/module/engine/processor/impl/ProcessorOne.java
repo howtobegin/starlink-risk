@@ -353,11 +353,10 @@ public class ProcessorOne implements Processor {
             // 更新最后预警时间
             lastWarningTimeState.update(timestamp);
             // 发送预警信息
-            // TODO: 测试中取消预警信息发送，待恢复
             AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
-//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertMessageDTO, currentKey);
-//            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
-//            out.collect(resultDTO);
+            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertMessageDTO, currentKey);
+            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
+            out.collect(resultDTO);
         }
 //        logOldState(ruleInfoDTO.getRuleCode(), currentKey);
 //        logState(ruleInfoDTO.getRuleCode(), currentKey);

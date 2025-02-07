@@ -114,7 +114,7 @@ knife4j:
 ############################## [日志 配置项] ##############################
 logging:
   file:
-    name: /slr-server/logs/server.log # 日志文件名，全路径
+    name: /app/dmapp/slr/log/server.log # 日志文件名，全路径
 
 debug: false
 

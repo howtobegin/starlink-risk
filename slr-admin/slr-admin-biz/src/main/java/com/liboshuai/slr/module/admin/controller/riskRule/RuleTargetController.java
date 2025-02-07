@@ -81,9 +81,9 @@ public class RuleTargetController {
 
     @GetMapping("/refreshCache")
     @Operation(summary = "刷新缓存")
-    public CommonResult<?> refreshCache() {
+    public CommonResult<Boolean> refreshCache() {
         ruleTargetService.refreshCache();
-        return success();
+        return success(true);
     }
 
     @GetMapping("/checkUniqueTargetCode")

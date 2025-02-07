@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
@@ -27,12 +27,12 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 @Slf4j
 @Validated
 @RestController
+@RequiredArgsConstructor
 @Tag(name = "风控预警消息")
 @RequestMapping("/alertMessage")
 public class AlertMessageController {
 
-    @Resource
-    private AlertMessageApi alertMessageApi;
+    private final AlertMessageApi alertMessageApi;
 
     @PostMapping("/page")
     @Operation(summary = "分页")
