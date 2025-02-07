@@ -1,1 +1,0 @@
-package com.liboshuai.slr.module.connector.client.rsoAlarm;

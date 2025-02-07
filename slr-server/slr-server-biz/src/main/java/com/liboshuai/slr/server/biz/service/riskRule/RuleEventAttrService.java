@@ -1,0 +1,12 @@
+package com.liboshuai.slr.server.biz.service.riskRule;
+
+import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleEventAttrRespVO;
+
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+
+public interface RuleEventAttrService {
+    List<RuleEventAttrRespVO> list(@NotBlank String eventCode);
+
+    Boolean checkUniqueEventAttrCode(String eventAttrCode);
+}
