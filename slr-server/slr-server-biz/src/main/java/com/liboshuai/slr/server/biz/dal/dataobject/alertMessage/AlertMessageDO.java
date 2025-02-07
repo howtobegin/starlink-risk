@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.alertMessage;
 
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.alertMessage;
 
+import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessagePageReqVO;
 import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessageRespVO;
 

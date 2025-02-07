@@ -1,9 +1,9 @@
 package com.liboshuai.slr.server.biz.controller.alertMessage.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.slr.framework.common.pojo.PageParam;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;

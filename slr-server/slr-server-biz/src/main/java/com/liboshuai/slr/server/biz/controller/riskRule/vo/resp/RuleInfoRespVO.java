@@ -1,8 +1,8 @@
 package com.liboshuai.slr.server.biz.controller.riskRule.vo.resp;
 
+import com.liboshuai.slr.engine.api.enums.*;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
-import com.liboshuai.slr.module.engine.enums.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;

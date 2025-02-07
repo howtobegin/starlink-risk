@@ -2,7 +2,7 @@
 
 flink_bin="/opt/flink/flink-1.14.2/bin/flink"
 flink_name="com.rongshu.flink.slrEngine"
-flink_main="com.liboshuai.slr.module.engine.EngineApplication"
+flink_main="com.liboshuai.slr.engine.biz.EngineApplication"
 flink_jar="/app/rongshu/slr/jar/slr-engine-biz-1.0.jar"
 flink_savepoint="hdfs:///user/rongshu/starlink_risk/savepoint"
 savepoint_log="/app/rongshu/slr/log/savepoint.log"
@@ -16,8 +16,8 @@ function init() {
       -p 10 \
       -t yarn-application \
       -Dyarn.application.name="${flink_name}" \
-      -Dtaskmanager.numberOfTaskSlots=5 \
-      -Dyarn.containers.vcores=10 \
+#      -Dtaskmanager.numberOfTaskSlots=5 \
+#      -Dyarn.containers.vcores=10 \
       -Dtaskmanager.memory.managed.size=0m \
       -Drest.flamegraph.enabled=true \
       -c ${flink_main} ${flink_jar}

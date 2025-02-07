@@ -1,11 +1,11 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
+import com.liboshuai.slr.engine.api.enums.RuleCondCombOpEnum;
+import com.liboshuai.slr.engine.api.enums.TimeUnitEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
-import com.liboshuai.slr.module.engine.enums.RuleCondCombOpEnum;
-import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 

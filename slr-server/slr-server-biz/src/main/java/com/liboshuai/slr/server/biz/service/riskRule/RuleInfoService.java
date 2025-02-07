@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.riskRule;
 
+import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoChangeStatusReqVO;
 import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoSaveReqVO;

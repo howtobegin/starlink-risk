@@ -1,10 +1,10 @@
 package com.liboshuai.slr.server.biz.dal.kafka.consumer;
 
+import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
 import com.liboshuai.slr.server.biz.convert.alertMessage.AlertMessageConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.alertMessage.AlertMessageDO;
 import com.liboshuai.slr.server.biz.dal.mongo.AlertMessageRepository;

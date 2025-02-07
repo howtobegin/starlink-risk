@@ -1,8 +1,8 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.riskRule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.liboshuai.slr.engine.api.enums.RuleEventAttrTypeEnum;
 import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
-import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 

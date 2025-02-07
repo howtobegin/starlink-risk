@@ -1,9 +1,9 @@
 package com.liboshuai.slr.server.biz.controller.riskRule.vo.resp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.liboshuai.slr.engine.api.enums.RuleCondTypeEnum;
+import com.liboshuai.slr.engine.api.enums.TimeUnitEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
-import com.liboshuai.slr.module.engine.enums.RuleCondTypeEnum;
-import com.liboshuai.slr.module.engine.enums.TimeUnitEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;

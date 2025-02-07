@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.impl;
 
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.server.biz.convert.kafkaEvent.KafkaEventConvert;
 import com.liboshuai.slr.server.biz.dal.mongo.KafkaEventRepository;

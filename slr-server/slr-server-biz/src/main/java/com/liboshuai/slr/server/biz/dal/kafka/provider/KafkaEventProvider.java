@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.dal.kafka.provider;
 
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.server.biz.framework.properties.KafkaProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

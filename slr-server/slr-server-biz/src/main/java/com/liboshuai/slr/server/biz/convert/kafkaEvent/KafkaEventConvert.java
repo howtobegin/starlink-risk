@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.convert.kafkaEvent;
 
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.server.biz.dal.dataobject.kafkaEvent.KafkaEventDO;
 import org.mapstruct.Mapper;

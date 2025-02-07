@@ -1,9 +1,9 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.kafkaEvent;
 
-import com.liboshuai.slr.module.engine.dto.RuleCondDTO;
-import com.liboshuai.slr.module.engine.dto.RuleEventAttrValueDTO;
-import com.liboshuai.slr.module.engine.dto.RuleInfoDTO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import com.liboshuai.slr.engine.api.dto.RuleCondDTO;
+import com.liboshuai.slr.engine.api.dto.RuleEventAttrValueDTO;
+import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

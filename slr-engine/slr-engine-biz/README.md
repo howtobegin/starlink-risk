@@ -21,7 +21,7 @@
     mvn clean install -P local -Dmaven.test.skip=true
     ```
 
-6. 找到`com.liboshuai.slr.module.engine.EngineApplication`类的main方法，右键run
+6. 找到`com.liboshuai.slr.engine.biz.EngineApplication`类的main方法，右键run
 
 ## 开发环境yarn
 

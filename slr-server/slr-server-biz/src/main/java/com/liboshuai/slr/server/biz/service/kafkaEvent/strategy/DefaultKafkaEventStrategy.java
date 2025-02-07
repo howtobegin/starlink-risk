@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.strategy;
 
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

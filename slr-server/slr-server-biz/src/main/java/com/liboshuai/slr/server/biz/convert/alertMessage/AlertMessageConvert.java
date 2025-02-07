@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.convert.alertMessage;
 
+import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
-import com.liboshuai.slr.module.engine.dto.AlertMessageDTO;
 import com.liboshuai.slr.server.biz.dal.dataobject.alertMessage.AlertMessageDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

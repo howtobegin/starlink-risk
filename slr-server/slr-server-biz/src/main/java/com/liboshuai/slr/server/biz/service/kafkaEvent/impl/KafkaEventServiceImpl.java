@@ -1,13 +1,13 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import com.liboshuai.slr.server.api.constants.ErrorCodeConstants;
 import com.liboshuai.slr.server.api.enums.KafkaEventErrorLevelEnum;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventErrorRespVO;

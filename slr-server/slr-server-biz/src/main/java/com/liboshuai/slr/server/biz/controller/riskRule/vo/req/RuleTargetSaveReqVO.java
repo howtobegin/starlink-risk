@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.controller.riskRule.vo.req;
 
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.slr.framework.common.validation.InStringEnum;
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.controller.riskRule.vo.req;
 
-import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
+import com.liboshuai.slr.engine.api.enums.RuleEventAttrTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,9 +1,9 @@
 package com.liboshuai.slr.server.biz.convert.riskRule;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.module.engine.dto.KafkaEventDTO;
 import com.liboshuai.slr.server.biz.dal.dataobject.riskRule.DorisEventDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.controller.riskRule.vo.resp;
 
+import com.liboshuai.slr.engine.api.enums.RuleEventAttrTypeEnum;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
-import com.liboshuai.slr.module.engine.enums.RuleEventAttrTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;

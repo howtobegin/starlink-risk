@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.kafkaEvent;
 
-import com.liboshuai.slr.module.engine.enums.ChannelEnum;
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
