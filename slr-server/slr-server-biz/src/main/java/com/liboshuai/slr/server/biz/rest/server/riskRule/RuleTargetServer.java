@@ -66,13 +66,6 @@ public class RuleTargetServer {
         return ruleTargetController.listDetail();
     }
 
-    @GetMapping("/refreshCache")
-    @Operation(summary = "刷新缓存")
-    public CommonResult<Boolean> refreshCache() {
-        ruleTargetController.refreshCache();
-        return success(true);
-    }
-
     @GetMapping("/checkUniqueTargetCode")
     @Operation(summary = "检查目标编号是否唯一")
     public CommonResult<Boolean> checkUniqueTargetCode(@NotBlank String targetCode) {

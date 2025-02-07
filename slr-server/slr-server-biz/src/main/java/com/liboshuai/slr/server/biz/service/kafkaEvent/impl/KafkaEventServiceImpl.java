@@ -28,7 +28,6 @@ import com.liboshuai.slr.server.biz.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.MongoEventService;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.strategy.KafkaEventStrategy;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleTargetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
@@ -52,7 +51,6 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     private final KafkaEventConvert kafkaEventConvert;
     private final KafkaEventProvider kafkaEventProvider;
     private final KafkaEventStrategyHolder kafkaEventStrategyHolder;
-    private final RuleTargetService ruleTargetService;
     private final KafkaEventErrorRepository kafkaEventErrorRepository;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
     private final KafkaEventRepository kafkaEventRepository;
@@ -186,7 +184,8 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     public void validateKafkaEventGroupReqVO(KafkaEventGroupReqVO kafkaEventGroupReqVO,
                                              List<KafkaEventErrorRespVO> kafkaEventErrorRespVOList) {
         String channel = kafkaEventGroupReqVO.getChannel();
-        List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.getCacheDetailList();
+//        List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.getCacheDetailList();
+        List<RuleTargetRespVO> ruleTargetRespVOList = new ArrayList<>();
 
         // 如果规则库为空，记录错误并抛出异常
         if (CollectionUtils.isEmpty(ruleTargetRespVOList)) {

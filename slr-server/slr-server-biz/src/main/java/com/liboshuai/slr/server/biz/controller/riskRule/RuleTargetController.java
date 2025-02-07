@@ -74,15 +74,8 @@ public class RuleTargetController {
     @GetMapping("/listDetail")
     @Operation(summary = "详情列表")
     public CommonResult<List<RuleTargetRespVO>> listDetail() {
-        List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.getCacheDetailList();
+        List<RuleTargetRespVO> ruleTargetRespVOList = ruleTargetService.listDetail();
         return success(ruleTargetRespVOList);
-    }
-
-    @GetMapping("/refreshCache")
-    @Operation(summary = "刷新缓存")
-    public CommonResult<Boolean> refreshCache() {
-        ruleTargetService.refreshCache();
-        return success(true);
     }
 
     @GetMapping("/checkUniqueTargetCode")

@@ -21,11 +21,7 @@ public interface RuleTargetService {
 
     List<RuleTargetRespVO> list(@NotBlank String channel);
 
-    List<RuleTargetRespVO> putCacheDetailList();
-
-    List<RuleTargetRespVO> getCacheDetailList();
-
-    void refreshCache();
-
     Boolean checkUniqueTargetCode(String targetCode);
+
+    List<RuleTargetRespVO> listDetail();
 }

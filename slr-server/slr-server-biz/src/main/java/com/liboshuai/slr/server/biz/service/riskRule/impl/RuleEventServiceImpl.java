@@ -75,8 +75,6 @@ public class RuleEventServiceImpl implements RuleEventService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.NEW_STATUS_NOT_SUPPORT);
         }
         ruleEventMapper.updateByEventCode(ruleEventDO, eventCode);
-        // 更新缓存
-        ruleTargetService.putCacheDetailList();
     }
 
     @Override

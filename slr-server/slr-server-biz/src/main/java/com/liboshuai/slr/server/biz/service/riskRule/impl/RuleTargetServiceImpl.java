@@ -1,11 +1,9 @@
 package com.liboshuai.slr.server.biz.service.riskRule.impl;
 
-import com.liboshuai.slr.framework.common.constants.CacheKeyConstants;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.framework.redis.core.manager.MultilevelCache;
 import com.liboshuai.slr.server.api.constants.ErrorCodeConstants;
 import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleEventAttrSaveReqVO;
 import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleEventSaveReqVO;
@@ -28,7 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -40,7 +41,6 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     private final RuleTargetMapper ruleTargetMapper;
     private final RuleEventMapper ruleEventMapper;
     private final RuleEventAttrMapper ruleEventAttrMapper;
-    private final MultilevelCache multilevelCache;
 
     @Override
     public PageResult<RuleTargetRespVO> page(RuleTargetPageReqVO ruleTargetPageReqVO) {
@@ -90,8 +90,6 @@ public class RuleTargetServiceImpl implements RuleTargetService {
                 .collect(Collectors.toList());
         List<RuleEventAttrDO> ruleEventAttrDOList = BeanUtils.toBean(ruleEventAttrSaveGroup, RuleEventAttrDO.class);
         ruleEventAttrMapper.insertBatch(ruleEventAttrDOList);
-        // 更新缓存
-        putCacheDetailList();
     }
 
     @Override
@@ -122,8 +120,6 @@ public class RuleTargetServiceImpl implements RuleTargetService {
                 .collect(Collectors.toList());
         ruleEventAttrMapper.deleteByEventCodes(oldRuleEventCodeList);
         ruleEventAttrMapper.insertBatch(BeanUtils.toBean(ruleEventAttrGroup, RuleEventAttrDO.class));
-        // 更新缓存
-        putCacheDetailList();
     }
 
     @Override
@@ -132,38 +128,10 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         return BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
     }
 
-    @Override
-    public List<RuleTargetRespVO> putCacheDetailList() {
-        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectList();
-        if (CollectionUtils.isEmpty(ruleTargetDOList)) {
-            // 放入空数组，防止缓存击穿
-            multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, new ArrayList<>());
-        }
-        List<RuleTargetRespVO> ruleTargetRespVOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
-        // 设置 规则事件组
-        ruleTargetRespVOList.forEach(this::detailSetRuleEventList);
-        multilevelCache.put(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, ruleTargetRespVOList);
-        return ruleTargetRespVOList;
-    }
-
-    @Override
-    public List<RuleTargetRespVO> getCacheDetailList() {
-        List<RuleTargetRespVO> list = multilevelCache.get(CacheKeyConstants.RULE_TARGET_DETAIL_LIST, List.class);
-        // 只需要判断是否为null，不要判断list元素是否为空，防止缓存击穿
-        if (Objects.nonNull(list)) {
-            return list;
-        }
-        return putCacheDetailList();
-    }
-
-    @Override
-    public void refreshCache() {
-        this.putCacheDetailList();
-
-    }
     /**
      * 设置 规则事件组
      */
+    // TODO: bug修复，查询不出来数据
     private void detailSetRuleEventList(RuleTargetRespVO ruleTargetRespVO) {
         String targetCode = ruleTargetRespVO.getTargetCode();
         if (!StringUtils.hasText(targetCode)) {
@@ -197,6 +165,15 @@ public class RuleTargetServiceImpl implements RuleTargetService {
     @Override
     public Boolean checkUniqueTargetCode(String targetCode) {
         return ruleTargetMapper.selectOneByTargetCode(targetCode) == null;
+    }
+
+    @Override
+    public List<RuleTargetRespVO> listDetail() {
+        List<RuleTargetDO> ruleTargetDOList = ruleTargetMapper.selectList();
+        List<RuleTargetRespVO> ruleTargetRespVOList = BeanUtils.toBean(ruleTargetDOList, RuleTargetRespVO.class);
+        // 设置 规则事件组
+        ruleTargetRespVOList.forEach(this::detailSetRuleEventList);
+        return ruleTargetRespVOList;
     }
 
 }
