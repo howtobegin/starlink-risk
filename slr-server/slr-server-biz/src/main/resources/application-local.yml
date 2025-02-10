@@ -42,7 +42,7 @@ spring:
           username: lbs
           password: Rongshu@2024
         slave:
-          url: jdbc:mysql://windows:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://vm:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
   ############################## [redis 配置项] ##############################
