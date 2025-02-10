@@ -15,7 +15,7 @@ class NginxServiceImplTest {
 
     @Test
     void testNginxBackendRequest() throws UnsupportedEncodingException {
-        String json = "{\"eventTime\": \"1739178682.366\",\"channel\": \"game\",\"targetField\": \"userId\",\"targetValue\": \"U000000002\",\"eventField\": \"lottery\",\"eventValue\": \"1\",\"eventAttrMap\": \"%7B%22campaignId%22%3A%22C000000004%22%2C%22bankNo%22%3A%226100%22%2C%22bankName%22%3A%22%E9%82%AE%E5%82%A8%E9%93%B6%E8%A1%8C%22%2C%22campaignName%22%3A%22%E6%B4%BB%E5%8A%A84%22%7D\"}";
+        String json = "{\"eventTime\": \"1739178682.366\",\"channel\": \"game\",\"targetField\": \"userId\",\"targetValue\": \"U000000002\",\"eventField\": \"lottery\",\"eventValue\": \"1\",\"eventAttrMap\": \"%257B%2522campaignId%2522%253A%2522C000000004%2522%252C%2522bankNo%2522%253A%25226100%2522%252C%2522bankName%2522%253A%2522%25E9%2582%25AE%25E5%2582%25A8%25E9%2593%25B6%25E8%25A1%258C%2522%252C%2522campaignName%2522%253A%2522%25E6%25B4%25BB%25E5%258A%25A84%2522%257D\"}";
         NginxEventDTO nginxEventDTO = JsonUtils.parseObject(json, NginxEventDTO.class);
         if (Objects.isNull(nginxEventDTO)) {
             throw new RuntimeException("nginxEventDTO must not be null");
@@ -26,7 +26,7 @@ class NginxServiceImplTest {
         nginxEventDTO.setTargetValue(URLDecoder.decode(nginxEventDTO.getTargetValue(), StandardCharsets.UTF_8.name()));
         nginxEventDTO.setEventField(URLDecoder.decode(nginxEventDTO.getEventField(), StandardCharsets.UTF_8.name()));
         nginxEventDTO.setEventValue(URLDecoder.decode(nginxEventDTO.getEventValue(), StandardCharsets.UTF_8.name()));
-        nginxEventDTO.setEventAttrMap(URLDecoder.decode(nginxEventDTO.getEventAttrMap(), StandardCharsets.UTF_8.name()));
+        nginxEventDTO.setEventAttrMap(URLDecoder.decode(URLDecoder.decode(nginxEventDTO.getEventAttrMap(), StandardCharsets.UTF_8.name()), StandardCharsets.UTF_8.name()));
         log.info("nginxEventDTO: {}", nginxEventDTO);
     }
 }

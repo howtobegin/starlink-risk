@@ -60,7 +60,7 @@ public class NginxServiceImpl implements NginxService {
      * @param eventData 要发送的事件数据
      */
     public void sendEventRequest(EventDTO eventData) {
-        String bashUri = "http://localhost:48888/slr-server/mock/backend";
+        String bashUri = "http://localhost:48881/backend.gif";
         String uri;
         try {
             String stringBuilder = bashUri +
