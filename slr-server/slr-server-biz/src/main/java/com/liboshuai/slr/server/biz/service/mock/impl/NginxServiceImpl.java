@@ -27,7 +27,7 @@ public class NginxServiceImpl implements NginxService {
     public void testNginxBackendRequest() {
         // 模拟业务系统产生事件数据
         KafkaEventDTO eventData = createEventData();
-        // 向打点服务器发送请求
+        // 向打点服务器发送请求（示例代码为同步调用，生产实践推荐修改为异步调用）
         sendEventRequest(eventData);
     }
 
