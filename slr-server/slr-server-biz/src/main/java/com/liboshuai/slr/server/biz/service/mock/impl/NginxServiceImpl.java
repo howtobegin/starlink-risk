@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +60,7 @@ public class NginxServiceImpl implements NginxService {
      * @param eventData 要发送的事件数据
      */
     public void sendEventRequest(EventDTO eventData) {
+        // 打点服务器的请求 URI 地址（建议动态配置）
         String baseUri = "http://localhost:48881/backend.gif";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
@@ -72,11 +72,9 @@ public class NginxServiceImpl implements NginxService {
                 .queryParam("eventValue", eventData.getEventValue())
                 .queryParam("eventAttrMap", JsonUtils.toJsonString(eventData.getEventAttrMap()))
                 .build()
-                .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行编码
+                .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
 
-        URI uri = uriComponents.toUri();
-
-        // 使用 RestTemplate 发送 GET 请求，RestTemplate 会处理编码
-        restTemplate.getForObject(uri, String.class);
+        // 向打点服务器发送数据（无需关注响应）
+        restTemplate.getForObject(uriComponents.toUri(), String.class);
     }
 }
