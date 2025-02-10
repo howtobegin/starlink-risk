@@ -4,6 +4,7 @@ import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
 import com.liboshuai.slr.server.biz.service.mock.MockService;
+import com.liboshuai.slr.server.biz.service.mock.NginxService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class MockController {
     private final MockService mockService;
     private final SnowflakeIdProperties snowflakeIdProperties;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
+    private final NginxService nginxService;
 
 
     @GetMapping("/createEventFileBatchMode")
@@ -36,5 +38,12 @@ public class MockController {
     public CommonResult<Long> testSnowflakeId() {
         log.info("snowflakeIdProperties: {}", snowflakeIdProperties);
         return CommonResult.success(snowflakeIdGenerator.nextId());
+    }
+
+    @GetMapping("/testNginxBackendRequest")
+    @Operation(summary = "测试nginx日志打点")
+    public CommonResult<Boolean> testNginxBackendRequest() {
+        nginxService.testNginxBackendRequest();
+        return CommonResult.success(true);
     }
 }

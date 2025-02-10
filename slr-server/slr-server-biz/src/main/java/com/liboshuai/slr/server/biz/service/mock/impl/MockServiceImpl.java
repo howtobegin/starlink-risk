@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,6 +21,9 @@ import java.util.*;
 @Slf4j
 @Service
 public class MockServiceImpl implements MockService {
+
+    @Resource
+    private RestTemplate restTemplate;
 
     private static final int MAX_ENTRIES = 1000000;
     // Predefined bank names and numbers
