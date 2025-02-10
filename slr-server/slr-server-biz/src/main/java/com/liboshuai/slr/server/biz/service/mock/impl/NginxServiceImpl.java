@@ -22,7 +22,7 @@ public class NginxServiceImpl implements NginxService {
     private final RestTemplate restTemplate;
 
     /**
-     * 测试 Nginx 后端请求
+     * 推送数据到打点服务器演示
      */
     @Override
     public void testNginxBackendRequest() {
@@ -75,6 +75,7 @@ public class NginxServiceImpl implements NginxService {
                 .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
 
         // 向打点服务器发送数据（无需关注响应）
+        // 请求url示例：http://localhost:48881/backend.gif?channel=game&targetField=userId&targetValue=U000000002&eventField=lottery&eventValue=1&eventAttrMap=%7B%22campaignId%22:%22C000000004%22,%22bankNo%22:%226100%22,%22bankName%22:%22%E9%82%AE%E5%82%A8%E9%93%B6%E8%A1%8C%22,%22campaignName%22:%22%E6%B4%BB%E5%8A%A84%22%7D
         restTemplate.getForObject(uriComponents.toUri(), String.class);
     }
 }
