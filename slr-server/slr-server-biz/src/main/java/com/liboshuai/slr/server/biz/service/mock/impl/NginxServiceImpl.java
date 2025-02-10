@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,21 +61,22 @@ public class NginxServiceImpl implements NginxService {
      * @param eventData 要发送的事件数据
      */
     public void sendEventRequest(EventDTO eventData) {
-        String bashUri = "http://localhost:48881/backend.gif";
-        String uri;
-        try {
-            String stringBuilder = bashUri +
-                    "?" + "channel=" + URLEncoder.encode(eventData.getChannel(), StandardCharsets.UTF_8.name()) +
-                    "&" + "targetField=" + URLEncoder.encode(eventData.getTargetField(), StandardCharsets.UTF_8.name()) +
-                    "&" + "targetValue=" + URLEncoder.encode(eventData.getTargetValue(), StandardCharsets.UTF_8.name()) +
-                    "&" + "eventField=" + URLEncoder.encode(eventData.getEventField(), StandardCharsets.UTF_8.name()) +
-                    "&" + "eventValue=" + URLEncoder.encode(eventData.getEventValue(), StandardCharsets.UTF_8.name()) +
-                    "&" + "eventAttrMap=" + URLEncoder.encode(JsonUtils.toJsonString(eventData.getEventAttrMap()), StandardCharsets.UTF_8.name());
-            uri = stringBuilder;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        // 发送 GET 请求，无需关注响应
+        String baseUri = "http://localhost:48881/backend.gif";
+
+        // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
+        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
+                .queryParam("channel", eventData.getChannel())
+                .queryParam("targetField", eventData.getTargetField())
+                .queryParam("targetValue", eventData.getTargetValue())
+                .queryParam("eventField", eventData.getEventField())
+                .queryParam("eventValue", eventData.getEventValue())
+                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventData.getEventAttrMap()))
+                .build()
+                .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行编码
+
+        URI uri = uriComponents.toUri();
+
+        // 使用 RestTemplate 发送 GET 请求，RestTemplate 会处理编码
         restTemplate.getForObject(uri, String.class);
     }
 }
