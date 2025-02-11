@@ -2,29 +2,20 @@ package com.liboshuai.slr.framework.redis.core.serializer;
 
 import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 
 /**
  * 统一前缀序列化
  */
 @Slf4j
-@Component
 public class PrefixRedisSerializer extends StringRedisSerializer {
 
-    @Value("${spring.redis.namespace}")
-    private String namespace;
+    private final String namespace;
 
-    @PostConstruct
-    public void init() {
-        if (!StringUtils.hasText(namespace)) {
-            throw new IllegalArgumentException("Redis namespace must not be empty");
-        }
+    public PrefixRedisSerializer(String namespace) {
+        this.namespace = namespace;
     }
 
     /**
@@ -38,8 +29,8 @@ public class PrefixRedisSerializer extends StringRedisSerializer {
         if (key == null) {
             return new byte[0];
         }
-        String keyPrefix = namespace + RedisKeyConstants.REDIS_KEY_PREFIX;
         // 拼接前缀
+        String keyPrefix = namespace + RedisKeyConstants.REDIS_KEY_SPLIT;
         String realKey = keyPrefix + key;
         return super.serialize(realKey);
     }
@@ -56,7 +47,8 @@ public class PrefixRedisSerializer extends StringRedisSerializer {
             return null;
         }
         String key = new String(bytes, StandardCharsets.UTF_8);
-        String keyPrefix = namespace + RedisKeyConstants.REDIS_KEY_PREFIX;
+        // 拼接前缀
+        String keyPrefix = namespace + RedisKeyConstants.REDIS_KEY_SPLIT;
         if (key.startsWith(keyPrefix)) {
             return key.substring(keyPrefix.length());
         }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,7 @@ public class MockController {
     private final SnowflakeIdProperties snowflakeIdProperties;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
     private final NginxService nginxService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     @GetMapping("/createEventFileBatchMode")
@@ -68,5 +70,21 @@ public class MockController {
         // 您可以根据需要进行进一步处理
 
         return "Parameters received successfully.";
+    }
+
+    @GetMapping("/testRedis")
+    @Operation(summary = "测试redis")
+    public CommonResult<Boolean> testRedis() {
+        redisTemplate.opsForValue().set("name", "lbs");
+        Object name = redisTemplate.opsForValue().get("name");
+        log.info("name: {}", name);
+
+        redisTemplate.opsForHash().put("dianzi", "phone", "苹果");
+        redisTemplate.opsForHash().put("dianzi", "book", "小米");
+        Object phone = redisTemplate.opsForHash().get("dianzi", "phone");
+        Object book = redisTemplate.opsForHash().get("dianzi", "book");
+        log.info("phone: {}", phone);
+        log.info("book: {}", book);
+        return CommonResult.success(true);
     }
 }
