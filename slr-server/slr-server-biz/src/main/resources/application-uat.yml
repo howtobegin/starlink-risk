@@ -50,6 +50,7 @@ spring:
   redis:
     database: 0
     password: common@Iml8329
+    namespace: starlink_risk_uat
     timeout: 5000
     cluster:
       max-redirects: 3
@@ -66,7 +67,7 @@ spring:
       bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
     consumer:
       bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
-      group-id: starlink_risk_server
+      group-id: starlink_risk_server_uat
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
@@ -84,7 +85,7 @@ xxl:
       addresses: http://10.152.143.164:54810/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
-      appname: starlink-risk
+      appname: starlink-risk-uat
       address:
       ip:
       port: 9888
@@ -95,11 +96,11 @@ xxl:
 slr-connector:
   kafka:
     event:
-      topic: starlink_risk_event
+      topic: starlink_risk_event_uat
       partition: 6
       replica: 3
     alert:
-      topic: starlink_risk_alert
+      topic: starlink_risk_alert_uat
       partition: 6
       replica: 3
   rso:

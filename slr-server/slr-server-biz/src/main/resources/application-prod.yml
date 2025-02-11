@@ -50,6 +50,7 @@ spring:
   redis:
     database: 0
     password: Dawn@Imp0513
+    namespace: starlink_risk_prod
     timeout: 5000
     cluster:
       max-redirects: 3

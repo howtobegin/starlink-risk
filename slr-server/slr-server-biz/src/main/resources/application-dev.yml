@@ -39,9 +39,9 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://10.188.60.4:53376/dmuat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          username: dmuat
-          password: Dmuat_1234
+          url: jdbc:mysql://10.188.60.4:53376/dmdev?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          username: dmdev
+          password: Dmdev_1234
         slave:
           url: jdbc:mysql://10.191.200.124:9030/rs_test_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: rsmall
@@ -50,6 +50,7 @@ spring:
   redis:
     database: 0
     password: common@Iml8329
+    namespace: starlink_risk_dev
     timeout: 5000
     cluster:
       max-redirects: 3
@@ -66,7 +67,7 @@ spring:
       bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
     consumer:
       bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
-      group-id: starlink_risk_server
+      group-id: starlink_risk_server_dev
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
@@ -84,7 +85,7 @@ xxl:
       addresses: http://10.152.143.164:54810/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
-      appname: starlink-risk
+      appname: starlink-risk-dev
       address:
       ip:
       port: 9888
@@ -95,11 +96,11 @@ xxl:
 slr-connector:
   kafka:
     event:
-      topic: starlink_risk_event
+      topic: starlink_risk_event_dev
       partition: 6
       replica: 3
     alert:
-      topic: starlink_risk_alert
+      topic: starlink_risk_alert_dev
       partition: 6
       replica: 3
   rso:
