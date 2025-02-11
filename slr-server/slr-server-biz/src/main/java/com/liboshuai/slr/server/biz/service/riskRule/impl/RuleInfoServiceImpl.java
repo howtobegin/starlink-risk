@@ -6,7 +6,6 @@ import com.baomidou.dynamic.datasource.annotation.Slave;
 import com.liboshuai.slr.engine.api.dto.*;
 import com.liboshuai.slr.engine.api.enums.TimeUnitEnum;
 import com.liboshuai.slr.engine.api.utils.TimeUtil;
-import com.liboshuai.slr.framework.common.constants.CacheKeyConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
@@ -489,13 +488,13 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
         }
         RuleInfoDTO ruleInfoDTO = BeanUtils.toBean(ruleInfoDO, RuleInfoDTO.class);
-        multilevelCache.put(CacheKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode, ruleInfoDTO);
+        multilevelCache.put(RedisKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode, ruleInfoDTO);
     }
 
     @Override
     public RuleInfoDTO getCacheRuleInfo(Long ruleCode) {
         RuleInfoDTO ruleInfoDTO = multilevelCache.get(
-                CacheKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode,
+                RedisKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode,
                 RuleInfoDTO.class
         );
         if (Objects.nonNull(ruleInfoDTO)) {
@@ -506,7 +505,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_INFO_NOT_EXISTS, ruleCode);
         }
         ruleInfoDTO = BeanUtils.toBean(ruleInfoDO, RuleInfoDTO.class);
-        multilevelCache.put(CacheKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode, ruleInfoDTO);
+        multilevelCache.put(RedisKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleCode, ruleInfoDTO);
         return ruleInfoDTO;
     }
 
@@ -518,7 +517,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         ruleInfoDOList.forEach(ruleInfoDO ->
                 multilevelCache.put(
-                        CacheKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleInfoDO.getRuleCode(),
+                        RedisKeyConstants.RULE_INFO + RedisKeyConstants.REDIS_KEY_SPLIT + ruleInfoDO.getRuleCode(),
                         BeanUtils.toBean(ruleInfoDO, RuleInfoDTO.class)
                 )
         );

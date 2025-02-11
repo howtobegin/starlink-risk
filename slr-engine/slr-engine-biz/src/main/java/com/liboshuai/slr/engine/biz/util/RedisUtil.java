@@ -2,6 +2,7 @@ package com.liboshuai.slr.engine.biz.util;
 
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.HostAndPort;
@@ -21,6 +22,7 @@ import java.util.Set;
 public class RedisUtil {
 
     private static final JedisCluster jedisCluster;
+    private static final String NAMESPACE;
 
     /**
      * 初始化连接池
@@ -36,6 +38,8 @@ public class RedisUtil {
         }
         // 密码
         String password = ParameterUtil.getParameters().get(ParameterConstants.REDIS_PASSWORD);
+        // 命名空间
+        NAMESPACE = ParameterUtil.getParameters().get(ParameterConstants.REDIS_NAMESPACE, "starlink_risk") + RedisKeyConstants.REDIS_KEY_SPLIT;
         // 超时配置
         int connectionTimeout = Integer.parseInt(ParameterUtil.getParameters().get(ParameterConstants.REDIS_CONNECTION_TIMEOUT));
         int soTimeout = Integer.parseInt(ParameterUtil.getParameters().get(ParameterConstants.REDIS_SO_TIMEOUT));
@@ -56,112 +60,113 @@ public class RedisUtil {
         } else {
             jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, poolConfig);
         }
+        log.info("RedisUtil 初始化完成，命名空间为: {}", NAMESPACE);
     }
 
     /**
      * Key 操作
      */
     public static boolean exists(String key) {
-        return jedisCluster.exists(key);
+        return jedisCluster.exists(NAMESPACE + key);
     }
 
     public static void del(String key) {
-        jedisCluster.del(key);
+        jedisCluster.del(NAMESPACE + key);
     }
 
     public static long ttl(String key) {
-        return jedisCluster.ttl(key);
+        return jedisCluster.ttl(NAMESPACE + key);
     }
 
     public static void expire(String key, long seconds) {
-        jedisCluster.expire(key, seconds);
+        jedisCluster.expire(NAMESPACE + key, seconds);
     }
 
     /**
      * String 操作
      */
     public static String getString(String key) {
-        return jedisCluster.get(key);
+        return jedisCluster.get(NAMESPACE + key);
     }
 
     public static void setString(String key, String value) {
-        jedisCluster.set(key, value);
+        jedisCluster.set(NAMESPACE + key, value);
     }
 
     public static void setStringWithExpiry(String key, String value, long seconds) {
-        jedisCluster.setex(key, seconds, value);
+        jedisCluster.setex(NAMESPACE + key, seconds, value);
     }
 
     /**
      * List 操作
      */
     public static void lpush(String key, String... values) {
-        jedisCluster.lpush(key, values);
+        jedisCluster.lpush(NAMESPACE + key, values);
     }
 
     public static List<String> lrange(String key, long start, long end) {
-        return jedisCluster.lrange(key, start, end);
+        return jedisCluster.lrange(NAMESPACE + key, start, end);
     }
 
     public static void lpushWithExpiry(String key, long seconds, String... values) {
-        jedisCluster.lpush(key, values);
-        jedisCluster.expire(key, seconds);
+        jedisCluster.lpush(NAMESPACE + key, values);
+        jedisCluster.expire(NAMESPACE + key, seconds);
     }
 
     /**
      * Set 操作
      */
     public static void sadd(String key, String... members) {
-        jedisCluster.sadd(key, members);
+        jedisCluster.sadd(NAMESPACE + key, members);
     }
 
     public static Set<String> smembers(String key) {
-        return jedisCluster.smembers(key);
+        return jedisCluster.smembers(NAMESPACE + key);
     }
 
     public static void saddWithExpiry(String key, long seconds, String... members) {
-        jedisCluster.sadd(key, members);
-        jedisCluster.expire(key, seconds);
+        jedisCluster.sadd(NAMESPACE + key, members);
+        jedisCluster.expire(NAMESPACE + key, seconds);
     }
 
     /**
      * Hash 操作
      */
     public static void hset(String key, String field, String value) {
-        jedisCluster.hset(key, field, value);
+        jedisCluster.hset(NAMESPACE + key, field, value);
     }
 
     public static String hget(String key, String field) {
-        return jedisCluster.hget(key, field);
+        return jedisCluster.hget(NAMESPACE + key, field);
     }
 
     public static Map<String, String> hgetAll(String key) {
-        return jedisCluster.hgetAll(key);
+        return jedisCluster.hgetAll(NAMESPACE + key);
     }
 
     public static void hsetWithExpiry(String key, long seconds, String field, String value) {
-        jedisCluster.hset(key, field, value);
-        jedisCluster.expire(key, seconds);
+        jedisCluster.hset(NAMESPACE + key, field, value);
+        jedisCluster.expire(NAMESPACE + key, seconds);
     }
 
     public static void hdel(final String key, final String... field) {
-        jedisCluster.hdel(key, field);
+        jedisCluster.hdel(NAMESPACE + key, field);
     }
 
     /**
      * ZSet 操作
      */
     public static void zadd(String key, double score, String member) {
-        jedisCluster.zadd(key, score, member);
+        jedisCluster.zadd(NAMESPACE + key, score, member);
     }
 
     public static Set<String> zrange(String key, long start, long end) {
-        return jedisCluster.zrange(key, start, end);
+        return jedisCluster.zrange(NAMESPACE + key, start, end);
     }
 
     public static void zaddWithExpiry(String key, long seconds, double score, String member) {
-        jedisCluster.zadd(key, score, member);
-        jedisCluster.expire(key, seconds);
+        jedisCluster.zadd(NAMESPACE + key, score, member);
+        jedisCluster.expire(NAMESPACE + key, seconds);
     }
 
 }

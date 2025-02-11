@@ -78,6 +78,7 @@ public interface ParameterConstants {
      */
     String REDIS_CLUSTER_NODES = "redis.cluster.nodes";
     String REDIS_PASSWORD = "redis.password";
+    String REDIS_NAMESPACE = "redis.namespace";
     String REDIS_CONNECTION_TIMEOUT = "redis.connectionTimeout";
     String REDIS_SO_TIMEOUT = "redis.soTimeout";
     String REDIS_MAX_ATTEMPTS = "redis.maxAttempts";
