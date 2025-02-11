@@ -38,11 +38,11 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://windows:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://vm:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
         slave:
-          url: jdbc:mysql://windows:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://vm:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
   ############################## [redis 配置项] ##############################
@@ -53,12 +53,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - localhost:6381
-        - localhost:6382
-        - localhost:6383
-        - localhost:6384
-        - localhost:6385
-        - localhost:6386
+        - vm:6381
+        - vm:6382
+        - vm:6383
+        - vm:6384
+        - vm:6385
+        - vm:6386
     lettuce:
       pool:
         min-idle: 0
@@ -68,14 +68,14 @@ spring:
   ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
+      bootstrap-servers: vm:9096,vm:9097,vm:9098
     consumer:
-      bootstrap-servers: localhost:9096,localhost:9097,localhost:9098
+      bootstrap-servers: vm:9096,vm:9097,vm:9098
       group-id: starlink_risk_server
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
-      host: localhost
+      host: vm
       port: 27018
       username: lbs
       password: Rongshu@2024
@@ -86,7 +86,7 @@ spring:
 xxl:
   job:
     admin:
-      addresses: http://localhost:8181/xxl-job-admin
+      addresses: http://vm:8181/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
       appname: starlink-risk
