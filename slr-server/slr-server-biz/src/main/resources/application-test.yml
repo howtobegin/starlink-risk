@@ -38,17 +38,18 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://docker:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://docker:3308/starlink_risk_test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
         slave:
-          url: jdbc:mysql://one:9130/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://one:9130/starlink_risk_test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
     password: Rongshu@2024
+    namespace: starlink_risk_test
     timeout: 5000
     cluster:
       max-redirects: 3
@@ -71,7 +72,7 @@ spring:
       bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
       bootstrap-servers: one:9092,two:9092,three:9092
-      group-id: starlink_risk_server
+      group-id: starlink_risk_server_test
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
@@ -79,8 +80,8 @@ spring:
       port: 27018
       username: lbs
       password: Rongshu@2024
-      database: starlink_risk
-      authentication-database: starlink_risk
+      database: starlink_risk_test
+      authentication-database: starlink_risk_test
 
 ############################## [xxl-job 配置项] ##############################
 xxl:
@@ -89,7 +90,7 @@ xxl:
       addresses: http://docker:8181/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
-      appname: starlink-risk
+      appname: starlink-risk-test
       address:
       ip:
       port: 9999
@@ -100,11 +101,11 @@ xxl:
 slr-connector:
   kafka:
     event:
-      topic: starlink_risk_event
+      topic: starlink_risk_event_test
       partition: 6
       replica: 3
     alert:
-      topic: starlink_risk_alert
+      topic: starlink_risk_alert_test
       partition: 6
       replica: 3
   rso:

@@ -38,11 +38,11 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://vm:3308/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://docker:3308/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
         slave:
-          url: jdbc:mysql://vm:9030/starlink_risk?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://one:9130/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
   ############################## [redis 配置项] ##############################
@@ -50,15 +50,16 @@ spring:
     database: 0
     password: Rongshu@2024
     timeout: 5000
+    namespace: starlink_risk_local
     cluster:
       max-redirects: 3
       nodes:
-        - vm:6381
-        - vm:6382
-        - vm:6383
-        - vm:6384
-        - vm:6385
-        - vm:6386
+        - one:6379
+        - one:6380
+        - two:6379
+        - two:6380
+        - three:6379
+        - three:6380
     lettuce:
       pool:
         min-idle: 0
@@ -68,28 +69,28 @@ spring:
   ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: vm:9096,vm:9097,vm:9098
+      bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
-      bootstrap-servers: vm:9096,vm:9097,vm:9098
-      group-id: starlink_risk_server
+      bootstrap-servers: one:9092,two:9092,three:9092
+      group-id: starlink_risk_server_local
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
-      host: vm
+      host: docker
       port: 27018
       username: lbs
       password: Rongshu@2024
-      database: starlink_risk
-      authentication-database: starlink_risk
+      database: starlink_risk_local
+      authentication-database: starlink_risk_local
 
 ############################## [xxl-job 配置项] ##############################
 xxl:
   job:
     admin:
-      addresses: http://vm:8181/xxl-job-admin
+      addresses: http://docker:8181/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
-      appname: starlink-risk
+      appname: starlink-risk-local
       address:
       ip:
       port: 9999
@@ -100,11 +101,11 @@ xxl:
 slr-connector:
   kafka:
     event:
-      topic: starlink_risk_event
+      topic: starlink_risk_event_local
       partition: 6
       replica: 3
     alert:
-      topic: starlink_risk_alert
+      topic: starlink_risk_alert_local
       partition: 6
       replica: 3
   rso:
