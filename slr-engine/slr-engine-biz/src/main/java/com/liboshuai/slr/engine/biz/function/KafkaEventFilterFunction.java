@@ -61,6 +61,8 @@ public class KafkaEventFilterFunction implements FilterFunction<FlinkEventDTO> {
             return false;
         }
 
+        // TODO: 将非法数据入 mongoDB，以便后期处理
+
         // 所有必填字段均不为空，保留该事件
         return true;
     }
