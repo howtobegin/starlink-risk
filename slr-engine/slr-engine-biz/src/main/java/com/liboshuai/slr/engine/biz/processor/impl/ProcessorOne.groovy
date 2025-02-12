@@ -248,9 +248,7 @@
 //     * 构建Redis的key
 //     */
 //    private String buildRedisKey(RuleCondDTO ruleCondDTO) {
-//        return RedisKeyConstants.REDIS_KEY_PREFIX +
-//                RedisKeyConstants.REDIS_KEY_SPLIT +
-//                RedisKeyConstants.DORIS_EVENT_HISTORY_VALUE +
+//        return RedisKeyConstants.DORIS_EVENT_HISTORY_VALUE +
 //                RedisKeyConstants.REDIS_KEY_SPLIT +
 //                ruleCondDTO.getRuleCode() +
 //                RedisKeyConstants.REDIS_KEY_SPLIT +
