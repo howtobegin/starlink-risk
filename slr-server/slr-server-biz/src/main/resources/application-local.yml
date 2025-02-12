@@ -97,6 +97,13 @@ xxl:
       logpath: C:/Me/Temp/xxl-job/jobhandler
       logretentiondays: 30
 
+############################## [日志 配置项] ##############################
+logging:
+  file:
+    name: /slr-server/logs/server.log # 日志文件名，全路径
+
+debug: false
+
 ############################## [connector 配置项] ##############################
 slr-connector:
   kafka:
