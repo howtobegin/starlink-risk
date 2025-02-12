@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.dal.kafka.consumer;
 
 import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
@@ -65,17 +65,17 @@ public class AlertMessageListener {
         List<AlertMessageDTO> finalAlertMessageDtoList = new ArrayList<>();
         if (!validAlertMessageDTOList.isEmpty()) {
             // 从mongo中获取事件id与其对应的数据数据
-            Map<Long, KafkaEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertMessageDTOList);
+            Map<Long, FlinkEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertMessageDTOList);
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertMessageDTO alertMessageDTO : validAlertMessageDTOList) {
                 // 根据mongo中的事件数据补充预警信息
                 String alertMessage = alertMessageDTO.getAlertMessage();
                 Long eventId = alertMessageDTO.getEventId();
-                KafkaEventDTO kafkaEventDTO = eventIdAndKafkaEventMap.get(eventId);
-                if (Objects.isNull(kafkaEventDTO)) {
-                    kafkaEventDTO = new KafkaEventDTO();
+                FlinkEventDTO flinkEventDTO = eventIdAndKafkaEventMap.get(eventId);
+                if (Objects.isNull(flinkEventDTO)) {
+                    flinkEventDTO = new FlinkEventDTO();
                 }
-                alertMessage = TemplateUtil.replacePlaceholders(alertMessage, kafkaEventDTO);
+                alertMessage = TemplateUtil.replacePlaceholders(alertMessage, flinkEventDTO);
                 // 将预警信息异步推送给微信预警平台
                 RuleInfoDTO ruleInfoDTO = ruleInfoService.getCacheRuleInfo(alertMessageDTO.getRuleCode());
                 // FIXME: 测试时，临时注释
@@ -87,7 +87,7 @@ public class AlertMessageListener {
 //                );
                 // 添加到 finalAlertMessageDtoList 中，并补充字段数据
                 alertMessageDTO.setAlertMessage(alertMessage);
-                alertMessageDTO.setTargetValue(kafkaEventDTO.getTargetValue());
+                alertMessageDTO.setTargetValue(flinkEventDTO.getTargetValue());
                 finalAlertMessageDtoList.add(alertMessageDTO);
             }
             // 将预警消息批量保存到 MongoDB
@@ -101,14 +101,14 @@ public class AlertMessageListener {
     /**
      * 从mongo中获取事件id与其对应的数据数据
      */
-    private Map<Long, KafkaEventDTO> findEventIdAndKafkaEventMap(List<AlertMessageDTO> validAlertMessageDTOList) {
-        Map<Long, KafkaEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
+    private Map<Long, FlinkEventDTO> findEventIdAndKafkaEventMap(List<AlertMessageDTO> validAlertMessageDTOList) {
+        Map<Long, FlinkEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
         List<Long> eventIdList = validAlertMessageDTOList.stream().map(AlertMessageDTO::getEventId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(eventIdList)) {
-            List<KafkaEventDTO> kafkaEventDTOList = kafkaEventService.selectListByEventIds(eventIdList);
-            if (!CollectionUtils.isEmpty(kafkaEventDTOList)) {
-                eventIdAndKafkaEventMap = kafkaEventDTOList.stream().collect(Collectors.toMap(
-                        KafkaEventDTO::getEventId,
+            List<FlinkEventDTO> flinkEventDTOList = kafkaEventService.selectListByEventIds(eventIdList);
+            if (!CollectionUtils.isEmpty(flinkEventDTOList)) {
+                eventIdAndKafkaEventMap = flinkEventDTOList.stream().collect(Collectors.toMap(
+                        FlinkEventDTO::getEventId,
                         Function.identity(),
                         (existing, replacement) -> existing
                 ));

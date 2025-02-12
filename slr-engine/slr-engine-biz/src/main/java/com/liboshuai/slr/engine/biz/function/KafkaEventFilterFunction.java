@@ -1,6 +1,6 @@
 package com.liboshuai.slr.engine.biz.function;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.FilterFunction;
 
@@ -12,7 +12,7 @@ import java.util.Objects;
  * KafkaEventFilterFunction类实现了FilterFunction接口，用于过滤Kafka事件数据
  */
 @Slf4j
-public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
+public class KafkaEventFilterFunction implements FilterFunction<FlinkEventDTO> {
 
     /**
      * 过滤方法实现
@@ -21,7 +21,7 @@ public class KafkaEventFilterFunction implements FilterFunction<KafkaEventDTO> {
      * @return 如果事件数据有效则返回true，否则返回false
      */
     @Override
-    public boolean filter(KafkaEventDTO event) {
+    public boolean filter(FlinkEventDTO event) {
 //        log.warn("接收到来自kafka的事件数据：{}", event);
 
         if (Objects.isNull(event)) {

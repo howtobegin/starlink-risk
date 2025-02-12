@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.impl;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.server.biz.convert.kafkaEvent.KafkaEventConvert;
 import com.liboshuai.slr.server.biz.dal.mongo.KafkaEventRepository;
@@ -20,7 +20,7 @@ public class MongoEventServiceImpl implements MongoEventService {
 
     @Override
     @Async(AsyncExecutorConstants.SAVE_EVENT_TO_MONGO_ASYNC_EXECUTOR)
-    public void batchSaveEventToMongo(List<KafkaEventDTO> kafkaEventDTOList) {
-        kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(kafkaEventDTOList));
+    public void batchSaveEventToMongo(List<FlinkEventDTO> flinkEventDTOList) {
+        kafkaEventRepository.saveAll(kafkaEventConvert.batchConvertDto2Do(flinkEventDTOList));
     }
 }

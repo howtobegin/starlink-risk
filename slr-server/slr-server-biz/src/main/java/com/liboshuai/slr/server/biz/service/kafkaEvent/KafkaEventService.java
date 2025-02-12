@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaInfoRespVO;
 
@@ -23,7 +23,7 @@ public interface KafkaEventService {
     /**
      * 根据事件id列表查询kafka事件数据集合
      */
-    List<KafkaEventDTO> selectListByEventIds(List<Long> eventIdList);
+    List<FlinkEventDTO> selectListByEventIds(List<Long> eventIdList);
 
     /**
      * 删除mongo中过期事件数据

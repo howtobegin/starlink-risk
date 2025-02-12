@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
@@ -142,19 +142,19 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         // 验证 KafkaEventGroupReqVO 是否符合规则库中的规则
         validateKafkaEventGroupReqVO(kafkaEventGroupReqVO, kafkaEventErrorRespVOList);
         // req转dto
-        List<KafkaEventDTO> kafkaEventDTOList = kafkaEventReqVOList.stream()
+        List<FlinkEventDTO> flinkEventDTOList = kafkaEventReqVOList.stream()
                 .map(kafkaEventConvert::convertReq2Dto) // 转换为DTO
                 .map(kafkaEventDTO -> kafkaEventDTO.setChannel(channel)) // 设置渠道
                 .collect(Collectors.toList());
         // 各渠道特别的数据处理逻辑
         KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
-        kafkaEventStrategy.processAfter(kafkaEventDTOList);
+        kafkaEventStrategy.processAfter(flinkEventDTOList);
         // 生成事件id
-        kafkaEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(snowflakeIdGenerator.nextId()));
+        flinkEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(snowflakeIdGenerator.nextId()));
         // 异步推送数据到kafka
-        kafkaEventProvider.batchSend(kafkaEventDTOList);
+        kafkaEventProvider.batchSend(flinkEventDTOList);
         // 异步保存事件数据到mongo
-        mongoEventService.batchSaveEventToMongo(kafkaEventDTOList);
+        mongoEventService.batchSaveEventToMongo(flinkEventDTOList);
         // 存在非法数据错误原因，则抛出异常
         if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
             // 构建错误数据对象，并存入 mongodb
@@ -171,7 +171,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     }
 
     @Override
-    public List<KafkaEventDTO> selectListByEventIds(List<Long> eventIdList) {
+    public List<FlinkEventDTO> selectListByEventIds(List<Long> eventIdList) {
         List<KafkaEventDO> kafkaEventDOList = kafkaEventRepository.findAllByEventIdIn(eventIdList);
         return kafkaEventConvert.batchConvertDo2Dto(kafkaEventDOList);
     }
@@ -333,7 +333,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
                 .map(ChannelEnum::getCode)
                 .collect(Collectors.toSet()); // 获取所有合法渠道的code
         if (!validChannels.contains(channel)) {
-            String fieldName = ReflectUtils.getFieldName(KafkaEventDTO::getChannel);
+            String fieldName = ReflectUtils.getFieldName(FlinkEventDTO::getChannel);
             String message = String.format("字段 [%s]: 无效的渠道 [%s]", fieldName, channel);
             // 构建错误数据对象，并存入 mongodb
             KafkaEventErrorDO kafkaEventErrorDO = KafkaEventErrorDO.builder()

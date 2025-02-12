@@ -18,14 +18,20 @@ import java.util.Map;
 @AllArgsConstructor
 @Accessors(chain = true)
 @TypeInfo(KafkaEventDtoType.class)
-public class KafkaEventDTO implements Serializable {
+public class FlinkEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;
 
     /**
-     * 事件时间（例如：1736732339.769）
+     * 事件id
      */
-    private String eventTime;
+    private Long eventId;
+    /**
+     * 事件时间（例如：1736732339769）
+     * 13位，毫秒级
+     * 第一版本使用flink处理时间，暂不使用业务平传输的时间
+     */
+    private Long eventTime;
     /**
      * 渠道
      * {@link ChannelEnum}
@@ -58,4 +64,8 @@ public class KafkaEventDTO implements Serializable {
      * key关联{@link RuleEventAttrValueDTO#getAttrField()}
      */
     private Map<String, String> eventAttrMap;
+    /**
+     * 规则状态历史的记录数据，用于清理下线规则状态
+     */
+    private StateHistoryDTO stateHistoryDTO;
 }

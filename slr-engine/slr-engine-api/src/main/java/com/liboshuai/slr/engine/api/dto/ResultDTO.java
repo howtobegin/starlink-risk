@@ -24,7 +24,7 @@ public class ResultDTO implements Serializable {
     /**
      * kafka事件数据
      */
-    private KafkaEventDTO kafkaEventDTO;
+    private FlinkEventDTO flinkEventDTO;
 
     /**
      * 状态历史的记录数据

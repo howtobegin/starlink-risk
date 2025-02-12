@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.convert.riskRule;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.server.biz.dal.dataobject.riskRule.DorisEventDO;
@@ -21,7 +21,7 @@ public interface DorisEventConvert {
 
     @Mapping(source = "eventTime", target = "eventTime", qualifiedByName = "localDateTimeToLong")
     @Mapping(source = "eventAttrMap", target = "eventAttrMap", qualifiedByName = "stringToMap")
-    List<KafkaEventDTO> batchConvertDO2KafkaDTO(List<DorisEventDO> dorisEventDOList);
+    List<FlinkEventDTO> batchConvertDO2KafkaDTO(List<DorisEventDO> dorisEventDOList);
 
     default Map<String, String> stringToMap(String eventAttrMap) {
         if (!StringUtils.hasText(eventAttrMap)) {

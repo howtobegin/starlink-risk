@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.dal.kafka.provider;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.server.biz.framework.properties.KafkaProperties;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +22,12 @@ public class KafkaEventProvider {
     /**
      * 批量上送事件信息到kafka
      */
-    public void batchSend(List<KafkaEventDTO> kafkaEventDTOList) {
+    public void batchSend(List<FlinkEventDTO> flinkEventDTOList) {
         String providerTopic = kafkaProperties.getEventTopic();
-        if (CollectionUtils.isEmpty(kafkaEventDTOList)) {
+        if (CollectionUtils.isEmpty(flinkEventDTOList)) {
             return;
         }
-        kafkaEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(
+        flinkEventDTOList.forEach(eventUploadDTO -> kafkaTemplate.send(
                 providerTopic, generateKey(eventUploadDTO), eventUploadDTO)
         );
     }
@@ -35,7 +35,7 @@ public class KafkaEventProvider {
     /**
      * 根据 channel、targetField 和 targetValue 生成消息的 key
      */
-    private String generateKey(KafkaEventDTO eventUploadDTO) {
+    private String generateKey(FlinkEventDTO eventUploadDTO) {
         String channel = eventUploadDTO.getChannel();
         String targetField = eventUploadDTO.getTargetField();
         String targetValue = eventUploadDTO.getTargetValue();

@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEventDTO> {
+public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, FlinkEventDTO> {
 
     private final ParameterTool parameterTool;
     // 连接池
@@ -75,7 +75,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEven
     }
 
     @Override
-    public void asyncInvoke(MysqlCdcDTO mysqlCdcDTO, ResultFuture<KafkaEventDTO> resultFuture) {
+    public void asyncInvoke(MysqlCdcDTO mysqlCdcDTO, ResultFuture<FlinkEventDTO> resultFuture) {
         String op = mysqlCdcDTO.getOp();
         // 规则下线时，查询doris创建数据清洗流
         if (!Envelope.Operation.DELETE.code().equals(op)) {
@@ -98,7 +98,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEven
                 resultFuture.complete(Collections.emptyList());
                 return;
             }
-            List<KafkaEventDTO> kafkaEventDTOList = new ArrayList<>();
+            List<FlinkEventDTO> flinkEventDTOList = new ArrayList<>();
             try (DruidPooledConnection connection = druidDataSource.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(
                          String.format("SELECT TARGET_VALUE FROM %s WHERE RULE_CODE = ? and RULE_VERSION = ? and CHANNEL =? and TARGET_FIELD = ?", tableName)
@@ -119,17 +119,17 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, KafkaEven
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
                                 .build();
-                        KafkaEventDTO kafkaEventDTO = KafkaEventDTO.builder()
+                        FlinkEventDTO flinkEventDTO = FlinkEventDTO.builder()
                                 .channel(ruleInfoDTOBefore.getChannel())
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
                                 .stateHistoryDTO(stateHistoryDTO)
                                 .build();
-                        kafkaEventDTOList.add(kafkaEventDTO);
+                        flinkEventDTOList.add(flinkEventDTO);
                     }
                 }
                 // 提交结果
-                resultFuture.complete(kafkaEventDTOList);
+                resultFuture.complete(flinkEventDTOList);
             } catch (Exception e) {
                 log.error("Error processing asyncInvoke for RuleInfoDTO: {}", mysqlCdcDTO, e);
                 // 可以根据需求选择是否提交空结果或有错误标识的结果

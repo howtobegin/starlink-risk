@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.strategy;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class DefaultKafkaEventStrategy implements KafkaEventStrategy {
      * 数据的前置处理
      */
     @Override
-    public void processAfter(List<KafkaEventDTO> kafkaEventDTOList) {
+    public void processAfter(List<FlinkEventDTO> flinkEventDTOList) {
         // 暂时没有处理逻辑
 
     }

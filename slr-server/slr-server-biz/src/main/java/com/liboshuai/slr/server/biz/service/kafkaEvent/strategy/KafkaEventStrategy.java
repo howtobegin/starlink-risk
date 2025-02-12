@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.kafkaEvent.strategy;
 
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ public interface KafkaEventStrategy {
     /**
      * 数据的前置处理
      */
-    void processAfter(List<KafkaEventDTO> kafkaEventDTOList);
+    void processAfter(List<FlinkEventDTO> flinkEventDTOList);
 }

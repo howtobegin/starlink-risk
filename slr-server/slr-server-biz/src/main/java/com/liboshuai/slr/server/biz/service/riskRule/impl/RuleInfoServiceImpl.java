@@ -574,10 +574,10 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.FLINK_PROCESS_NOT_END, LocalDateTimeUtils.convertTimestamp2String(flinkProcessEndTime));
         }
         // doris 事件数据转换成 kafka 事件数据
-        List<KafkaEventDTO> kafkaEventDTOList = dorisEventConvert.batchConvertDO2KafkaDTO(dorisEventDOList);
+        List<FlinkEventDTO> flinkEventDTOList = dorisEventConvert.batchConvertDO2KafkaDTO(dorisEventDOList);
         // 根据 targetValue 进行分组
-        Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap = kafkaEventDTOList.stream()
-                .collect(Collectors.groupingBy(KafkaEventDTO::getTargetValue));
+        Map<String, List<FlinkEventDTO>> targetValueAndKafkaEventDtoMap = flinkEventDTOList.stream()
+                .collect(Collectors.groupingBy(FlinkEventDTO::getTargetValue));
         // 最终生成的风控信息集合
         List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
         // 遍历每个targetValue下的数据，进行风控规则判断
@@ -606,23 +606,23 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     /**
      * 遍历每个targetValue下的数据，进行风控规则判断
      */
-    private void process(Long ruleCode, Map<String, List<KafkaEventDTO>> targetValueAndKafkaEventDtoMap,
+    private void process(Long ruleCode, Map<String, List<FlinkEventDTO>> targetValueAndKafkaEventDtoMap,
                          long windowSize, long windowStep, RuleCondDTO ruleCondDTO, Long alertInterval,
                          String channel, String targetField, String eventField, List<AlertMessageDTO> alertMessageDTOS) {
-        for (Map.Entry<String, List<KafkaEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
+        for (Map.Entry<String, List<FlinkEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
             String targetValue = entry.getKey();
-            List<KafkaEventDTO> kafkaEventDTOS = entry.getValue();
+            List<FlinkEventDTO> flinkEventDTOS = entry.getValue();
             // 最近一次预警时间（针对当前 TARGET_VALUE）
             long lastAlertTimestamp = 0L;
-            if (CollectionUtils.isEmpty(kafkaEventDTOS)) {
+            if (CollectionUtils.isEmpty(flinkEventDTOS)) {
                 continue;
             }
             // 上一次更新后的阈值
             Long latestThreshold = null;
             // 获取第一个和最后一个事件的时间戳
-            KafkaEventDTO firstKafkaEventDO = kafkaEventDTOS.get(0);
+            FlinkEventDTO firstKafkaEventDO = flinkEventDTOS.get(0);
             long firstEventTimestamp = firstKafkaEventDO.getEventTime();
-            KafkaEventDTO latestKafkaEventDO = kafkaEventDTOS.get(kafkaEventDTOS.size() - 1);
+            FlinkEventDTO latestKafkaEventDO = flinkEventDTOS.get(flinkEventDTOS.size() - 1);
             long latestEventTimestamp = latestKafkaEventDO.getEventTime();
 
             // 计算窗口的起始时间
@@ -638,7 +638,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 long windowEndTimeStamp = windowStartTimeStamp + windowSize;
                 // 过滤出在当前窗口内的事件
                 long finalWindowStartTimeStamp = windowStartTimeStamp;
-                List<KafkaEventDTO> windowsKafkaEventDOList = kafkaEventDTOS.stream()
+                List<FlinkEventDTO> windowsKafkaEventDOList = flinkEventDTOS.stream()
                         .filter(eventDO -> {
                             long eventTimestamp = eventDO.getEventTime();
                             return eventTimestamp >= finalWindowStartTimeStamp && eventTimestamp < windowEndTimeStamp;

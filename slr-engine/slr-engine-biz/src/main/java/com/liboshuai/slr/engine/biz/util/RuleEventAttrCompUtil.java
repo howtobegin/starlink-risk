@@ -1,6 +1,6 @@
 package com.liboshuai.slr.engine.biz.util;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.dto.RuleEventAttrValueDTO;
 import com.liboshuai.slr.engine.api.enums.RuleEventAttrOpEnum;
 import com.liboshuai.slr.engine.api.enums.RuleEventAttrTypeEnum;
@@ -18,13 +18,13 @@ public class RuleEventAttrCompUtil {
      * 比较两个值，判断是否满足指定的关系
      * @return 比较结果，满足关系返回 true，否则返回 false
      */
-    public static boolean compareValues(RuleEventAttrValueDTO ruleEventAttrValueDTO, KafkaEventDTO kafkaEventDTO) {
+    public static boolean compareValues(RuleEventAttrValueDTO ruleEventAttrValueDTO, FlinkEventDTO flinkEventDTO) {
         String ruleEventAttrField = ruleEventAttrValueDTO.getAttrField();
         String ruleEventAttrType = ruleEventAttrValueDTO.getAttrType();
         String ruleEventAttrOp = ruleEventAttrValueDTO.getAttrOp();
         String ruleEventAttrValue = ruleEventAttrValueDTO.getAttrValue();
 
-        Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap();
+        Map<String, String> kafkaEventAttrMap = flinkEventDTO.getEventAttrMap();
         String kafkaEventAttrValue = kafkaEventAttrMap.get(ruleEventAttrField);
         if (Objects.isNull(kafkaEventAttrValue)) {
             return false;
@@ -45,7 +45,7 @@ public class RuleEventAttrCompUtil {
 
         if ((val1 == null) || (val2 == null)) {
             log.warn("kafka数据事件属性值比较失败，可能是规则配置中事件属性类型与事件属性值不匹配，故直接判定为不符合规则要求！" +
-                    "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
+                    "规则事件属性信息:{}, kafka事件信息:{}", ruleEventAttrValueDTO, flinkEventDTO);
             return false;
         }
 

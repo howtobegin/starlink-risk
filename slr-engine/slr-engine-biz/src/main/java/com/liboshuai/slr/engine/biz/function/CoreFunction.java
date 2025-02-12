@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO> implements CheckpointedFunction {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO> implements CheckpointedFunction {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -47,7 +47,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     /**
      * 最近5分钟时间事件数据缓存
      */
-    private final Map<String, List<KafkaEventDTO>> recentEventMap = new HashMap<>();
+    private final Map<String, List<FlinkEventDTO>> recentEventMap = new HashMap<>();
     /**
      * groovy加载器
      */
@@ -80,44 +80,44 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
     }
 
     @Override
-    public void processElement(KafkaEventDTO kafkaEventDTO,
-                               KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.ReadOnlyContext ctx,
+    public void processElement(FlinkEventDTO flinkEventDTO,
+                               KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.ReadOnlyContext ctx,
                                Collector<ResultDTO> out) throws Exception {
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
         // 获取下线规则状态记录信息
-        StateHistoryDTO stateHistoryDTO = kafkaEventDTO.getStateHistoryDTO();
+        StateHistoryDTO stateHistoryDTO = flinkEventDTO.getStateHistoryDTO();
         if (Objects.nonNull(stateHistoryDTO)) {
             clearOldState(stateHistoryDTO);
             return;
         }
         // 设置事件时间为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        kafkaEventDTO.setEventTime(currentProcessingTime);
+        flinkEventDTO.setEventTime(currentProcessingTime);
         // 将设置了事件时间的数据放入结果中，以便后续写入doris
         ResultDTO resultDTO = ResultDTO.builder()
-                .kafkaEventDTO(kafkaEventDTO)
+                .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(resultDTO);
         // 将事件添加到缓存列表中并移除超过5分钟的过期数据
-        addEventToCacheAndRemoveExpired(currentKey, kafkaEventDTO, currentProcessingTime);
+        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, currentProcessingTime);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
-                List<KafkaEventDTO> historyKafkaEventDTOList = recentEventMap.get(currentKey);
-                if (CollectionUtil.isNullOrEmpty(historyKafkaEventDTOList)) {
+                List<FlinkEventDTO> historyFlinkEventDTOList = recentEventMap.get(currentKey);
+                if (CollectionUtil.isNullOrEmpty(historyFlinkEventDTOList)) {
                     continue;
                 }
-                for (KafkaEventDTO historyKafkaEventDto : historyKafkaEventDTOList) {
-                    processor.processElement(currentKey, currentProcessingTime, historyKafkaEventDto, out);
+                for (FlinkEventDTO historyFlinkEventDto : historyFlinkEventDTOList) {
+                    processor.processElement(currentKey, currentProcessingTime, historyFlinkEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, currentProcessingTime, kafkaEventDTO, out);
+                processor.processElement(currentKey, currentProcessingTime, flinkEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
@@ -130,19 +130,19 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      * 将事件添加到缓存列表中并移除超过5分钟的过期数据。
      *
      * @param currentKey            当前的键值
-     * @param kafkaEventDTO         要添加的事件对象
+     * @param flinkEventDTO         要添加的事件对象
      * @param currentProcessingTime 当前的处理时间
      */
-    private void addEventToCacheAndRemoveExpired(String currentKey, KafkaEventDTO kafkaEventDTO, long currentProcessingTime) {
+    private void addEventToCacheAndRemoveExpired(String currentKey, FlinkEventDTO flinkEventDTO, long currentProcessingTime) {
         // 将事件放入缓存列表中
         recentEventMap
                 .computeIfAbsent(currentKey, k -> new ArrayList<>())
-                .add(kafkaEventDTO);
-        List<KafkaEventDTO> kafkaEventDTOList = recentEventMap.get(currentKey);
+                .add(flinkEventDTO);
+        List<FlinkEventDTO> flinkEventDTOList = recentEventMap.get(currentKey);
         // 遍历并移除过期的数据
-        Iterator<KafkaEventDTO> iterator = kafkaEventDTOList.iterator();
+        Iterator<FlinkEventDTO> iterator = flinkEventDTOList.iterator();
         while (iterator.hasNext()) {
-            KafkaEventDTO eventDTO = iterator.next();
+            FlinkEventDTO eventDTO = iterator.next();
             Long eventTime = eventDTO.getEventTime();
             if (eventTime < currentProcessingTime - TimeUnit.MINUTES.toMillis(5)) {
                 // 移除过期数据
@@ -222,7 +222,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
 
     @Override
     public void processBroadcastElement(MysqlCdcDTO mysqlCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.Context ctx,
+                                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.Context ctx,
                                         Collector<ResultDTO> out) throws Exception {
         if (mysqlCdcDTO == null) {
             log.warn("规则运算机上下线处理失败，MysqlCdc规则信息ruleCdcDTO必须非空！");
@@ -329,7 +329,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, KafkaEve
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, KafkaEventDTO, MysqlCdcDTO, ResultDTO>.OnTimerContext ctx,
+                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.OnTimerContext ctx,
                         Collector<ResultDTO> out) throws Exception {
         // 获取当前Key
         String currentKey = ctx.getCurrentKey();
