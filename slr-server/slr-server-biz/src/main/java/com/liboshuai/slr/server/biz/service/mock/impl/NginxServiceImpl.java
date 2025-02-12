@@ -57,20 +57,20 @@ public class NginxServiceImpl implements NginxService {
     /**
      * 向打点服务器发送请求
      *
-     * @param eventData 要发送的事件数据
+     * @param eventDTO 要发送的事件数据
      */
-    public void sendEventRequest(EventDTO eventData) {
+    public void sendEventRequest(EventDTO eventDTO) {
         // 打点服务器的请求 URI 地址（建议动态配置）
         String baseUri = "http://docker:48881/backend.gif";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
-                .queryParam("channel", eventData.getChannel())
-                .queryParam("targetField", eventData.getTargetField())
-                .queryParam("targetValue", eventData.getTargetValue())
-                .queryParam("eventField", eventData.getEventField())
-                .queryParam("eventValue", eventData.getEventValue())
-                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventData.getEventAttrMap()))
+                .queryParam("channel", eventDTO.getChannel())
+                .queryParam("targetField", eventDTO.getTargetField())
+                .queryParam("targetValue", eventDTO.getTargetValue())
+                .queryParam("eventField", eventDTO.getEventField())
+                .queryParam("eventValue", eventDTO.getEventValue())
+                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventDTO.getEventAttrMap()))
                 .build()
                 .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
 

@@ -1,29 +1,26 @@
 package com.liboshuai.slr.server.biz.service.mock.impl;
 
+import com.liboshuai.slr.engine.api.dto.EventDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
-import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
-import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventReqVO;
 import com.liboshuai.slr.server.biz.service.mock.MockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
 @Service
 public class MockServiceImpl implements MockService {
-
-    @Resource
-    private RestTemplate restTemplate;
 
     private static final int MAX_ENTRIES = 1000000;
     // Predefined bank names and numbers
@@ -74,43 +71,42 @@ public class MockServiceImpl implements MockService {
     @Override
     @TakeTime
     @Async(AsyncExecutorConstants.MOCK_EVENT_FILE_ASYNC_EXECUTOR)
-    public void createEventFileBatchMode(Long totalCount, Long maxEntries) {
-        log.info("开始生成事件文件，目标条数: {}", totalCount);
+    public void createEventFile(Long totalCount, Long maxEntries) {
         long generatedCount = 0;
+        int batchSize = 1000;
+
+        List<String> urlParamsBatch = new ArrayList<>(batchSize);
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(eventLogFilePath, false))) {
             while (generatedCount < totalCount) {
-                // 计算当前批次的大小，确保不会超过 totalCount
-                int currentBatchSize = (int) Math.min(random.nextInt(10) + 1, totalCount - generatedCount);
-                generatedCount += currentBatchSize;
+                generatedCount++;
 
-                // 随机选择一个 channel
+                // 生成事件
                 String channel = random.nextBoolean() ? "GAME" : "HJF";
+                EventDTO eventDTO = generateEvent(channel);
+                String urlParams = convertToParams(eventDTO);
 
-                // 生成当前批次的事件列表
-                List<KafkaEventReqVO> eventList = new ArrayList<>(currentBatchSize);
-                for (int i = 0; i < currentBatchSize; i++) {
-                    KafkaEventReqVO event = generateEvent(channel);
-                    eventList.add(event);
+                // 添加到批次列表
+                urlParamsBatch.add(urlParams);
+
+                // 如果达到批量阈值，则一次性写入文件
+                if (urlParamsBatch.size() >= batchSize) {
+                    writeBatchToFile(writer, urlParamsBatch);
+                    urlParamsBatch.clear(); // 清空列表，继续收集下一批数据
                 }
-
-                // 创建批次对象
-                KafkaEventGroupReqVO batch = KafkaEventGroupReqVO.builder()
-                        .channel(channel)
-                        .kafkaEventGroup(eventList)
-                        .build();
-
-                // 将批次写入文件
-                writeBatchToFile(writer, batch);
             }
-            log.info("事件文件生成完成，文件路径: {}", eventLogFilePath);
+
+            // 处理剩余的事件
+            if (!urlParamsBatch.isEmpty()) {
+                writeBatchToFile(writer, urlParamsBatch);
+            }
         } catch (IOException e) {
             log.error("写入事件文件时发生错误", e);
         }
     }
 
-    private KafkaEventReqVO generateEvent(String channel) {
-        KafkaEventReqVO.KafkaEventReqVOBuilder builder = KafkaEventReqVO.builder();
+    private EventDTO generateEvent(String channel) {
+        EventDTO.EventDTOBuilder builder = EventDTO.builder();
 
         Map<String, String> eventAttrMap = new HashMap<>();
 
@@ -132,11 +128,6 @@ public class MockServiceImpl implements MockService {
             throw new IllegalArgumentException("Invalid channel: " + channel);
         }
 
-        builder.eventTime(System.currentTimeMillis())
-                .targetField("userId")
-                .targetValue(generateUserId())
-                .eventValue(String.valueOf(random.nextInt(11)))
-        ;
         if (Objects.equals(eventField, "orderAmount")) {
             // 订单金额
             builder.eventValue(String.valueOf(random.nextInt(100)));
@@ -148,6 +139,11 @@ public class MockServiceImpl implements MockService {
         eventAttrMap.put("bankNo", bankNos.get(bankIndex));
 
         builder.eventAttrMap(eventAttrMap);
+
+        builder.channel(channel)
+                .targetField("userId")
+                .targetValue(generateUserId())
+                .eventValue(String.valueOf(random.nextInt(11)));
         return builder.build();
     }
 
@@ -180,9 +176,35 @@ public class MockServiceImpl implements MockService {
         return "产品" + (productIdCounter - 1);
     }
 
-    private void writeBatchToFile(BufferedWriter writer, KafkaEventGroupReqVO batch) throws IOException {
-        String json = JsonUtils.toJsonString(batch);
-        writer.write(json);
-        writer.newLine();
+    /**
+     * 将 EventDTO 转换为 url参数
+     */
+    private String convertToParams(EventDTO eventDTO) throws IOException {
+        // 打点服务器的请求 URI 地址（建议动态配置）
+        String baseUri = "http://docker:48881/backend.gif";
+
+        // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
+        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
+                .queryParam("channel", eventDTO.getChannel())
+                .queryParam("targetField", eventDTO.getTargetField())
+                .queryParam("targetValue", eventDTO.getTargetValue())
+                .queryParam("eventField", eventDTO.getEventField())
+                .queryParam("eventValue", eventDTO.getEventValue())
+                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventDTO.getEventAttrMap()))
+                .build()
+                .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
+        String[] split = uriComponents.toUriString().split("\\?");
+        return split[1];
+    }
+
+    /**
+     * 一次性写入一批事件到文件
+     */
+    private void writeBatchToFile(BufferedWriter writer, List<String> urlParamsBatch) throws IOException {
+        for (String urlParams : urlParamsBatch) {
+            writer.write(urlParams);
+            writer.newLine();
+        }
+        writer.flush(); // 确保数据写入磁盘
     }
 }

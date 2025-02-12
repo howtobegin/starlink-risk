@@ -29,10 +29,10 @@ public class MockController {
     private final RedisTemplate<String, Object> redisTemplate;
 
 
-    @GetMapping("/createEventFileBatchMode")
-    @Operation(summary = "创建事件数据文件（文件内容为批量上送模式）")
-    public CommonResult<String> createEventFileBatchMode(Long totalCount, Long maxEntries) {
-        mockService.createEventFileBatchMode(totalCount, maxEntries);
+    @GetMapping("/createEventFile")
+    @Operation(summary = "创建事件数据文件")
+    public CommonResult<String> createEventFile(Long totalCount, Long maxEntries) {
+        mockService.createEventFile(totalCount, maxEntries);
         return CommonResult.success("事件日志文件开始生成，请等待......");
     }
 
