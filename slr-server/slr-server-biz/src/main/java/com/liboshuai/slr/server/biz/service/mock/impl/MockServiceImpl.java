@@ -183,7 +183,7 @@ public class MockServiceImpl implements MockService {
      */
     private String convertToParams(EventDTO eventDTO) throws IOException {
         // 打点服务器的请求 URI 地址（建议动态配置）
-        String baseUri = "http://docker:48881/slr_" + slrServerProperties.getActive() + ".gif ";
+        String baseUri = "http://docker:48881/slr_event_" + slrServerProperties.getActive() + ".gif ";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
