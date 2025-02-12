@@ -103,46 +103,46 @@
 //     * 处理元素事件，根据给定的规则信息和Kafka事件进行处理
 //     *
 //     * @param currentEventTimestamp 时间戳，用于处理的时间参考
-//     * @param kafkaEventDTO         Kafka事件数据传输对象，包含事件的详细信息
+//     * @param flinkEventDTO         Kafka事件数据传输对象，包含事件的详细信息
 //     * @param out                   用于输出处理结果的收集器
 //     * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
 //     */
 //    @Override
-//    public void processElement(String currentKey, long currentEventTimestamp, KafkaEventDTO kafkaEventDTO,
+//    public void processElement(String currentKey, long currentEventTimestamp, FlinkEventDTO flinkEventDTO,
 //                               Collector<ResultDTO> out) throws Exception {
 //        if (Objects.isNull(ruleInfoDTO)) {
-//            log.warn("因规则信息为空，故跳过此次计算！当前事件数据：{}", kafkaEventDTO);
+//            log.warn("因规则信息为空，故跳过此次计算！当前事件数据：{}", flinkEventDTO);
 //            return;
 //        }
 //        if (!Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.ONLINE.getCode())
 //                && !Objects.equals(ruleInfoDTO.getRuleStatus(), CommonStatusEnum.OFFLINE_PENDING.getCode())) {
-//            log.warn("因规则[{}]的状态不为'已上线'或'下线待审核'，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
+//            log.warn("因规则[{}]的状态不为'已上线'或'下线待审核'，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
 //            return;
 //        }
 //        // 事件与规则渠道匹配不上，则直接跳过
-//        if (!Objects.equals(kafkaEventDTO.getChannel(), ruleInfoDTO.getChannel())) {
+//        if (!Objects.equals(flinkEventDTO.getChannel(), ruleInfoDTO.getChannel())) {
 //            return;
 //        }
 //        // 事件与规则目标匹配不上，则直接跳过
-//        if (!Objects.equals(kafkaEventDTO.getTargetField(), ruleInfoDTO.getTargetField())) {
+//        if (!Objects.equals(flinkEventDTO.getTargetField(), ruleInfoDTO.getTargetField())) {
 //            return;
 //        }
 //        // 获取规则条件
 //        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup();
 //        if (condGroupList == null || condGroupList.isEmpty()) {
-//            log.warn("因规则[{}]的条件组为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
+//            log.warn("因规则[{}]的条件组为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
 //            return;
 //        }
 //        // 此模型仅支持条件为周期类型的规则
 //        for (RuleCondDTO condGroupDTO : condGroupList) {
 //            String type = condGroupDTO.getCondType();
 //            if (!Objects.equals(type, RuleCondTypeEnum.PERIODIC.getCode())) {
-//                log.warn("因规则[{}]的条件类型不为周期类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), kafkaEventDTO);
+//                log.warn("因规则[{}]的条件类型不为周期类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
 //                return;
 //            }
 //        }
 //        // 计算规则条件值
-//        processRuleCondValue(currentEventTimestamp, ruleInfoDTO, kafkaEventDTO, out);
+//        processRuleCondValue(currentEventTimestamp, ruleInfoDTO, flinkEventDTO, out);
 //    }
 //
 //    /**
@@ -151,20 +151,20 @@
 //     * 如果规则条件跨越历史时间段，则需要从Redis中获取历史事件值，并进行初始化
 //     *
 //     * @param currentEventTimestamp 时间戳，用于非跨历史时间段的事件匹配
-//     * @param kafkaEventDTO         Kafka事件DTO
+//     * @param flinkEventDTO         Kafka事件DTO
 //     */
 //    private void processRuleCondValue(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
-//                                      KafkaEventDTO kafkaEventDTO, Collector<ResultDTO> out) throws Exception {
+//                                      FlinkEventDTO flinkEventDTO, Collector<ResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
 //            // 事件与规则中的事件编号匹配不上，则直接跳过
-//            if (!Objects.equals(kafkaEventDTO.getEventField(), ruleCondDTO.getEventField())) {
+//            if (!Objects.equals(flinkEventDTO.getEventField(), ruleCondDTO.getEventField())) {
 //                // 事件编号匹配不上，则直接跳过
 //                continue;
 //            }
 //            // 进行事件属性匹配
 //            List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup();
-//            boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, kafkaEventDTO);
+//            boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, flinkEventDTO);
 //            if (!eventAttributeMatchResult) {
 //                // 事件属性匹配不上，则直接跳过
 //                continue;
@@ -176,69 +176,69 @@
 //                        .ruleCode(ruleInfoDTO.getRuleCode())
 //                        .ruleVersion(ruleInfoDTO.getRuleVersion())
 //                        .channel(ruleInfoDTO.getChannel())
-//                        .targetField(kafkaEventDTO.getTargetField())
-//                        .targetValue(kafkaEventDTO.getTargetValue())
+//                        .targetField(flinkEventDTO.getTargetField())
+//                        .targetValue(flinkEventDTO.getTargetValue())
 //                        .build();
 //                out.collect(ResultDTO.builder().stateHistoryDTO(stateHistoryDTO).build());
 //                hasValueState.update(true);
 //            }
 //            // 状态值防空
-//            Tuple2<Long, Long> longLongTuple2 = smallMapState.get(kafkaEventDTO.getEventField());
+//            Tuple2<Long, Long> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
 //            if (Objects.isNull(longLongTuple2)) {
-//                smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(0L, kafkaEventDTO.getEventId()));
+//                smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(0L, flinkEventDTO.getEventId()));
 //            }
 //            // 规则事件值计算
 //            if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
 //                String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
 //                // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
 //                // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
-//                if (kafkaEventDTO.getEventTime()
+//                if (flinkEventDTO.getEventTime()
 //                        <= LocalDateTimeUtils.convertString2Timestamp(crossHistoryTimeline)) {
 //                    continue;
 //                }
 //                // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
 //                // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
-//                if (!smallInitMapState.contains(kafkaEventDTO.getEventField())) {
+//                if (!smallInitMapState.contains(flinkEventDTO.getEventField())) {
 //                    // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
 //                    // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
 //                    String redisKey = buildRedisKey(ruleCondDTO);
-//                    String redisHashKey = buildRedisHashKey(kafkaEventDTO);
+//                    String redisHashKey = buildRedisHashKey(flinkEventDTO);
 //                    // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
 //                    String initValue = RedisUtil.hget(redisKey, redisHashKey);
 //                    RedisUtil.hdel(redisKey, redisHashKey);
 //                    if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
-//                        log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, kafkaEventDTO);
+//                        log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
 //                        return;
 //                    }
-//                    smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), kafkaEventDTO.getEventId()));
-//                    smallInitMapState.put(kafkaEventDTO.getEventField(), true);
+//                    smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), flinkEventDTO.getEventId()));
+//                    smallInitMapState.put(flinkEventDTO.getEventField(), true);
 //                }
 //                // 从redis初始化值后，正常处理数据
-//                addEventValue(kafkaEventDTO);
+//                addEventValue(flinkEventDTO);
 //            } else { // 非跨历史时间段
 //                // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
-//                if (kafkaEventDTO.getEventTime() != currentEventTimestamp) {
+//                if (flinkEventDTO.getEventTime() != currentEventTimestamp) {
 //                    continue;
 //                }
-//                addEventValue(kafkaEventDTO);
+//                addEventValue(flinkEventDTO);
 //            }
 //        }
 //    }
 //
-//    private void addEventValue(KafkaEventDTO kafkaEventDTO) throws Exception {
-//        Tuple2<Long, Long> longLongTuple2 = smallMapState.get(kafkaEventDTO.getEventField());
+//    private void addEventValue(FlinkEventDTO flinkEventDTO) throws Exception {
+//        Tuple2<Long, Long> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
 //        Long currentValue = longLongTuple2.f0;
-//        Long newValue = currentValue + Long.parseLong(kafkaEventDTO.getEventValue());
-//        smallMapState.put(kafkaEventDTO.getEventField(), Tuple2.of(newValue, kafkaEventDTO.getEventId()));
+//        Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
+//        smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(newValue, flinkEventDTO.getEventId()));
 //    }
 //
 //
 //    /**
 //     * 构建Redis的哈希键
 //     */
-//    private String buildRedisHashKey(KafkaEventDTO kafkaEventDTO) {
-//        String targetField = kafkaEventDTO.getTargetField();
-//        String targetValue = kafkaEventDTO.getTargetValue();
+//    private String buildRedisHashKey(FlinkEventDTO flinkEventDTO) {
+//        String targetField = flinkEventDTO.getTargetField();
+//        String targetValue = flinkEventDTO.getTargetValue();
 //        return targetField +
 //                RedisKeyConstants.REDIS_KEY_SPLIT +
 //                targetValue;
@@ -260,10 +260,10 @@
 //     * 此方法的目的是为了验证给定的Kafka事件是否满足规则事件中定义的所有属性条件
 //     * 它通过比较规则事件属性和Kafka事件属性来确定两者是否匹配
 //     *
-//     * @param kafkaEventDTO Kafka事件DTO，包含Kafka事件的详细信息，包括事件属性
+//     * @param flinkEventDTO Kafka事件DTO，包含Kafka事件的详细信息，包括事件属性
 //     * @return boolean 如果Kafka事件属性与规则事件属性完全匹配，则返回true；否则返回false
 //     */
-//    private boolean matchEventAttribute(List<RuleEventAttrValueDTO> ruleEventAttrValueGroup, KafkaEventDTO kafkaEventDTO) {
+//    private boolean matchEventAttribute(List<RuleEventAttrValueDTO> ruleEventAttrValueGroup, FlinkEventDTO flinkEventDTO) {
 //        if (CollectionUtil.isEmptyOrContainsNulls(ruleEventAttrValueGroup)) {
 //            // 规则中不包含事件属性相关的配置，则表明不需要进行事件属性匹配，直接跳过即可
 //            return true;
@@ -276,17 +276,17 @@
 //                continue;
 //            }
 //            String attrField = ruleEventAttrValueDTO.getAttrField();
-//            Map<String, String> kafkaEventAttrMap = kafkaEventDTO.getEventAttrMap();
+//            Map<String, String> kafkaEventAttrMap = flinkEventDTO.getEventAttrMap();
 //            if (Objects.isNull(kafkaEventAttrMap) || kafkaEventAttrMap.isEmpty()) {
 //                // 规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求
 //                log.warn("规则包含事件属性配置，但是kafka数据事件属性map为空，故直接判定为不符合规则要求！" +
-//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
+//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, flinkEventDTO);
 //                return false;
 //            }
 //            if (!kafkaEventAttrMap.containsKey(attrField)) {
 //                // kafka事件属性不包含规则中事件属性，则表明不符合匹配
 //                log.warn("kafka数据事件属性map并不包含规则配置的事件属性Field，故直接判定为不符合规则要求！" +
-//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, kafkaEventDTO);
+//                        "规则事件属性信息:{}, 当前事件信息:{}", ruleEventAttrValueDTO, flinkEventDTO);
 //                return false;
 //            }
 //            String kafkaEventAttributeValue = kafkaEventAttrMap.get(attrField);
@@ -295,7 +295,7 @@
 //                return false;
 //            }
 //            // 比较kafka中属性值与规则中属性值
-//            boolean isMatch = RuleEventAttrCompUtil.compareValues(ruleEventAttrValueDTO, kafkaEventDTO);
+//            boolean isMatch = RuleEventAttrCompUtil.compareValues(ruleEventAttrValueDTO, flinkEventDTO);
 //            if (!isMatch) {
 //                // kafka事件属性值与规则事件属性值不相等，则表明不符合匹配
 //                return false;
