@@ -1,0 +1,31 @@
+{
+  "channel": "hjf",
+  "ruleName": "花积分刷单2",
+  "ruleDesc": "花积分刷单规则2",
+  "alertIntervalValue": 2,
+  "alertIntervalUnit": "分钟",
+  "alertProjectNo": "hjf",
+  "alertLevel": "4",
+  "alertMessage": "[刷单预警2]${KafkaEventDTO.eventAttrMap.bankName}(${KafkaEventDTO.eventAttrMap.bankNo}): 花积分用户(${KafkaEventDTO.targetValue})，最近${RuleInfoDTO.ruleCondGroup.0.windowValue}${RuleInfoDTO.ruleCondGroup.0.windowUnit}内下单金额为${ProcessorDTO.eventValueGroup.orderAmount}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}元；或最近${RuleInfoDTO.ruleCondGroup.1.windowValue}${RuleInfoDTO.ruleCondGroup.1.windowUnit}内下单数量为${ProcessorDTO.eventValueGroup.orderCount}，超过${RuleInfoDTO.ruleCondGroup.1.threshold}次；触发预警的商品为：${KafkaEventDTO.eventAttrMap.productName}(${KafkaEventDTO.eventAttrMap.productId})。请您及时查看原因！",
+  "targetCode": "hjf_userId",
+  "modelCode": 1889596060557512704,
+  "ruleCondCombOp": "OR",
+  "ruleCondGroup": [
+    {
+      "condType": "CYCLE",
+      "windowValue": 5,
+      "windowUnit": "分钟",
+      "threshold": 100,
+      "crossHistory": false,
+      "eventCode": "hjf_userId_orderAmount"
+    },
+    {
+      "condType": "CYCLE",
+      "windowValue": 5,
+      "windowUnit": "分钟",
+      "threshold": 10,
+      "crossHistory": false,
+      "eventCode": "hjf_userId_orderCount"
+    }
+  ]
+}

@@ -11,10 +11,10 @@ import java.util.Objects;
  */
 @Getter
 public enum AlertProjectNoEnum implements StringArrayValuable {
-    MALL("MALL", "商场"),
-    HJF("HJF", "花积分"),
-    GAME("GAME", "游戏"),
-    CLM("CLM", "积分");
+    MALL("mall", "商场"),
+    HJF("hjf", "花积分"),
+    GAME("game", "游戏"),
+    CLM("clm", "积分");
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(AlertProjectNoEnum::getCode).toArray(String[]::new);
 
