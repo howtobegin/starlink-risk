@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.api.dto;
 
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
-import com.liboshuai.slr.engine.api.type.KafkaEventDtoType;
+import com.liboshuai.slr.engine.api.type.NginxEventDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +19,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(KafkaEventDtoType.class)
+@TypeInfo(NginxEventDtoType.class)
 public class NginxEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;

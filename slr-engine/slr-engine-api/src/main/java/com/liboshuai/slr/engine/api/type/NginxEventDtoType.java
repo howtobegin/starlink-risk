@@ -1,6 +1,6 @@
 package com.liboshuai.slr.engine.api.type;
 
-import com.liboshuai.slr.engine.api.dto.KafkaEventDTO;
+import com.liboshuai.slr.engine.api.dto.NginxEventDTO;
 import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KafkaEventDtoType extends TypeInfoFactory<KafkaEventDTO> {
+public class NginxEventDtoType extends TypeInfoFactory<NginxEventDTO> {
     @Override
-    public TypeInformation<KafkaEventDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
+    public TypeInformation<NginxEventDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
         typeInformationMap.put("eventTime", Types.STRING);
         typeInformationMap.put("channel", Types.STRING);
@@ -19,7 +19,7 @@ public class KafkaEventDtoType extends TypeInfoFactory<KafkaEventDTO> {
         typeInformationMap.put("targetValue", Types.STRING);
         typeInformationMap.put("eventField", Types.STRING);
         typeInformationMap.put("eventValue", Types.STRING);
-        typeInformationMap.put("eventAttrMap", Types.MAP(Types.STRING, Types.STRING));
-        return Types.POJO(KafkaEventDTO.class, typeInformationMap);
+        typeInformationMap.put("eventAttrMap", Types.STRING);
+        return Types.POJO(NginxEventDTO.class, typeInformationMap);
     }
 }

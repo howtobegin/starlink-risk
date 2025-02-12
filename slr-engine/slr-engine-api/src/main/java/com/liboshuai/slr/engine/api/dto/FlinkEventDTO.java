@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.api.dto;
 
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
-import com.liboshuai.slr.engine.api.type.KafkaEventDtoType;
+import com.liboshuai.slr.engine.api.type.FlinkEventDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(KafkaEventDtoType.class)
+@TypeInfo(FlinkEventDtoType.class)
 public class FlinkEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;
