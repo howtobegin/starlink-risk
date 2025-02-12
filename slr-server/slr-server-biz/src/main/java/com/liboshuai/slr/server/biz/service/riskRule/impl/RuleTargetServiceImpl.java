@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -137,8 +136,7 @@ public class RuleTargetServiceImpl implements RuleTargetService {
         if (!StringUtils.hasText(targetCode)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_TARGET_NOT_EXISTS);
         }
-        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCodeAndStatus(targetCode,
-                Arrays.asList(CommonStatusEnum.ONLINE.getCode(), CommonStatusEnum.OFFLINE_PENDING.getCode()));
+        List<RuleEventDO> ruleEventDOList = ruleEventMapper.selectListByTargetCode(targetCode);
         if (CollectionUtils.isEmpty(ruleEventDOList)) {
             return;
         }
