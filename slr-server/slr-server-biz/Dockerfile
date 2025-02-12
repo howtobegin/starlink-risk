@@ -4,7 +4,7 @@ FROM eclipse-temurin:8-jre
 RUN mkdir -p /slr-server/{logs,data}
 WORKDIR /slr-server
 ## 将后端项目的 Jar 文件，复制到镜像中
-COPY ./target/slr-server-1.0.jar app.jar
+COPY ../target/slr-server-1.0.jar app.jar
 
 ## 设置 TZ 时区
 ENV TZ=Asia/Shanghai

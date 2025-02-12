@@ -3,7 +3,7 @@ version: '3'
 services:
   slr-server:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
     container_name: slr-server
     restart: always
