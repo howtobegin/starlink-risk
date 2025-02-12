@@ -61,7 +61,7 @@ public class NginxServiceImpl implements NginxService {
      */
     public void sendEventRequest(EventDTO eventData) {
         // 打点服务器的请求 URI 地址（建议动态配置）
-        String baseUri = "http://vm:48881/backend.gif";
+        String baseUri = "http://docker:48881/backend.gif";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
