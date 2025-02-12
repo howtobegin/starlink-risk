@@ -32,6 +32,7 @@ public class FlinkKafkaConnector {
     public static DataStream<String> read(StreamExecutionEnvironment env,
                                           ParameterTool parameterTool) {
 
+        String active = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE);
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SOURCE_BROKERS);
         String topic = parameterTool.get(ParameterConstants.KAFKA_SOURCE_TOPIC);
         String group = parameterTool.get(ParameterConstants.KAFKA_SOURCE_GROUP);
@@ -41,7 +42,7 @@ public class FlinkKafkaConnector {
                 .setBootstrapServers(brokers)
                 .setTopics(topic)
                 .setGroupId(group)
-                .setClientIdPrefix("slr-engine-")
+                .setClientIdPrefix("starlink-risk-engine-" + active + "-")
                 .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
@@ -54,6 +55,7 @@ public class FlinkKafkaConnector {
     }
 
     public static void writer(DataStream<String> dataStream, ParameterTool parameterTool) {
+        String active = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE);
         String brokers = parameterTool.get(ParameterConstants.KAFKA_SINK_BROKERS);
         String topic = parameterTool.get(ParameterConstants.KAFKA_SINK_TOPIC);
         int partition = parameterTool.getInt(ParameterConstants.KAFKA_SINK_TOPIC_PARTITION);
@@ -68,7 +70,7 @@ public class FlinkKafkaConnector {
                                 .setValueSerializationSchema(new SimpleStringSchema()) //设置value的序列化器
                                 .build())
                 //设置事务前缀
-                .setTransactionalIdPrefix("starlink-risk-" + topic)
+                .setTransactionalIdPrefix("starlink-risk-engine-" + active + "-" + topic)
                 //设置交付保证-至少一次
                 .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();

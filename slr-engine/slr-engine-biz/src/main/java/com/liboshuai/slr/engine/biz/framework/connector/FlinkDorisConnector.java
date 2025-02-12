@@ -26,6 +26,7 @@ public class FlinkDorisConnector {
      */
     public static void writer(String tableName, DataStream<String> dataStream, ParameterTool parameterTool) {
         // 从参数中获取 Doris 配置
+        String active = parameterTool.get(ParameterConstants.FLINK_ENV_ACTIVE);
         String host = parameterTool.get(ParameterConstants.DORIS_FE_HOST);
         String httpPort = parameterTool.get(ParameterConstants.DORIS_FE_PORT_HTTP);
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
@@ -45,7 +46,7 @@ public class FlinkDorisConnector {
         properties.setProperty("read_json_by_line", "true");
         DorisExecutionOptions.Builder executionBuilder = DorisExecutionOptions.builder();
         // 生成一个唯一的 label prefix
-        String uniqueLabelPrefix = "starlink-risk-" + UUID.randomUUID();
+        String uniqueLabelPrefix = "starlink-risk-engine-" + active + "-" + UUID.randomUUID();
         executionBuilder.setLabelPrefix(uniqueLabelPrefix) //streamload label prefix
                 .setDeletable(false)
                 .setStreamLoadProp(properties);
