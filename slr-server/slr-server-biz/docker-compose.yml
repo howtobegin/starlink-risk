@@ -11,8 +11,8 @@ services:
       - "48888:48888"
       - "9999:9999"
     volumes:
-      - logs:/slr-server/logs
-      - data:/slr-server/data
+      - ./logs:/slr-server/logs
+      - ./data:/slr-server/data
     extra_hosts:
       - "docker:10.0.0.95"
       - "one:10.0.0.98"
@@ -22,7 +22,3 @@ services:
       resources:
         limits:
           memory: 9g
-
-volumes:
-  data:
-  logs:
