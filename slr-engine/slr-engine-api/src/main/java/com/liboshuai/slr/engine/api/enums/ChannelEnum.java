@@ -12,10 +12,10 @@ import java.util.Objects;
 @Getter
 public enum ChannelEnum implements StringArrayValuable {
 
-    GAME("GAME", "游戏"),
-    HJF("HJF", "花积分"),
-    MALL("MALL", "商场"),
-    CLM("CLM", "积分")
+    GAME("game", "游戏"),
+    HJF("hjf", "花积分"),
+    MALL("mall", "商场"),
+    CLM("clm", "积分")
     ;
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(ChannelEnum::getCode).toArray(String[]::new);

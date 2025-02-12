@@ -1,46 +1,46 @@
 {
-  "channel": "MALL",
-  "targetCode": "MALL_phoneNumber",
+  "channel": "mall",
+  "targetCode": "mall_phoneNumber",
   "targetField": "phoneNumber",
   "targetName": "商城手机号",
   "targetDesc": "商城平台的手机号",
   "ruleEventGroup": [
     {
-      "eventCode": "MALL_phoneNumber_login",
+      "eventCode": "mall_phoneNumber_login",
       "eventField": "login",
       "eventName": "商城登录",
       "eventDesc": "商城平台的登录事件",
-      "targetCode": "MALL_phoneNumber",
+      "targetCode": "mall_phoneNumber",
       "ruleEventAttrGroup": [
         {
-          "attrCode": "MALL_phoneNumber_login_ip",
+          "attrCode": "mall_phoneNumber_login_ip",
           "attrField": "ip",
           "attrName": "ip地址",
           "attrType": "String",
-          "eventCode": "MALL_phoneNumber_login"
+          "eventCode": "mall_phoneNumber_login"
         }
       ]
     },
     {
-      "eventCode": "MALL_phoneNumber_receiveVoucher",
+      "eventCode": "mall_phoneNumber_receiveVoucher",
       "eventField": "receiveVoucher",
       "eventName": "商城领卷",
       "eventDesc": "商城平台的领卷事件",
-      "targetCode": "MALL_phoneNumber"
+      "targetCode": "mall_phoneNumber"
     },
     {
-      "eventCode": "MALL_phoneNumber_logout",
+      "eventCode": "mall_phoneNumber_logout",
       "eventField": "logout",
       "eventName": "商城注销",
       "eventDesc": "商城平台的注销事件",
-      "targetCode": "MALL_phoneNumber",
+      "targetCode": "mall_phoneNumber",
       "ruleEventAttrGroup": [
         {
-          "attrCode": "MALL_phoneNumber_logout_ip",
+          "attrCode": "mall_phoneNumber_logout_ip",
           "attrField": "ip",
           "attrName": "ip地址",
           "attrType": "String",
-          "eventCode": "MALL_phoneNumber_logout"
+          "eventCode": "mall_phoneNumber_logout"
         }
       ]
     }
