@@ -23,7 +23,7 @@ import com.liboshuai.slr.server.biz.dal.dataobject.kafkaEvent.KafkaEventErrorDO;
 import com.liboshuai.slr.server.biz.dal.kafka.provider.KafkaEventProvider;
 import com.liboshuai.slr.server.biz.dal.mongo.KafkaEventErrorRepository;
 import com.liboshuai.slr.server.biz.dal.mongo.KafkaEventRepository;
-import com.liboshuai.slr.server.biz.framework.properties.KafkaProperties;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.KafkaEventService;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.MongoEventService;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.strategy.KafkaEventStrategy;
@@ -55,7 +55,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     private final SnowflakeIdGenerator snowflakeIdGenerator;
     private final KafkaEventRepository kafkaEventRepository;
     private final MongoEventService mongoEventService;
-    private final KafkaProperties kafkaProperties;
+    private final SlrServerProperties slrServerProperties;
 
 
     /**
@@ -63,7 +63,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
      */
     @Override
     public KafkaInfoRespVO kafkaInfo() {
-        String bootstrapServers = kafkaProperties.getBootstrapServers();
+        String bootstrapServers = slrServerProperties.getBootstrapServers();
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 

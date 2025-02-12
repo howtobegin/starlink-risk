@@ -99,8 +99,9 @@ logging:
 
 debug: false
 
-############################## [connector 配置项] ##############################
-slr-connector:
+############################## [项目配置项] ##############################
+slr-server:
+  active: uat
   kafka:
     event:
       topic: starlink_risk_event_uat
@@ -110,10 +111,7 @@ slr-connector:
       topic: starlink_risk_alert_uat
       partition: 6
       replica: 3
-  rso:
-    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
-
-############################## [admin 配置项] ##############################
-slr-admin:
   file-path:
     event-log: /app/dmapp/slr/data
+  rso:
+    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg

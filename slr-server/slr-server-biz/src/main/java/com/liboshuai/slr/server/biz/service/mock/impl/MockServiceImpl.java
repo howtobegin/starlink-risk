@@ -4,14 +4,15 @@ import com.liboshuai.slr.engine.api.dto.EventDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.MockService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,12 +28,13 @@ public class MockServiceImpl implements MockService {
     private final List<String> bankNames = new ArrayList<>();
     private final List<String> bankNos = new ArrayList<>();
     private final Random random = new Random();
-    @Value("${slr-admin.file-path.event-log}")
-    private String eventLogFilePath;
     // Counters for unique ID generation
     private long userIdCounter = 1;
     private long campaignIdCounter = 1;
     private long productIdCounter = 1;
+
+    @Resource
+    private SlrServerProperties slrServerProperties;
 
     public MockServiceImpl() {
         initializeBankData();
@@ -77,7 +79,7 @@ public class MockServiceImpl implements MockService {
 
         List<String> urlParamsBatch = new ArrayList<>(batchSize);
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(eventLogFilePath, false))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(slrServerProperties.getEventLogFilePath(), false))) {
             while (generatedCount < totalCount) {
                 generatedCount++;
 
@@ -181,7 +183,7 @@ public class MockServiceImpl implements MockService {
      */
     private String convertToParams(EventDTO eventDTO) throws IOException {
         // 打点服务器的请求 URI 地址（建议动态配置）
-        String baseUri = "http://docker:48881/backend.gif";
+        String baseUri = "http://docker:48881/slr_" + slrServerProperties.getActive() + ".gif ";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)

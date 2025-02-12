@@ -104,8 +104,9 @@ logging:
 
 debug: false
 
-############################## [connector 配置项] ##############################
-slr-connector:
+############################## [项目配置项] ##############################
+slr-server:
+  active: local
   kafka:
     event:
       topic: starlink_risk_event_local
@@ -115,10 +116,7 @@ slr-connector:
       topic: starlink_risk_alert_local
       partition: 6
       replica: 3
-  rso:
-    alert-address: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
-
-############################## [admin 配置项] ##############################
-slr-admin:
   file-path:
     event-log: C:/Me/Temp/mock/event.log
+  api-address:
+    rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg

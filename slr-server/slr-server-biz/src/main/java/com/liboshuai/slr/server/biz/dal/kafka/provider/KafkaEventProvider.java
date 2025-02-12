@@ -2,7 +2,7 @@ package com.liboshuai.slr.server.biz.dal.kafka.provider;
 
 import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
-import com.liboshuai.slr.server.biz.framework.properties.KafkaProperties;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,13 +17,13 @@ import java.util.List;
 public class KafkaEventProvider {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final KafkaProperties kafkaProperties;
+    private final SlrServerProperties slrServerProperties;
 
     /**
      * 批量上送事件信息到kafka
      */
     public void batchSend(List<FlinkEventDTO> flinkEventDTOList) {
-        String providerTopic = kafkaProperties.getEventTopic();
+        String providerTopic = slrServerProperties.getEventTopic();
         if (CollectionUtils.isEmpty(flinkEventDTOList)) {
             return;
         }

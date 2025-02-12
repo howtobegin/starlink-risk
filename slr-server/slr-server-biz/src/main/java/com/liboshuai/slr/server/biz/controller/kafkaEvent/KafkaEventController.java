@@ -3,7 +3,7 @@ package com.liboshuai.slr.server.biz.controller.kafkaEvent;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.server.biz.controller.kafkaEvent.vo.KafkaInfoRespVO;
-import com.liboshuai.slr.server.biz.framework.properties.KafkaProperties;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.kafkaEvent.KafkaEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,7 +27,7 @@ import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 public class KafkaEventController {
 
     private final KafkaEventService kafkaEventService;
-    private final KafkaProperties kafkaProperties;
+    private final SlrServerProperties slrServerProperties;
 
 
     /**
@@ -47,10 +47,10 @@ public class KafkaEventController {
     @Operation(summary = "创建kafka事件topic")
     public CommonResult<Boolean> createKafkaEventTopic() {
         kafkaEventService.createKafkaTopic(
-                kafkaProperties.getBootstrapServers(),
-                kafkaProperties.getEventTopic(),
-                kafkaProperties.getEventPartition(),
-                kafkaProperties.getEventReplica()
+                slrServerProperties.getBootstrapServers(),
+                slrServerProperties.getEventTopic(),
+                slrServerProperties.getEventPartition(),
+                slrServerProperties.getEventReplica()
         );
         return success(true);
     }
@@ -62,10 +62,10 @@ public class KafkaEventController {
     @Operation(summary = "创建kafka预警信息topic")
     public CommonResult<Boolean> createKafkaAlertTopic() {
         kafkaEventService.createKafkaTopic(
-                kafkaProperties.getBootstrapServers(),
-                kafkaProperties.getAlertTopic(),
-                kafkaProperties.getAlertPartition(),
-                kafkaProperties.getAlertReplica()
+                slrServerProperties.getBootstrapServers(),
+                slrServerProperties.getAlertTopic(),
+                slrServerProperties.getAlertPartition(),
+                slrServerProperties.getAlertReplica()
         );
         return success(true);
     }

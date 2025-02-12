@@ -3,11 +3,11 @@ package com.liboshuai.slr.server.biz.rest.client.rsoAlarm;
 import com.liboshuai.slr.framework.common.util.date.DateUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.rest.client.rsoAlarm.vo.RroAlarmRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +27,7 @@ public class RsoAlarmClient {
 
     private static final int ALERT_MESSAGE_MAX_LENGTH = 300;
     private final RestTemplate restTemplate;
-    @Value("${slr-connector.rso.alert-address}")
-    private String rsoAlertAddress;
+    private final SlrServerProperties slrServerProperties;
 
     /**
      * 发送消息到荣数运营平台
@@ -44,7 +43,7 @@ public class RsoAlarmClient {
     public void sendMsgToRso(String projectNo, String warningLevel, String warningTime, String alertMessage) {
         log.info("发送消息到荣数运营平台的请求参数，projectNo: {}, warningLevel: {}, warningTime: {}, alertMessage: {}",
                 projectNo, warningLevel, warningTime, alertMessage);
-        if (StringUtils.isBlank(alertMessage) || StringUtils.isBlank(projectNo) || StringUtils.isBlank(rsoAlertAddress)) {
+        if (StringUtils.isBlank(alertMessage) || StringUtils.isBlank(projectNo) || StringUtils.isBlank(slrServerProperties.getRsoAlertApiAddress())) {
             log.error("发送参数为空，请检查项目编号、请求地址或告警信息是否为空。");
             return;
         }
@@ -55,7 +54,7 @@ public class RsoAlarmClient {
         try {
             RroAlarmRequest alarmMessageDTO = createAlertMessageRequest(projectNo, warningLevel, warningTime, alertMessage);
             // 使用 RestTemplate 发起 POST 请求并处理响应
-            String responseJson = sendPostForJson(rsoAlertAddress, alarmMessageDTO);
+            String responseJson = sendPostForJson(slrServerProperties.getRsoAlertApiAddress(), alarmMessageDTO);
             log.info("发送消息到荣数运营平台的响应结果：{}", responseJson);
         } catch (Exception e) {
             log.error("发送消息到荣数运营平台失败。", e);
