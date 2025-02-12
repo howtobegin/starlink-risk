@@ -7,8 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotBlank;
-
 
 @Data
 @Builder
@@ -24,21 +22,20 @@ public class RuleTargetPageReqVO extends PageParam {
     /**
      * {@link ChannelEnum}
      */
-    @NotBlank(message = "渠道[channel]，不能为空")
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME")
+    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String channel;
 
-    @Schema(description = "目标编号", example = "GAME_userId")
+    @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String targetCode;
 
-    @Schema(description = "目标字段", example = "userId")
+    @Schema(description = "目标字段", example = "userId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String targetField;
 
-    @Schema(description = "目标名称", example = "用户id")
+    @Schema(description = "目标名称", example = "用户id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String targetName;
 
-    @Schema(description = "目标描述", example = "游戏平台的用户ID")
+    @Schema(description = "目标描述", example = "游戏平台的用户ID", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String targetDesc;
 
 }

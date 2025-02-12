@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotBlank;
-
 
 @Data
 @Builder
@@ -25,24 +23,23 @@ public class RuleInfoPageReqVO extends PageParam {
     /**
      * {@link ChannelEnum}
      */
-    @NotBlank(message = "渠道[channel]，不能为空")
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME")
+    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String channel;
 
-    @Schema(description = "规则编号", example = "1553673459123456000")
+    @Schema(description = "规则编号", example = "1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long ruleCode;
 
-    @Schema(description = "规则名称", example = "游戏高频抽奖")
+    @Schema(description = "规则名称", example = "游戏高频抽奖", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleName;
 
     /**
      * {@link CommonStatusEnum}
      */
-    @Schema(description = "规则状态", example = "ONLINE")
+    @Schema(description = "规则状态", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String ruleStatus;
 
-    @Schema(description = "模型编号", example = "1553673459123456001")
+    @Schema(description = "模型编号", example = "1553673459123456001", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long modelCode;
 
 }
