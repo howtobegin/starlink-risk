@@ -390,8 +390,8 @@ public class ProcessorOne implements Processor {
                 .channel(ruleInfoDTO.getChannel())
                 .ruleCode(ruleInfoDTO.getRuleCode())
                 .eventId(processBigMapResult.f1)
-                .alertMessage(finalWarnMessage)
-                .alertTime(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
+                .message(finalWarnMessage)
+                .time(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
                 .targetField(ruleInfoDTO.getTargetField())
                 .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
                 .build();

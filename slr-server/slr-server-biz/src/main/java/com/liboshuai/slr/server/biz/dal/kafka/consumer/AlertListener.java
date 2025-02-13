@@ -69,7 +69,7 @@ public class AlertListener {
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertDTO alertDTO : validAlertDTOList) {
                 // 根据mongo中的事件数据补充预警信息
-                String alertMessage = alertDTO.getAlertMessage();
+                String alertMessage = alertDTO.getMessage();
                 String eventId = alertDTO.getEventId();
                 FlinkEventDTO flinkEventDTO = eventIdAndKafkaEventMap.get(eventId);
                 if (Objects.isNull(flinkEventDTO)) {
@@ -86,7 +86,7 @@ public class AlertListener {
 //                        alertMessage
 //                );
                 // 添加到 finalAlertMessageDtoList 中，并补充字段数据
-                alertDTO.setAlertMessage(alertMessage);
+                alertDTO.setMessage(alertMessage);
                 alertDTO.setTargetValue(flinkEventDTO.getTargetValue());
                 finalAlertDtoList.add(alertDTO);
             }
@@ -132,10 +132,10 @@ public class AlertListener {
         if (Objects.isNull(dto.getRuleCode())) {
             missingFields.add("ruleCode");
         }
-        if (!StringUtils.hasText(dto.getAlertMessage())) {
+        if (!StringUtils.hasText(dto.getMessage())) {
             missingFields.add("alertMessage");
         }
-        if (Objects.isNull(dto.getAlertTime())) {
+        if (Objects.isNull(dto.getTime())) {
             missingFields.add("alertTime");
         }
 

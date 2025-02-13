@@ -42,13 +42,13 @@ public class AlertDTO implements Serializable {
     /**
      * 预警消息
      */
-    private String alertMessage;
+    private String message;
     /**
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
      * 注意不要使用 LocalDateTime，这样无法使用 POJO 序列化，严重降低性能
      */
-    private String alertTime;
+    private String time;
     /**
      * 目标字段
      */

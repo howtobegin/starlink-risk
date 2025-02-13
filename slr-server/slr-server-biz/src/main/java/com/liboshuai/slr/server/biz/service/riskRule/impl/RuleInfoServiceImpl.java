@@ -671,7 +671,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                             .targetField(targetField)
                             .targetValue(targetValue)
                             .eventValueGroup(Collections.singletonMap(eventField, eventValueSum))
-                            .alertTime(LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp))
+                            .time(LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp))
                             .build();
                     alertDTOS.add(alertDTO);
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
@@ -710,7 +710,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                                 .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
                                 .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
                                 .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertDTO::getAlertTime)     // 最后按 alertTime 排序
+                                .thenComparing(AlertDTO::getTime)     // 最后按 alertTime 排序
                 )
                 .collect(Collectors.toList());
         List<AlertDTO> sortedMongoAlerts = mongoAlerts.stream()
@@ -719,13 +719,13 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                                 .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
                                 .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
                                 .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertDTO::getAlertTime)     // 最后按 alertTime 排序
+                                .thenComparing(AlertDTO::getTime)     // 最后按 alertTime 排序
                 )
                 .collect(Collectors.toList());
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
             AlertDTO generatedAlert = sortedGeneratedAlerts.get(i);
             AlertDTO mongoAlert = sortedMongoAlerts.get(i);
-            mongoAlert.setAlertMessage(null);
+            mongoAlert.setMessage(null);
             if (!generatedAlert.equals(mongoAlert)) {
                 log.info("预警信息内容不一致！计算: {}, Mongo: {}", generatedAlert, mongoAlert);
                 return false;

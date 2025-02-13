@@ -38,13 +38,13 @@ public class AlertMongoDAO {
         if (ruleCode != null && !ruleCode.isEmpty()) {
             criteriaList.add(Criteria.where("ruleCode").is(ruleCode));
         }
-        String alertMessage = alertPageReqVO.getAlertMessage();
+        String alertMessage = alertPageReqVO.getMessage();
         if (alertMessage != null && !alertMessage.isEmpty()) {
             // 使用正则表达式进行模糊查询，'i'表示不区分大小写
             criteriaList.add(Criteria.where("alertMessage").regex(alertMessage, "i"));
         }
-        LocalDateTime alertTimeStart = alertPageReqVO.getAlertTimeStart();
-        LocalDateTime alertTimeEnd = alertPageReqVO.getAlertTimeEnd();
+        LocalDateTime alertTimeStart = alertPageReqVO.getTimeStart();
+        LocalDateTime alertTimeEnd = alertPageReqVO.getTimeEnd();
         if (alertTimeStart != null && alertTimeEnd != null) {
             criteriaList.add(Criteria.where("alertTime").gte(alertTimeStart).lte(alertTimeEnd));
         } else if (alertTimeStart != null) {

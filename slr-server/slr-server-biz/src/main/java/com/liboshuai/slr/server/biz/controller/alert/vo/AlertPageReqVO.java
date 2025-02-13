@@ -32,15 +32,15 @@ public class AlertPageReqVO extends PageParam {
     private String ruleCode;
 
     @Schema(description = "预警消息", example = "触发了xxx预警", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String alertMessage;
+    private String message;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "预警时间开始", example = "2025-01-01 00:01:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private LocalDateTime alertTimeStart;
+    private LocalDateTime timeStart;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "预警时间结束", example = "2025-01-02 00:01:01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private LocalDateTime alertTimeEnd;
+    private LocalDateTime timeEnd;
 }

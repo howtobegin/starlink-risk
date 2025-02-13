@@ -40,7 +40,7 @@ public class MongoAlertDO implements Serializable {
      * 预警时间
      * （格式：yyyy-MM-dd HH:mm:ss）
      */
-    private LocalDateTime alertTime;
+    private LocalDateTime time;
     /**
      * 目标字段
      */
