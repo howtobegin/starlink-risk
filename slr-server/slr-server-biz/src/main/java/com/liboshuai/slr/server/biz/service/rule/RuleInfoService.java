@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.riskRule;
+package com.liboshuai.slr.server.biz.service.rule;
 
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;

@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.kafkaEvent.strategy;
+package com.liboshuai.slr.server.biz.service.event.strategy;
 
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import org.springframework.beans.factory.annotation.Autowired;

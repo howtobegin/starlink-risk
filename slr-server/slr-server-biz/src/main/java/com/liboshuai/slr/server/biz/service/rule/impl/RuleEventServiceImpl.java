@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.riskRule.impl;
+package com.liboshuai.slr.server.biz.service.rule.impl;
 
 import com.liboshuai.slr.framework.common.enums.CommonAuditOpEnum;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
@@ -9,8 +9,8 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleEventChangeStatus
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.RuleEventDO;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.RuleEventMapper;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleEventService;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleTargetService;
+import com.liboshuai.slr.server.biz.service.rule.RuleEventService;
+import com.liboshuai.slr.server.biz.service.rule.RuleTargetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

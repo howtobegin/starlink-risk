@@ -5,7 +5,7 @@ import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleTargetPageReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleTargetSaveReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleTargetRespVO;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleTargetService;
+import com.liboshuai.slr.server.biz.service.rule.RuleTargetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

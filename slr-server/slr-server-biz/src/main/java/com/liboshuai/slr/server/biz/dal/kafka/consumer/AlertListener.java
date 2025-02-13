@@ -1,16 +1,14 @@
 package com.liboshuai.slr.server.biz.dal.kafka.consumer;
 
 import com.liboshuai.slr.engine.api.dto.AlertDTO;
-import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import com.liboshuai.slr.server.biz.convert.alert.AlertConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.alert.MongoAlertDO;
 import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertRepository;
 import com.liboshuai.slr.server.biz.rest.client.rsoAlarm.RsoAlarmClient;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.EventService;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.server.biz.service.event.EventService;
+import com.liboshuai.slr.server.biz.service.rule.RuleInfoService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +16,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -64,18 +61,8 @@ public class AlertListener {
         }
         List<AlertDTO> finalAlertDtoList = new ArrayList<>();
         if (!validAlertDTOList.isEmpty()) {
-            // 从mongo中获取事件id与其对应的数据数据
-            Map<String, FlinkEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertDTOList);
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertDTO alertDTO : validAlertDTOList) {
-                // 根据mongo中的事件数据补充预警信息
-                String message = alertDTO.getMessage();
-                String eventId = alertDTO.getEventId();
-                FlinkEventDTO flinkEventDTO = eventIdAndKafkaEventMap.get(eventId);
-                if (Objects.isNull(flinkEventDTO)) {
-                    flinkEventDTO = new FlinkEventDTO();
-                }
-                message = TemplateUtil.replacePlaceholders(message, flinkEventDTO);
                 // 将预警信息异步推送给微信预警平台
                 RuleInfoDTO ruleInfoDTO = ruleInfoService.getCacheRuleInfo(alertDTO.getRuleCode());
                 // FIXME: 测试时，临时注释
@@ -85,9 +72,6 @@ public class AlertListener {
 //                        LocalDateTimeUtils.convertLocalDateTime2Str(alertDTO.getTime()),
 //                        message
 //                );
-                // 添加到 finalAlertDtoList 中，并补充字段数据
-                alertDTO.setMessage(message);
-                alertDTO.setTargetValue(flinkEventDTO.getTargetValue());
                 finalAlertDtoList.add(alertDTO);
             }
             // 将预警消息批量保存到 MongoDB
@@ -96,25 +80,6 @@ public class AlertListener {
         }
         // 手动提交偏移量
         ack.acknowledge();
-    }
-
-    /**
-     * 从mongo中获取事件id与其对应的数据数据
-     */
-    private Map<String, FlinkEventDTO> findEventIdAndKafkaEventMap(List<AlertDTO> validAlertDTOList) {
-        Map<String, FlinkEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
-        List<String> eventIdList = validAlertDTOList.stream().map(AlertDTO::getEventId).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(eventIdList)) {
-            List<FlinkEventDTO> flinkEventDTOList = eventService.selectListByEventIds(eventIdList);
-            if (!CollectionUtils.isEmpty(flinkEventDTOList)) {
-                eventIdAndKafkaEventMap = flinkEventDTOList.stream().collect(Collectors.toMap(
-                        FlinkEventDTO::getEventId,
-                        Function.identity(),
-                        (existing, replacement) -> existing
-                ));
-            }
-        }
-        return eventIdAndKafkaEventMap;
     }
 
     /**

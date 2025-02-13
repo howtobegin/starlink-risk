@@ -36,9 +36,9 @@ public class ProcessorOne implements Processor {
     private RuleInfoDTO ruleInfoDTO;
     /**
      * - key: eventField
-     * - value: f0为eventValue累加值，f1为最新的事件id
+     * - value: f0为eventValue累加值，f1为最新的事件数据
      */
-    private MapState<String, Tuple2<Long, String>> smallMapState;
+    private MapState<String, Tuple2<Long, FlinkEventDTO>> smallMapState;
     /**
      * 记录对于事件条件是否初始化过
      * - key: eventField
@@ -62,9 +62,9 @@ public class ProcessorOne implements Processor {
     private MapState<String, Long> latestEventThresholdMapState;
     /**
      * key: f0为eventField，f1为时间戳
-     * value: f0为eventValue累加值，f1为最新的事件id
+     * value: f0为eventValue累加值，f1为最新的事件数据
      */
-    private MapState<Tuple2<String, Long>, Tuple2<Long, String>> bigMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> bigMapState;
 
     // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
 //    private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> oldBigMapState;
@@ -186,9 +186,9 @@ public class ProcessorOne implements Processor {
                 hasValueState.update(true);
             }
             // 状态值防空
-            Tuple2<Long, String> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
-            if (Objects.isNull(longLongTuple2)) {
-                smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(0L, flinkEventDTO.getEventId()));
+            Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+            if (Objects.isNull(eventValueAndEventDateTuple2)) {
+                smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(0L, flinkEventDTO));
             }
             // 规则事件值计算
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
@@ -213,7 +213,7 @@ public class ProcessorOne implements Processor {
                         log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
                         return;
                     }
-                    smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), flinkEventDTO.getEventId()));
+                    smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), flinkEventDTO));
                     smallInitMapState.put(flinkEventDTO.getEventField(), true);
                 }
                 // 从redis初始化值后，正常处理数据
@@ -229,10 +229,10 @@ public class ProcessorOne implements Processor {
     }
 
     private void addEventValue(FlinkEventDTO flinkEventDTO) throws Exception {
-        Tuple2<Long, String> longStringTuple2 = smallMapState.get(flinkEventDTO.getEventField());
-        Long currentValue = longStringTuple2.f0;
+        Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+        Long currentValue = eventValueAndEventDateTuple2.f0;
         Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
-        smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(newValue, flinkEventDTO.getEventId()));
+        smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(newValue, flinkEventDTO));
     }
 
 
@@ -337,7 +337,7 @@ public class ProcessorOne implements Processor {
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField);
         // 处理bigMapState
-        Tuple3<Boolean, String, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
+        Tuple3<Boolean, FlinkEventDTO, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
         // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
         if (lastWarningTimeState.value() == null) {
             lastWarningTimeState.update(0L);
@@ -363,7 +363,7 @@ public class ProcessorOne implements Processor {
 
     private void logState(Long ruleCode, String currentKey) throws Exception {
         Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
-        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> entry : bigMapState.entries()) {
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : bigMapState.entries()) {
             bigMap.put(entry.getKey(), entry.getValue().f0);
         }
         log.info("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
@@ -380,16 +380,16 @@ public class ProcessorOne implements Processor {
     /**
      * 构建预警信息的方法，提取重复逻辑
      */
-    private AlertDTO buildAlert(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
+    private AlertDTO buildAlert(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, FlinkEventDTO, ProcessorDTO> processBigMapResult) {
         String finalWarnMessage = TemplateUtil.replacePlaceholders(
                 ruleInfoDTO.getAlertTemplate(),
                 ruleInfoDTO,
+                processBigMapResult.f1,
                 processBigMapResult.f2
         );
         return AlertDTO.builder()
                 .channel(ruleInfoDTO.getChannel())
                 .ruleCode(ruleInfoDTO.getRuleCode())
-                .eventId(processBigMapResult.f1)
                 .message(finalWarnMessage)
                 .time(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
                 .targetField(ruleInfoDTO.getTargetField())
@@ -425,24 +425,24 @@ public class ProcessorOne implements Processor {
      * @return 返回一个Tuple3对象，包含事件结果、最新的Kafka事件DTO和处理器DTO
      * @throws Exception 如果处理过程中发生错误，则抛出异常
      */
-    private Tuple3<Boolean, String, ProcessorDTO> processBigMap(Map<String, RuleCondDTO> ruleConditionMapByEventField,
+    private Tuple3<Boolean, FlinkEventDTO, ProcessorDTO> processBigMap(Map<String, RuleCondDTO> ruleConditionMapByEventField,
                                                               String ruleCondCombOp) throws Exception {
         // 获取事件与之判断结果
         Map<String, Boolean> eventFieldAndWarnResult = new HashMap<>();
         // 获取事件字段与值之和
         Map<String, Long> eventFiledAndValueSumMap = new HashMap<>();
-        // 获取最新的最新的Kafka事件id
-        String eventId = null;
+        // 获取最新的最新的Kafka事件数据
+        FlinkEventDTO flinkEventDTO = null;
         Long maxTimestamp = Long.MIN_VALUE;
         // 遍历 MapState 的所有条目
-        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> entry : bigMapState.entries()) {
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : bigMapState.entries()) {
             Tuple2<String, Long> key = entry.getKey(); // 获取键，包含 eventField 和关联的时间戳值
-            Tuple2<Long, String> value = entry.getValue(); // 获取值，包含累加值和 最新eventId
+            Tuple2<Long, FlinkEventDTO> value = entry.getValue(); // 获取值，包含累加值和 最新事件数据
             Long currentTimestamp = key.f1; // 时间戳
             // 比较当前时间戳是否大于已记录的最大时间戳
             if (currentTimestamp > maxTimestamp) {
                 maxTimestamp = currentTimestamp;
-                eventId = value.f1; // 获取最新的事件id
+                flinkEventDTO = value.f1; // 获取最新的事件数据
             }
             String eventField = key.f0; // Tuple2 的第一个元素作为事件字段
             // 使用 merge 方法高效地累加值
@@ -466,7 +466,7 @@ public class ProcessorOne implements Processor {
         ProcessorDTO processorDTO = ProcessorDTO.builder()
                 .eventValueGroup(eventFiledAndValueSumMap)
                 .build();
-        return Tuple3.of(eventResult, eventId, processorDTO);
+        return Tuple3.of(eventResult, flinkEventDTO, processorDTO);
     }
 
     /**
@@ -499,13 +499,13 @@ public class ProcessorOne implements Processor {
      */
     private void updateBigMapWithSmallMap(long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
-        for (Map.Entry<String, Tuple2<Long, String>> smallMapEntry : smallMapState.entries()) {
+        for (Map.Entry<String, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
             String eventField = smallMapEntry.getKey();
-            Tuple2<Long, String> tupleValue = smallMapEntry.getValue();
+            Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = smallMapEntry.getValue();
             // 创建新的 Tuple2 作为 bigMapState 的键
             Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
-            bigMapState.put(tupleKey, tupleValue);
+            bigMapState.put(tupleKey, eventValueAndEventDataTuple2);
         }
         // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
         smallMapState.clear();
@@ -528,12 +528,12 @@ public class ProcessorOne implements Processor {
         }
 
         // 遍历 bigMapState 的所有条目
-        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>>> iterator = bigMapState.entries().iterator();
+        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>>> iterator = bigMapState.entries().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> stateEntry = iterator.next();
-            Tuple2<String, Long> keyTuple = stateEntry.getKey();
-            String eventField = keyTuple.f0;
-            Long eventTime = keyTuple.f1;
+            Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> stateEntry = iterator.next();
+            Tuple2<String, Long> eventFieldAndTimeTuple2 = stateEntry.getKey();
+            String eventField = eventFieldAndTimeTuple2.f0;
+            Long eventTime = eventFieldAndTimeTuple2.f1;
 
             RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField);
             if (Objects.isNull(ruleCondDTO)) {

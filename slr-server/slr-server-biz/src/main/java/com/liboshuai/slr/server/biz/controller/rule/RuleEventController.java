@@ -3,7 +3,7 @@ package com.liboshuai.slr.server.biz.controller.rule;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleEventChangeStatusReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventRespVO;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleEventService;
+import com.liboshuai.slr.server.biz.service.rule.RuleEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

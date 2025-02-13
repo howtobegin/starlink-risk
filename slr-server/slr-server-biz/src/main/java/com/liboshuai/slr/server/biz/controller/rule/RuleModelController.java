@@ -6,7 +6,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleModelCreateReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleModelPageReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleModelUpdateReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleModelRespVO;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleModelService;
+import com.liboshuai.slr.server.biz.service.rule.RuleModelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

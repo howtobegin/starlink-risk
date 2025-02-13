@@ -1,13 +1,13 @@
-package com.liboshuai.slr.server.biz.service.kafkaEvent.impl;
+package com.liboshuai.slr.server.biz.service.event.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.liboshuai.slr.engine.api.dto.EventErrorDTO;
 import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.ReflectUtils;
 import com.liboshuai.slr.framework.common.util.object.reflect.SFunction;
-import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.server.api.constants.ErrorCodeConstants;
 import com.liboshuai.slr.server.api.enums.KafkaEventErrorLevelEnum;
 import com.liboshuai.slr.server.biz.controller.event.vo.KafkaEventErrorRespVO;
@@ -18,16 +18,11 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrRespVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventRespVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleTargetRespVO;
 import com.liboshuai.slr.server.biz.convert.event.EventConvert;
-import com.liboshuai.slr.server.biz.dal.dataobject.event.MongoEventDO;
-import com.liboshuai.slr.server.biz.dal.dataobject.event.MongoEventErrorDO;
 import com.liboshuai.slr.server.biz.dal.kafka.provider.EventProvider;
-import com.liboshuai.slr.server.biz.dal.mongo.event.EventErrorRepository;
-import com.liboshuai.slr.server.biz.dal.mongo.event.EventRepository;
 import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.EventService;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.MongoEventService;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.strategy.KafkaEventStrategy;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.strategy.KafkaEventStrategyHolder;
+import com.liboshuai.slr.server.biz.service.event.EventService;
+import com.liboshuai.slr.server.biz.service.event.strategy.KafkaEventStrategy;
+import com.liboshuai.slr.server.biz.service.event.strategy.KafkaEventStrategyHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.*;
@@ -40,7 +35,6 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,10 +45,6 @@ public class EventServiceImpl implements EventService {
     private final EventConvert eventConvert;
     private final EventProvider eventProvider;
     private final KafkaEventStrategyHolder kafkaEventStrategyHolder;
-    private final EventErrorRepository eventErrorRepository;
-    private final SnowflakeIdGenerator snowflakeIdGenerator;
-    private final EventRepository eventRepository;
-    private final MongoEventService mongoEventService;
     private final SlrServerProperties slrServerProperties;
 
 
@@ -149,31 +139,20 @@ public class EventServiceImpl implements EventService {
         // 各渠道特别的数据处理逻辑
         KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
         kafkaEventStrategy.processAfter(flinkEventDTOList);
-        // 生成事件id
-        flinkEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(UUID.randomUUID().toString()));
         // 异步推送数据到kafka
         eventProvider.batchSend(flinkEventDTOList);
-        // 异步保存事件数据到mongo
-        mongoEventService.batchSaveEventToMongo(flinkEventDTOList);
         // 存在非法数据错误原因，则抛出异常
         if (!CollectionUtils.isEmpty(kafkaEventErrorRespVOList)) {
-            // 构建错误数据对象，并存入 mongodb
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            // 构建错误数据对象，并存入
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(JsonUtils.toJsonString(kafkaEventErrorRespVOList))
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(kafkaEventErrorRespVOList, ErrorCodeConstants.UPLOAD_EVENT_MINOR_ERROR);
         }
-    }
-
-    @Override
-    public List<FlinkEventDTO> selectListByEventIds(List<String> eventIdList) {
-        List<MongoEventDO> mongoEventDOList = eventRepository.findAllByEventIdIn(eventIdList);
-        return eventConvert.batchConvertDo2Dto(mongoEventDOList);
     }
 
     /**
@@ -191,14 +170,13 @@ public class EventServiceImpl implements EventService {
         if (CollectionUtils.isEmpty(ruleTargetRespVOList)) {
             String message = "因上线的规则目标事件配置项条数为0，故不接受业务平台任何上送数据";
             log.error(message);
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(message)
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -211,14 +189,13 @@ public class EventServiceImpl implements EventService {
         Map<String, RuleTargetRespVO> targetFieldMap = ruleMap.get(channel);
         if (targetFieldMap == null) {
             String message = String.format("渠道 [%s] 在规则库中不存在或未上线", channel);
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(message)
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -336,14 +313,13 @@ public class EventServiceImpl implements EventService {
             String fieldName = ReflectUtils.getFieldName(FlinkEventDTO::getChannel);
             String message = String.format("字段 [%s]: 无效的渠道 [%s]", fieldName, channel);
             // 构建错误数据对象，并存入 mongodb
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(message)
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -354,14 +330,13 @@ public class EventServiceImpl implements EventService {
             String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventGroup);
             String message = String.format("字段 [%s]: 事件数据集合不能为空", fieldName);
             // 构建错误数据对象，并存入 mongodb
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(message)
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
 
@@ -371,14 +346,13 @@ public class EventServiceImpl implements EventService {
             String fieldName = ReflectUtils.getFieldName(KafkaEventGroupReqVO::getKafkaEventGroup);
             String message = String.format("字段 [%s]: 元素个数必须小于等于 [%d]", fieldName, maxSize);
             // 构建错误数据对象，并存入 mongodb
-            MongoEventErrorDO mongoEventErrorDO = MongoEventErrorDO.builder()
+            EventErrorDTO eventErrorDTO = EventErrorDTO.builder()
                     .channel(channel)
                     .level(KafkaEventErrorLevelEnum.MAJOR.getCode())
                     .cause(message)
                     .data(JsonUtils.toJsonString(kafkaEventGroupReqVO))
                     .time(LocalDateTime.now())
                     .build();
-            eventErrorRepository.insert(mongoEventErrorDO);
             throw ServiceExceptionUtil.exception(message, ErrorCodeConstants.UPLOAD_EVENT_MAJOR_ERROR);
         }
     }
@@ -451,14 +425,6 @@ public class EventServiceImpl implements EventService {
         if (fieldValue == null || (fieldValue instanceof String && !StringUtils.hasText((String) fieldValue))) {
             reasons.add("字段 [" + fieldName + "]: 必须非空");
         }
-    }
-
-    @Override
-    public void deleteOldEventFromMongo() {
-        // 删除一天前的数据
-        long currentTimeMillis = System.currentTimeMillis();
-        long oneDayAgo = currentTimeMillis - TimeUnit.DAYS.toMillis(1);
-        eventRepository.deleteByEventTimeBefore(oneDayAgo);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.riskRule;
+package com.liboshuai.slr.server.biz.service.rule;
 
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrRespVO;
 

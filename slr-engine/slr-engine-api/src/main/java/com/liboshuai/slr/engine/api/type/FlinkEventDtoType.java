@@ -14,7 +14,6 @@ public class FlinkEventDtoType extends TypeInfoFactory<FlinkEventDTO> {
     @Override
     public TypeInformation<FlinkEventDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
-        typeInformationMap.put("eventId", Types.STRING);
         typeInformationMap.put("eventTime", Types.LONG);
         typeInformationMap.put("channel", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);

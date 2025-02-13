@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.riskRule.impl;
+package com.liboshuai.slr.server.biz.service.rule.impl;
 
 import com.liboshuai.slr.framework.common.exception.util.ServiceExceptionUtil;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
@@ -11,7 +11,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleModelUpdateReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleModelRespVO;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.RuleModelDO;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.RuleModelMapper;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleModelService;
+import com.liboshuai.slr.server.biz.service.rule.RuleModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

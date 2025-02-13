@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.riskRule.impl;
+package com.liboshuai.slr.server.biz.service.rule.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.Master;
@@ -25,7 +25,7 @@ import com.liboshuai.slr.server.biz.convert.rule.DorisEventConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.*;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.*;
 import com.liboshuai.slr.server.biz.service.alert.AlertService;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.server.biz.service.rule.RuleInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopContext;

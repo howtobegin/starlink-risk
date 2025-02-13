@@ -6,7 +6,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoChangeStatusR
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoPageReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoSaveReqVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleInfoRespVO;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleInfoService;
+import com.liboshuai.slr.server.biz.service.rule.RuleInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

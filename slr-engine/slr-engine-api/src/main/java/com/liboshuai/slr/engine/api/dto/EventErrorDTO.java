@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.dal.dataobject.event;
+package com.liboshuai.slr.engine.api.dto;
 
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -17,11 +15,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Document(collection = "starlink_risk_event_error") // 指定集合名称
-public class MongoEventErrorDO implements Serializable {
+public class EventErrorDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Id
     private String id;
 
     /**

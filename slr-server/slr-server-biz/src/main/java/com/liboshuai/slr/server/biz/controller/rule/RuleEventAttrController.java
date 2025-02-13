@@ -2,7 +2,7 @@ package com.liboshuai.slr.server.biz.controller.rule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrRespVO;
-import com.liboshuai.slr.server.biz.service.riskRule.RuleEventAttrService;
+import com.liboshuai.slr.server.biz.service.rule.RuleEventAttrService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

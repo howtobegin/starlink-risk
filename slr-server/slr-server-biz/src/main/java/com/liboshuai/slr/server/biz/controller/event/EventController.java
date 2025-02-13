@@ -4,7 +4,7 @@ import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.server.biz.controller.event.vo.KafkaEventGroupReqVO;
 import com.liboshuai.slr.server.biz.controller.event.vo.KafkaInfoRespVO;
 import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.EventService;
+import com.liboshuai.slr.server.biz.service.event.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
