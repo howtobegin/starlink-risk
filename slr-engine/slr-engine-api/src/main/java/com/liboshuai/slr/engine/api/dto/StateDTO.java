@@ -1,6 +1,6 @@
 package com.liboshuai.slr.engine.api.dto;
 
-import com.liboshuai.slr.engine.api.type.StateHistoryDtoType;
+import com.liboshuai.slr.engine.api.type.StateDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +19,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(StateHistoryDtoType.class)
+@TypeInfo(StateDtoType.class)
 public class StateDTO implements Serializable {
 
     private static final long serialVersionUID = 1;

@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StateHistoryDtoType extends TypeInfoFactory<StateDTO> {
+public class StateDtoType extends TypeInfoFactory<StateDTO> {
     @Override
     public TypeInformation<StateDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
