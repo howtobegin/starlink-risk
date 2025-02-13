@@ -34,7 +34,7 @@ public class KafkaEventDO implements Serializable {
     /**
      * 事件id
      */
-    private Long eventId;
+    private String eventId;
     /**
      * 事件时间（例如：1736732339769）
      * 13位，毫秒级

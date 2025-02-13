@@ -28,7 +28,7 @@ public class DorisEventDTO implements Serializable {
     /**
      * 事件id
      */
-    private Long eventId;
+    private String eventId;
     /**
      * 事件时间
      * （无需业务方传输，而是取flink处理时间，格式：yyyy-MM-dd HH:mm:ss）

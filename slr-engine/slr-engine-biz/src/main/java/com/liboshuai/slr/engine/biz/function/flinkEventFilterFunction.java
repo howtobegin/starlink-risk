@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * KafkaEventFilterFunction类实现了FilterFunction接口，用于过滤Kafka事件数据
+ * flinkEventFilterFunction类实现了FilterFunction接口，用于过滤非法事件数据
  */
 @Slf4j
-public class KafkaEventFilterFunction implements FilterFunction<FlinkEventDTO> {
+public class flinkEventFilterFunction implements FilterFunction<FlinkEventDTO> {
 
     /**
      * 过滤方法实现

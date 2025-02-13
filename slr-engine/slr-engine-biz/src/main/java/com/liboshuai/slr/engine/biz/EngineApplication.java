@@ -47,29 +47,29 @@ public class EngineApplication {
         // 获取规则配置数据流
         DataStream<MysqlCdcDTO> ruleDS = FlinkMysqlCdcConnector.read(env, parameterTool);
         // 获取旧状态清理流
-        SingleOutputStreamOperator<FlinkEventDTO> clearKafkaEventDtoSO = AsyncDataStream.unorderedWait(
+        SingleOutputStreamOperator<FlinkEventDTO> clearFlinkEventDtoSO = AsyncDataStream.unorderedWait(
                         ruleDS, new DorisAsyncFunction(parameterTool), 1, TimeUnit.MINUTES, 100
                 ).setParallelism(kafkaPartition)
                 .returns(Types.POJO(FlinkEventDTO.class)).uid("async-doris");
         // 获取规则广播流
         BroadcastStream<MysqlCdcDTO> broadcastStream = ruleDS.broadcast(CommonStateDesc.BROADCAST_RULE_MAP_STATE_DESC);
         // 获取业务数据流
-        SingleOutputStreamOperator<FlinkEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
+        SingleOutputStreamOperator<FlinkEventDTO> flinkEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为FlinkEventDto对象
                 .map(new Json2FlinkEventDtoMapFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-process")
                 // 过滤掉非法的事件
-                .filter(new KafkaEventFilterFunction())
+                .filter(new flinkEventFilterFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
         // 实时动态规则引擎
-        SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
+        SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = flinkEventDtoDS
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("register-watermark")
                 // 合并数据清洗流
-                .union(clearKafkaEventDtoSO)
+                .union(clearFlinkEventDtoSO)
                 // keyBy分组
-                .keyBy(new KafkaEventKeyBy())
+                .keyBy(new flinkEventKeyBy())
                 // 连接规则配置流
                 .connect(broadcastStream)
                 // 核心处理逻辑

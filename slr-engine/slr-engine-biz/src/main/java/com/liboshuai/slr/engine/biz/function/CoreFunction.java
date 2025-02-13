@@ -62,12 +62,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
-    private MapState<String, Tuple2<Long, Long>> smallMapState;
+    private MapState<String, Tuple2<Long, String>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Boolean> hasValueState;
     private ValueState<Long> lastWarningTimeState;
     private MapState<String, Long> latestEventThresholdMapState;
-    private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> bigMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, String>> bigMapState;
 
     /**
      * 注意千万不要在open方法中对状态进行赋值操作，因为在processElement等方法中并不能获取到
@@ -94,6 +94,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         // 设置事件时间为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
         long currentProcessingTime = ctx.timerService().currentProcessingTime();
         flinkEventDTO.setEventTime(currentProcessingTime);
+        // 设置事件ID
+        flinkEventDTO.setEventId(UUID.randomUUID().toString());
         // 将设置了事件时间的数据放入结果中，以便后续写入doris
         ResultDTO resultDTO = ResultDTO.builder()
                 .flinkEventDTO(flinkEventDTO)
@@ -178,10 +180,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      * 打印状态值
      */
     private void logState(String status) throws Exception {
-        Map<String, Tuple2<Long, Long>> smallMap = new HashMap<>();
-        Iterator<Map.Entry<String, Tuple2<Long, Long>>> oldSmallMapIterator = smallMapState.iterator();
+        Map<String, Tuple2<Long, String>> smallMap = new HashMap<>();
+        Iterator<Map.Entry<String, Tuple2<Long, String>>> oldSmallMapIterator = smallMapState.iterator();
         while (oldSmallMapIterator.hasNext()) {
-            Map.Entry<String, Tuple2<Long, Long>> next = oldSmallMapIterator.next();
+            Map.Entry<String, Tuple2<Long, String>> next = oldSmallMapIterator.next();
             smallMap.put(next.getKey(), next.getValue());
         }
 
@@ -203,10 +205,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             latestEventThresholdMap.put(next.getKey(), next.getValue());
         }
 
-        Map<Tuple2<String, Long>, Tuple2<Long, Long>> bigMap = new HashMap<>();
-        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>>> oldBigMapStateIterator = bigMapState.iterator();
+        Map<Tuple2<String, Long>, Tuple2<Long, String>> bigMap = new HashMap<>();
+        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>>> oldBigMapStateIterator = bigMapState.iterator();
         while (oldBigMapStateIterator.hasNext()) {
-            Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> next = oldBigMapStateIterator.next();
+            Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> next = oldBigMapStateIterator.next();
             bigMap.put(next.getKey(), next.getValue());
         }
 

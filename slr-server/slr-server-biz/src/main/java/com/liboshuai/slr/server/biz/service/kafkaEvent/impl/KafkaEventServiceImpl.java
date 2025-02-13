@@ -150,7 +150,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
         KafkaEventStrategy kafkaEventStrategy = kafkaEventStrategyHolder.getByChannel(channel);
         kafkaEventStrategy.processAfter(flinkEventDTOList);
         // 生成事件id
-        flinkEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(snowflakeIdGenerator.nextId()));
+        flinkEventDTOList.forEach(kafkaEventDTO -> kafkaEventDTO.setEventId(UUID.randomUUID().toString()));
         // 异步推送数据到kafka
         kafkaEventProvider.batchSend(flinkEventDTOList);
         // 异步保存事件数据到mongo

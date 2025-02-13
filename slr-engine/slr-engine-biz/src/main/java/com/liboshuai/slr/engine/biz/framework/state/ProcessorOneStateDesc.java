@@ -10,9 +10,9 @@ import org.apache.flink.api.java.tuple.Tuple2;
  **/
 public class ProcessorOneStateDesc {
 
-    public static MapStateDescriptor<String, Tuple2<Long, Long>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<String, Tuple2<Long, String>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
         String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(smallMapStateName, Types.STRING, Types.TUPLE(Types.LONG, Types.LONG));
+        return new MapStateDescriptor<>(smallMapStateName, Types.STRING, Types.TUPLE(Types.LONG, Types.STRING));
     }
 
     public static MapStateDescriptor<String, Boolean> getSmallInitMapStateDesc(Long ruleCode, Long ruleVersion) {
@@ -35,8 +35,8 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG);
     }
 
-    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, Long>> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, String>> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.LONG));
+        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.STRING));
     }
 }
