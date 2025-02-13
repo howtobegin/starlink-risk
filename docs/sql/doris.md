@@ -10,8 +10,8 @@
 -- CREATE DATABASE IF NOT EXISTS `starlink_risk_test`;
 -- use starlink_risk_test;
 
-DROP TABLE IF EXISTS starlink_risk_kafka_event;
-CREATE TABLE IF NOT EXISTS starlink_risk_kafka_event (
+DROP TABLE IF EXISTS starlink_risk_event;
+CREATE TABLE IF NOT EXISTS starlink_risk_event (
     `EVENT_TIME`    DATETIME    NOT NULL COMMENT '事件时间',
     `CHANNEL`       VARCHAR(16) NOT NULL COMMENT '渠道',
     `TARGET_FIELD`  VARCHAR(64) NOT NULL COMMENT '目标编号',
@@ -34,8 +34,8 @@ PROPERTIES(
     "replication_allocation" = "tag.location.group_a:1,tag.location.group_b:1,tag.location.group_c:1" -- 集群模式启用
 );
 
-DROP TABLE IF EXISTS starlink_risk_state_history;
-CREATE TABLE IF NOT EXISTS starlink_risk_state_history (
+DROP TABLE IF EXISTS starlink_risk_state;
+CREATE TABLE IF NOT EXISTS starlink_risk_state (
     `RULE_CODE`     BIGINT      NOT NULL COMMENT '规则编号',
     `RULE_VERSION`  BIGINT      NOT NULL COMMENT '规则版本',
     `CHANNEL`       VARCHAR(16) NOT NULL COMMENT '渠道',
