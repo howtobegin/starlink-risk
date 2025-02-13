@@ -34,10 +34,10 @@ public class ProcessorOne implements Processor {
      */
     private RuleInfoDTO ruleInfoDTO;
     /**
-     * - key: 事件字段
+     * - key: f0为事件字段，f1为时间戳
      * - value: f0为eventValue累加值，f1为最新的事件数据
      */
-    private MapState<String, Tuple2<Long, FlinkEventDTO>> smallMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapState;
     /**
      * 记录对于事件条件是否初始化过
      * - key: eventField
@@ -185,9 +185,9 @@ public class ProcessorOne implements Processor {
                 hasValueState.update(true);
             }
             // 状态值防空
-            Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+            Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(Tuple2.of(flinkEventDTO.getEventField(), currentEventTimestamp));
             if (Objects.isNull(eventValueAndEventDateTuple2)) {
-                smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(0L, flinkEventDTO));
+                smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), currentEventTimestamp), Tuple2.of(0L, flinkEventDTO));
             }
             // 规则事件值计算
             if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
@@ -212,26 +212,26 @@ public class ProcessorOne implements Processor {
                         log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
                         return;
                     }
-                    smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(Long.parseLong(initValue), flinkEventDTO));
+                    smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), currentEventTimestamp), Tuple2.of(Long.parseLong(initValue), flinkEventDTO));
                     smallInitMapState.put(flinkEventDTO.getEventField(), true);
                 }
                 // 从redis初始化值后，正常处理数据
-                addEventValue(flinkEventDTO);
+                addEventValue(currentEventTimestamp, flinkEventDTO);
             } else { // 非跨历史时间段
                 // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
                 if (flinkEventDTO.getEventTime() != currentEventTimestamp) {
                     continue;
                 }
-                addEventValue(flinkEventDTO);
+                addEventValue(currentEventTimestamp, flinkEventDTO);
             }
         }
     }
 
-    private void addEventValue(FlinkEventDTO flinkEventDTO) throws Exception {
-        Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+    private void addEventValue(long currentEventTimestamp, FlinkEventDTO flinkEventDTO) throws Exception {
+        Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(Tuple2.of(flinkEventDTO.getEventField(), currentEventTimestamp));
         Long currentValue = eventValueAndEventDateTuple2.f0;
         Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
-        smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(newValue, flinkEventDTO));
+        smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), currentEventTimestamp), Tuple2.of(newValue, flinkEventDTO));
     }
 
 
@@ -331,9 +331,8 @@ public class ProcessorOne implements Processor {
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
-        // 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
-        // TODO: 获取最新的事件数据
-        FlinkEventDTO latestFlinkEventDTO = updateBigMapWithSmallMap(timestamp);
+        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
+        FlinkEventDTO latestFlinkEventDTO = aggregateSmallMapToBigMapAndGetLatestEvent(timestamp);
         // 清理窗口大小之外的数据
         cleanupWindowData(timestamp, ruleConditionMapByEventField);
         // 处理bigMapState
@@ -486,21 +485,28 @@ public class ProcessorOne implements Processor {
 
 
     /**
-     * 将每个事件窗口步长数据集累加的值，添加到窗口大小数据集中bigMapState中
+     * 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
      */
-    private FlinkEventDTO updateBigMapWithSmallMap(long timestamp) throws Exception {
+    private FlinkEventDTO aggregateSmallMapToBigMapAndGetLatestEvent(long timestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
-        for (Map.Entry<String, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
-            String eventField = smallMapEntry.getKey();
+        Long timestampMax = 0L;
+        FlinkEventDTO latestFlinkEventDTO = null;
+        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
+            Tuple2<String, Long> eventFieldAndTimeTuple2 = smallMapEntry.getKey();
             Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = smallMapEntry.getValue();
             // 创建新的 Tuple2 作为 bigMapState 的键
-            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
+            Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, timestamp);
             // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, eventValueAndEventDataTuple2.f0);
+            Long eventTime = eventFieldAndTimeTuple2.f1;
+            if (eventTime > timestampMax) {
+                timestampMax = eventTime;
+                latestFlinkEventDTO = eventValueAndEventDataTuple2.f1;
+            }
         }
         // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
         smallMapState.clear();
-        return null;
+        return latestFlinkEventDTO;
     }
 
     /**

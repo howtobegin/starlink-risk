@@ -11,9 +11,9 @@ import org.apache.flink.api.java.tuple.Tuple2;
  **/
 public class ProcessorOneStateDesc {
 
-    public static MapStateDescriptor<String, Tuple2<Long, FlinkEventDTO>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
         String smallMapStateName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(smallMapStateName, Types.STRING, Types.TUPLE(Types.LONG, Types.POJO(FlinkEventDTO.class)));
+        return new MapStateDescriptor<>(smallMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(FlinkEventDTO.class)));
     }
 
     public static MapStateDescriptor<String, Boolean> getSmallInitMapStateDesc(Long ruleCode, Long ruleVersion) {

@@ -62,7 +62,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
-    private MapState<String, Tuple2<Long, FlinkEventDTO>> smallMapState;
+    private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Boolean> hasValueState;
     private ValueState<Long> lastWarningTimeState;
@@ -172,10 +172,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      * 打印状态值
      */
     private void logState(String status) throws Exception {
-        Map<String, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
-        Iterator<Map.Entry<String, Tuple2<Long, FlinkEventDTO>>> oldSmallMapIterator = smallMapState.iterator();
+        Map<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
+        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>>> oldSmallMapIterator = smallMapState.iterator();
         while (oldSmallMapIterator.hasNext()) {
-            Map.Entry<String, Tuple2<Long, FlinkEventDTO>> next = oldSmallMapIterator.next();
+            Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> next = oldSmallMapIterator.next();
             smallMap.put(next.getKey(), next.getValue());
         }
 
