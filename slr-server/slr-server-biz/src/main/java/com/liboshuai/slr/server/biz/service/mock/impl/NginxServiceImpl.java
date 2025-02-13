@@ -2,6 +2,7 @@ package com.liboshuai.slr.server.biz.service.mock.impl;
 
 import com.liboshuai.slr.engine.api.dto.EventDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.NginxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class NginxServiceImpl implements NginxService {
 
     private final RestTemplate restTemplate;
+    private final SlrServerProperties slrServerProperties;
 
     /**
      * 推送数据到打点服务器演示
@@ -60,11 +62,11 @@ public class NginxServiceImpl implements NginxService {
      * @param eventDTO 要发送的事件数据
      */
     public void sendEventRequest(EventDTO eventDTO) {
-        // 打点服务器的请求 URI 地址（建议动态配置）
-        String baseUri = "http://docker:48881/backend.gif";
+        // 打点服务器的请求 URI 地址
+        String slrGifApiAddress = slrServerProperties.getSlrGifApiAddress();
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
-        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
+        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(slrGifApiAddress)
                 .queryParam("channel", eventDTO.getChannel())
                 .queryParam("targetField", eventDTO.getTargetField())
                 .queryParam("targetValue", eventDTO.getTargetValue())

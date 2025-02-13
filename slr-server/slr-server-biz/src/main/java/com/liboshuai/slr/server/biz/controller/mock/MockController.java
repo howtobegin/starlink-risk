@@ -1,5 +1,6 @@
 package com.liboshuai.slr.server.biz.controller.mock;
 
+import com.liboshuai.slr.engine.api.dto.EventDTO;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
@@ -10,10 +11,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -43,33 +43,18 @@ public class MockController {
         return CommonResult.success(snowflakeIdGenerator.nextId());
     }
 
+    @PostMapping("/pushEventToNginx")
+    @Operation(summary = "推送数据到nginx")
+    public CommonResult<Boolean> pushEventToNginx(@RequestBody List<EventDTO> eventDTOList) {
+        mockService.pushEventToNginx(eventDTOList);
+        return CommonResult.success(true);
+    }
+
     @GetMapping("/testNginxBackendRequest")
     @Operation(summary = "测试nginx日志打点")
     public CommonResult<Boolean> testNginxBackendRequest() {
         nginxService.testNginxBackendRequest();
         return CommonResult.success(true);
-    }
-
-    @GetMapping("/backend")
-    public String handleBackendGif(
-            @RequestParam(required = false) String channel,
-            @RequestParam(required = false) String targetField,
-            @RequestParam(required = false) String targetValue,
-            @RequestParam(required = false) String eventField,
-            @RequestParam(required = false) String eventValue,
-            @RequestParam(required = false) String eventAttrMap
-    ) {
-        System.out.println("Received parameters:");
-        System.out.println("channel: " + channel);
-        System.out.println("targetField: " + targetField);
-        System.out.println("targetValue: " + targetValue);
-        System.out.println("eventField: " + eventField);
-        System.out.println("eventValue: " + eventValue);
-        System.out.println("eventAttrMap: " + eventAttrMap);
-
-        // 您可以根据需要进行进一步处理
-
-        return "Parameters received successfully.";
     }
 
     @GetMapping("/testRedis")

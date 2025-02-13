@@ -33,4 +33,6 @@ public class SlrServerProperties {
 
     @Value("${slr-server.api-address.rso-alert}")
     private String rsoAlertApiAddress;
+    @Value("${slr-server.api-address.slr-gif}")
+    private String slrGifApiAddress;
 }

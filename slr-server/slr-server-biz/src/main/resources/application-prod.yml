@@ -115,3 +115,4 @@ slr-server:
     event-log: /app/dmapp/slr/data
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
+    slr-gif: http://10.188.6.154:48881/slr_event_prod.gif

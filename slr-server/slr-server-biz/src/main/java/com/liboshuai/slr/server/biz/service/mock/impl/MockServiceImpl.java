@@ -6,6 +6,7 @@ import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
 import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.MockService;
+import com.liboshuai.slr.server.biz.service.mock.NginxService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,8 @@ public class MockServiceImpl implements MockService {
 
     @Resource
     private SlrServerProperties slrServerProperties;
+    @Resource
+    private NginxService nginxService;
 
     public MockServiceImpl() {
         initializeBankData();
@@ -104,6 +107,13 @@ public class MockServiceImpl implements MockService {
             }
         } catch (IOException e) {
             log.error("写入事件文件时发生错误", e);
+        }
+    }
+
+    @Override
+    public void pushEventToNginx(List<EventDTO> eventDTOList) {
+        for (EventDTO eventDTO : eventDTOList) {
+            nginxService.sendEventRequest(eventDTO);
         }
     }
 
@@ -209,4 +219,5 @@ public class MockServiceImpl implements MockService {
         }
         writer.flush(); // 确保数据写入磁盘
     }
+
 }

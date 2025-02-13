@@ -120,3 +120,4 @@ slr-server:
     event-log: C:/Me/Temp/mock/event.log
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
+    slr-gif: http://docker:48881/slr_event_local.gif
