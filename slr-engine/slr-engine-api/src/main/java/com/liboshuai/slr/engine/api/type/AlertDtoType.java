@@ -16,8 +16,8 @@ public class AlertDtoType extends TypeInfoFactory<AlertDTO> {
         typeInformationMap.put("channel", Types.STRING);
         typeInformationMap.put("ruleCode", Types.LONG);
         typeInformationMap.put("eventId", Types.STRING);
-        typeInformationMap.put("alertMessage", Types.STRING);
-        typeInformationMap.put("alertTime", Types.STRING);
+        typeInformationMap.put("message", Types.STRING);
+        typeInformationMap.put("time", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);
         typeInformationMap.put("targetValue", Types.STRING);
         typeInformationMap.put("eventValueGroup", Types.MAP(Types.STRING, Types.LONG));
