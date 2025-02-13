@@ -65,12 +65,12 @@ public class AlertMessageListener {
         List<AlertMessageDTO> finalAlertMessageDtoList = new ArrayList<>();
         if (!validAlertMessageDTOList.isEmpty()) {
             // 从mongo中获取事件id与其对应的数据数据
-            Map<Long, FlinkEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertMessageDTOList);
+            Map<String, FlinkEventDTO> eventIdAndKafkaEventMap = findEventIdAndKafkaEventMap(validAlertMessageDTOList);
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertMessageDTO alertMessageDTO : validAlertMessageDTOList) {
                 // 根据mongo中的事件数据补充预警信息
                 String alertMessage = alertMessageDTO.getAlertMessage();
-                Long eventId = alertMessageDTO.getEventId();
+                String eventId = alertMessageDTO.getEventId();
                 FlinkEventDTO flinkEventDTO = eventIdAndKafkaEventMap.get(eventId);
                 if (Objects.isNull(flinkEventDTO)) {
                     flinkEventDTO = new FlinkEventDTO();
@@ -101,9 +101,9 @@ public class AlertMessageListener {
     /**
      * 从mongo中获取事件id与其对应的数据数据
      */
-    private Map<Long, FlinkEventDTO> findEventIdAndKafkaEventMap(List<AlertMessageDTO> validAlertMessageDTOList) {
-        Map<Long, FlinkEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
-        List<Long> eventIdList = validAlertMessageDTOList.stream().map(AlertMessageDTO::getEventId).collect(Collectors.toList());
+    private Map<String, FlinkEventDTO> findEventIdAndKafkaEventMap(List<AlertMessageDTO> validAlertMessageDTOList) {
+        Map<String, FlinkEventDTO> eventIdAndKafkaEventMap = new HashMap<>();
+        List<String> eventIdList = validAlertMessageDTOList.stream().map(AlertMessageDTO::getEventId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(eventIdList)) {
             List<FlinkEventDTO> flinkEventDTOList = kafkaEventService.selectListByEventIds(eventIdList);
             if (!CollectionUtils.isEmpty(flinkEventDTOList)) {

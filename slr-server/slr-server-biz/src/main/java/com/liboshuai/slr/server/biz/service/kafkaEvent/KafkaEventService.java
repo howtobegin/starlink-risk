@@ -23,7 +23,7 @@ public interface KafkaEventService {
     /**
      * 根据事件id列表查询kafka事件数据集合
      */
-    List<FlinkEventDTO> selectListByEventIds(List<Long> eventIdList);
+    List<FlinkEventDTO> selectListByEventIds(List<String> eventIdList);
 
     /**
      * 删除mongo中过期事件数据

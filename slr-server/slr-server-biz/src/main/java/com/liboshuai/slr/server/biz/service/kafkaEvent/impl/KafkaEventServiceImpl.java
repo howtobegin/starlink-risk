@@ -171,7 +171,7 @@ public class KafkaEventServiceImpl implements KafkaEventService {
     }
 
     @Override
-    public List<FlinkEventDTO> selectListByEventIds(List<Long> eventIdList) {
+    public List<FlinkEventDTO> selectListByEventIds(List<String> eventIdList) {
         List<KafkaEventDO> kafkaEventDOList = kafkaEventRepository.findAllByEventIdIn(eventIdList);
         return kafkaEventConvert.batchConvertDo2Dto(kafkaEventDOList);
     }

@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface KafkaEventRepository extends MongoRepository<KafkaEventDO, String> {
 
-    List<KafkaEventDO> findAllByEventIdIn(List<Long> eventIdList);
+    List<KafkaEventDO> findAllByEventIdIn(List<String> eventIdList);
 
     void deleteByEventTimeBefore(long eventTime);
 }
