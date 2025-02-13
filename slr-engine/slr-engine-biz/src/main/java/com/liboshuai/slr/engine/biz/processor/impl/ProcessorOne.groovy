@@ -33,9 +33,9 @@
 //    private RuleInfoDTO ruleInfoDTO;
 //    /**
 //     * - key: eventField
-//     * - value: f0为eventValue累加值，f1为最新的kafka事件id
+//     * - value: f0为eventValue累加值，f1为最新的事件id
 //     */
-//    private MapState<String, Tuple2<Long, Long>> smallMapState;
+//    private MapState<String, Tuple2<Long, String>> smallMapState;
 //    /**
 //     * 记录对于事件条件是否初始化过
 //     * - key: eventField
@@ -59,9 +59,9 @@
 //    private MapState<String, Long> latestEventThresholdMapState;
 //    /**
 //     * key: f0为eventField，f1为时间戳
-//     * value: f0为eventValue累加值，f1为最新的kafka事件id
+//     * value: f0为eventValue累加值，f1为最新的事件id
 //     */
-//    private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> bigMapState;
+//    private MapState<Tuple2<String, Long>, Tuple2<Long, String>> bigMapState;
 //
 //    // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
 ////    private MapState<Tuple2<String, Long>, Tuple2<Long, Long>> oldBigMapState;
@@ -183,7 +183,7 @@
 //                hasValueState.update(true);
 //            }
 //            // 状态值防空
-//            Tuple2<Long, Long> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+//            Tuple2<Long, String> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
 //            if (Objects.isNull(longLongTuple2)) {
 //                smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(0L, flinkEventDTO.getEventId()));
 //            }
@@ -226,8 +226,8 @@
 //    }
 //
 //    private void addEventValue(FlinkEventDTO flinkEventDTO) throws Exception {
-//        Tuple2<Long, Long> longLongTuple2 = smallMapState.get(flinkEventDTO.getEventField());
-//        Long currentValue = longLongTuple2.f0;
+//        Tuple2<Long, String> longStringTuple2 = smallMapState.get(flinkEventDTO.getEventField());
+//        Long currentValue = longStringTuple2.f0;
 //        Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
 //        smallMapState.put(flinkEventDTO.getEventField(), Tuple2.of(newValue, flinkEventDTO.getEventId()));
 //    }
@@ -334,7 +334,7 @@
 //        // 清理窗口大小之外的数据
 //        cleanupWindowData(timestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
-//        Tuple3<Boolean, Long, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
+//        Tuple3<Boolean, String, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
 //        // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
 //        if (lastWarningTimeState.value() == null) {
 //            lastWarningTimeState.update(0L);
@@ -360,7 +360,7 @@
 //
 //    private void logState(Long ruleCode, String currentKey) throws Exception {
 //        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
-//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : bigMapState.entries()) {
+//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue().f0);
 //        }
 //        log.info("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
@@ -377,7 +377,7 @@
 //    /**
 //     * 构建预警信息的方法，提取重复逻辑
 //     */
-//    private AlertMessageDTO buildAlertMessage(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, Long, ProcessorDTO> processBigMapResult) {
+//    private AlertMessageDTO buildAlertMessage(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
 //        String finalWarnMessage = TemplateUtil.replacePlaceholders(
 //                ruleInfoDTO.getAlertMessage(),
 //                ruleInfoDTO,
@@ -422,19 +422,19 @@
 //     * @return 返回一个Tuple3对象，包含事件结果、最新的Kafka事件DTO和处理器DTO
 //     * @throws Exception 如果处理过程中发生错误，则抛出异常
 //     */
-//    private Tuple3<Boolean, Long, ProcessorDTO> processBigMap(Map<String, RuleCondDTO> ruleConditionMapByEventField,
-//                                                              String ruleCondCombOp) throws Exception {
+//    private Tuple3<Boolean, String, ProcessorDTO> processBigMap(Map<String, RuleCondDTO> ruleConditionMapByEventField,
+//                                                                String ruleCondCombOp) throws Exception {
 //        // 获取事件与之判断结果
 //        Map<String, Boolean> eventFieldAndWarnResult = new HashMap<>();
 //        // 获取事件字段与值之和
 //        Map<String, Long> eventFiledAndValueSumMap = new HashMap<>();
 //        // 获取最新的最新的Kafka事件id
-//        Long eventId = null;
+//        String eventId = null;
 //        Long maxTimestamp = Long.MIN_VALUE;
 //        // 遍历 MapState 的所有条目
-//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : bigMapState.entries()) {
+//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> entry : bigMapState.entries()) {
 //            Tuple2<String, Long> key = entry.getKey(); // 获取键，包含 eventField 和关联的时间戳值
-//            Tuple2<Long, Long> value = entry.getValue(); // 获取值，包含累加值和 KafkaEventDTO 对象
+//            Tuple2<Long, String> value = entry.getValue(); // 获取值，包含累加值和 KafkaEventDTO 对象
 //            Long currentTimestamp = key.f1; // 时间戳
 //            // 比较当前时间戳是否大于已记录的最大时间戳
 //            if (currentTimestamp > maxTimestamp) {
@@ -496,9 +496,9 @@
 //     */
 //    private void updateBigMapWithSmallMap(long timestamp) throws Exception {
 //        // 遍历 smallMapState 的所有条目
-//        for (Map.Entry<String, Tuple2<Long, Long>> smallMapEntry : smallMapState.entries()) {
+//        for (Map.Entry<String, Tuple2<Long, String>> smallMapEntry : smallMapState.entries()) {
 //            String eventField = smallMapEntry.getKey();
-//            Tuple2<Long, Long> tupleValue = smallMapEntry.getValue();
+//            Tuple2<Long, String> tupleValue = smallMapEntry.getValue();
 //            // 创建新的 Tuple2 作为 bigMapState 的键
 //            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
 //            // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
@@ -525,9 +525,9 @@
 //        }
 //
 //        // 遍历 bigMapState 的所有条目
-//        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>>> iterator = bigMapState.entries().iterator();
+//        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>>> iterator = bigMapState.entries().iterator();
 //        while (iterator.hasNext()) {
-//            Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> stateEntry = iterator.next();
+//            Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> stateEntry = iterator.next();
 //            Tuple2<String, Long> keyTuple = stateEntry.getKey();
 //            String eventField = keyTuple.f0;
 //            Long eventTime = keyTuple.f1;
