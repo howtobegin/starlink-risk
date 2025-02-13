@@ -112,7 +112,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, FlinkEven
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         String targetValue = resultSet.getString("TARGET_VALUE");
-                        StateHistoryDTO stateHistoryDTO = StateHistoryDTO.builder()
+                        StateDTO stateDTO = StateDTO.builder()
                                 .ruleCode(ruleInfoDTOBefore.getRuleCode())
                                 .ruleVersion(ruleInfoDTOBefore.getRuleVersion())
                                 .channel(ruleInfoDTOBefore.getChannel())
@@ -123,7 +123,7 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, FlinkEven
                                 .channel(ruleInfoDTOBefore.getChannel())
                                 .targetField(ruleInfoDTOBefore.getTargetField())
                                 .targetValue(targetValue)
-                                .stateHistoryDTO(stateHistoryDTO)
+                                .stateDTO(stateDTO)
                                 .build();
                         flinkEventDTOList.add(flinkEventDTO);
                     }

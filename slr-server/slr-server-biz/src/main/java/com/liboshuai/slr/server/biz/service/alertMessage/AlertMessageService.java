@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.alertMessage;
 
-import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
+import com.liboshuai.slr.engine.api.dto.AlertDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.server.biz.controller.alert.vo.AlertPageReqVO;
 import com.liboshuai.slr.server.biz.controller.alert.vo.AlertRespVO;
@@ -19,5 +19,5 @@ public interface AlertMessageService {
      * @param ruleCode 规则编号
      * @return 预警信息集合
      */
-    List<AlertMessageDTO> findByRuleCode(Long ruleCode);
+    List<AlertDTO> findByRuleCode(Long ruleCode);
 }

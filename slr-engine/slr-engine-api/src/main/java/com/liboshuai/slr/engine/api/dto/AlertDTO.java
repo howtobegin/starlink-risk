@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.api.dto;
 
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
-import com.liboshuai.slr.engine.api.type.AlertMessageDtoType;
+import com.liboshuai.slr.engine.api.type.AlertDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +20,8 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(AlertMessageDtoType.class)
-public class AlertMessageDTO implements Serializable {
+@TypeInfo(AlertDtoType.class)
+public class AlertDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 

@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.alertMessage.impl;
 
-import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
+import com.liboshuai.slr.engine.api.dto.AlertDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
 import com.liboshuai.slr.server.biz.controller.alert.vo.AlertPageReqVO;
@@ -30,7 +30,7 @@ public class AlertMessageServiceImpl implements AlertMessageService {
     }
 
     @Override
-    public List<AlertMessageDTO> findByRuleCode(Long ruleCode) {
+    public List<AlertDTO> findByRuleCode(Long ruleCode) {
         List<MongoAlertDO> mongoAlertDOList = alertRepository.findByRuleCode(ruleCode);
         return alertConvert.batchConvertMongo2Dto(mongoAlertDOList);
     }

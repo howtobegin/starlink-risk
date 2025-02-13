@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.biz.processor;
 
 import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
-import com.liboshuai.slr.engine.api.dto.ResultDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkResultDTO;
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.KeyedStateStore;
@@ -20,10 +20,10 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(String currentKey, long timestamp, FlinkEventDTO flinkEventDTO, Collector<ResultDTO> out) throws Exception;
+    void processElement(String currentKey, long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
 
     /**
      * 定时器
      */
-    boolean onTimer(String currentKey, long timestamp, Collector<ResultDTO> out) throws Exception;
+    boolean onTimer(String currentKey, long timestamp, Collector<FlinkResultDTO> out) throws Exception;
 }

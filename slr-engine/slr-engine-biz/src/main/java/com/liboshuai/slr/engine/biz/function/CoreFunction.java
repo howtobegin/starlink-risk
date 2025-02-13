@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * 计算引擎核心function
  */
 @Slf4j
-public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO> implements CheckpointedFunction {
+public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO> implements CheckpointedFunction {
 
     private static final long serialVersionUID = -5913085790319815064L;
 
@@ -81,28 +81,20 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
 
     @Override
     public void processElement(FlinkEventDTO flinkEventDTO,
-                               KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.ReadOnlyContext ctx,
-                               Collector<ResultDTO> out) throws Exception {
+                               KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.ReadOnlyContext ctx,
+                               Collector<FlinkResultDTO> out) throws Exception {
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
         // 获取下线规则状态记录信息
-        StateHistoryDTO stateHistoryDTO = flinkEventDTO.getStateHistoryDTO();
-        if (Objects.nonNull(stateHistoryDTO)) {
-            clearOldState(stateHistoryDTO);
+        StateDTO stateDTO = flinkEventDTO.getStateDTO();
+        if (Objects.nonNull(stateDTO)) {
+            clearOldState(stateDTO);
             return;
         }
-        // 设置事件时间为Flink当前处理时间（注意：设置时间事件一定要放在缓存列表之前）
-        long currentProcessingTime = ctx.timerService().currentProcessingTime();
-        flinkEventDTO.setEventTime(currentProcessingTime);
-        // 设置事件ID
-        flinkEventDTO.setEventId(UUID.randomUUID().toString());
-        // 将设置了事件时间的数据放入结果中，以便后续写入doris
-        ResultDTO resultDTO = ResultDTO.builder()
-                .flinkEventDTO(flinkEventDTO)
-                .build();
-        out.collect(resultDTO);
+        // 获取当前事件时间
+        Long eventTime = flinkEventDTO.getEventTime();
         // 将事件添加到缓存列表中并移除超过5分钟的过期数据
-        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, currentProcessingTime);
+        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, eventTime);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Long ruleCode = stringProcessorEntry.getKey();
@@ -114,16 +106,16 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                     continue;
                 }
                 for (FlinkEventDTO historyFlinkEventDto : historyFlinkEventDTOList) {
-                    processor.processElement(currentKey, currentProcessingTime, historyFlinkEventDto, out);
+                    processor.processElement(currentKey, eventTime, historyFlinkEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, currentProcessingTime, flinkEventDTO, out);
+                processor.processElement(currentKey, eventTime, flinkEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
-        long fireTime = WindowUtil.getWindowStartWithOffset(currentProcessingTime, 0, TimeUnit.MINUTES.toMillis(1))
+        long fireTime = WindowUtil.getWindowStartWithOffset(eventTime, 0, TimeUnit.MINUTES.toMillis(1))
                 + TimeUnit.MINUTES.toMillis(1);
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
@@ -153,9 +145,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         }
     }
 
-    private void clearOldState(StateHistoryDTO stateHistoryDTO) throws Exception {
-        Long ruleCode = stateHistoryDTO.getRuleCode();
-        Long ruleVersion = stateHistoryDTO.getRuleVersion();
+    private void clearOldState(StateDTO stateDTO) throws Exception {
+        Long ruleCode = stateDTO.getRuleCode();
+        Long ruleVersion = stateDTO.getRuleVersion();
 
         RuntimeContext runtimeContext = getRuntimeContext();
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
@@ -224,8 +216,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
 
     @Override
     public void processBroadcastElement(MysqlCdcDTO mysqlCdcDTO,
-                                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.Context ctx,
-                                        Collector<ResultDTO> out) throws Exception {
+                                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.Context ctx,
+                                        Collector<FlinkResultDTO> out) throws Exception {
         if (mysqlCdcDTO == null) {
             log.warn("规则运算机上下线处理失败，MysqlCdc规则信息ruleCdcDTO必须非空！");
             return;
@@ -331,8 +323,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      */
     @Override
     public void onTimer(long timestamp,
-                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, ResultDTO>.OnTimerContext ctx,
-                        Collector<ResultDTO> out) throws Exception {
+                        KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.OnTimerContext ctx,
+                        Collector<FlinkResultDTO> out) throws Exception {
         // 获取当前Key
         String currentKey = ctx.getCurrentKey();
         // 判断当前key所有运算机中是否有待处理的定时器

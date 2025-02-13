@@ -67,5 +67,5 @@ public class FlinkEventDTO implements Serializable {
     /**
      * 规则状态历史的记录数据，用于清理下线规则状态
      */
-    private StateHistoryDTO stateHistoryDTO;
+    private StateDTO stateDTO;
 }

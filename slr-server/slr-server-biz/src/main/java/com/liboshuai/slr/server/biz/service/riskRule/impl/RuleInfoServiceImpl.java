@@ -579,28 +579,28 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         Map<String, List<FlinkEventDTO>> targetValueAndKafkaEventDtoMap = flinkEventDTOList.stream()
                 .collect(Collectors.groupingBy(FlinkEventDTO::getTargetValue));
         // 最终生成的风控信息集合
-        List<AlertMessageDTO> alertMessageDTOS = new ArrayList<>();
+        List<AlertDTO> alertDTOS = new ArrayList<>();
         // 遍历每个targetValue下的数据，进行风控规则判断
-        process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertMessageDTOS);
+        process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertDTOS);
         // 查询mongo中对应规则产生的预警信息
-        List<AlertMessageDTO> mongoAlertMessageDtoList = alertMessageService.findByRuleCode(ruleCode);
-        if (CollectionUtils.isEmpty(alertMessageDTOS) && CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+        List<AlertDTO> mongoAlertDtoList = alertMessageService.findByRuleCode(ruleCode);
+        if (CollectionUtils.isEmpty(alertDTOS) && CollectionUtils.isEmpty(mongoAlertDtoList)) {
             log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
             return true;
         }
-        if (CollectionUtils.isEmpty(alertMessageDTOS)) {
+        if (CollectionUtils.isEmpty(alertDTOS)) {
             log.info("计算得出的预警信息条数不为0，但mongo中的预警信息条数为0");
             return false;
         }
-        if (CollectionUtils.isEmpty(mongoAlertMessageDtoList)) {
+        if (CollectionUtils.isEmpty(mongoAlertDtoList)) {
             log.info("计算得出的预警信息条数为0，但mongo中的预警信息条数不为0");
             return false;
         }
-        int processSize = alertMessageDTOS.size();
-        int mongoSize = mongoAlertMessageDtoList.size();
+        int processSize = alertDTOS.size();
+        int mongoSize = mongoAlertDtoList.size();
         log.info("计算得出/mongo中的预警信息条数分别为: {}, {}", processSize, mongoSize);
         // 对比'计算得出的预警信息'条件与'mongo中的预警数据'条数、内容是否一致
-        return compareAlerts(alertMessageDTOS, mongoAlertMessageDtoList);
+        return compareAlerts(alertDTOS, mongoAlertDtoList);
     }
 
     /**
@@ -608,7 +608,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
      */
     private void process(Long ruleCode, Map<String, List<FlinkEventDTO>> targetValueAndKafkaEventDtoMap,
                          long windowSize, long windowStep, RuleCondDTO ruleCondDTO, Long alertInterval,
-                         String channel, String targetField, String eventField, List<AlertMessageDTO> alertMessageDTOS) {
+                         String channel, String targetField, String eventField, List<AlertDTO> alertDTOS) {
         for (Map.Entry<String, List<FlinkEventDTO>> entry : targetValueAndKafkaEventDtoMap.entrySet()) {
             String targetValue = entry.getKey();
             List<FlinkEventDTO> flinkEventDTOS = entry.getValue();
@@ -665,7 +665,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 boolean shouldAlert = (eventValueSum > eventThreshold) &&
                         (alertInterval == null || (windowEndTimeStamp - lastAlertTimestamp >= alertInterval));
                 if (shouldAlert) {
-                    AlertMessageDTO alertMessageDTO = AlertMessageDTO.builder()
+                    AlertDTO alertDTO = AlertDTO.builder()
                             .channel(channel)
                             .ruleCode(ruleCode)
                             .targetField(targetField)
@@ -673,7 +673,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                             .eventValueGroup(Collections.singletonMap(eventField, eventValueSum))
                             .alertTime(LocalDateTimeUtils.convertTimestamp2String(windowEndTimeStamp))
                             .build();
-                    alertMessageDTOS.add(alertMessageDTO);
+                    alertDTOS.add(alertDTO);
                     // 更新 lastAlertTimestamp 为当前窗口的结束时间
                     lastAlertTimestamp = windowEndTimeStamp;
                 }
@@ -690,7 +690,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         return TimeUtil.toMillis(alertIntervalValue, TimeUnitEnum.fromEnUnit(alertIntervalUnit));
     }
 
-    private Boolean compareAlerts(List<AlertMessageDTO> generatedAlerts, List<AlertMessageDTO> mongoAlerts) {
+    private Boolean compareAlerts(List<AlertDTO> generatedAlerts, List<AlertDTO> mongoAlerts) {
         if (CollectionUtils.isEmpty(generatedAlerts) && CollectionUtils.isEmpty(mongoAlerts)) {
             log.info("计算得出的预警信息条数与Mongo中的预警信息条数都为0");
             return true;
@@ -704,27 +704,27 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             return false;
         }
         // 对计算生成的预警信息与mongo中的预警信息进行排序
-        List<AlertMessageDTO> sortedGeneratedAlerts = generatedAlerts.stream()
+        List<AlertDTO> sortedGeneratedAlerts = generatedAlerts.stream()
                 .sorted(
-                        Comparator.comparing(AlertMessageDTO::getChannel)      // 按照 channel 排序
-                                .thenComparing(AlertMessageDTO::getRuleCode)       // 然后按 ruleCode 排序
-                                .thenComparing(AlertMessageDTO::getTargetField)   // 然后按 targetField 排序
-                                .thenComparing(AlertMessageDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertMessageDTO::getAlertTime)     // 最后按 alertTime 排序
+                        Comparator.comparing(AlertDTO::getChannel)      // 按照 channel 排序
+                                .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
+                                .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
+                                .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
+                                .thenComparing(AlertDTO::getAlertTime)     // 最后按 alertTime 排序
                 )
                 .collect(Collectors.toList());
-        List<AlertMessageDTO> sortedMongoAlerts = mongoAlerts.stream()
+        List<AlertDTO> sortedMongoAlerts = mongoAlerts.stream()
                 .sorted(
-                        Comparator.comparing(AlertMessageDTO::getChannel)      // 按照 channel 排序
-                                .thenComparing(AlertMessageDTO::getRuleCode)       // 然后按 ruleCode 排序
-                                .thenComparing(AlertMessageDTO::getTargetField)   // 然后按 targetField 排序
-                                .thenComparing(AlertMessageDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertMessageDTO::getAlertTime)     // 最后按 alertTime 排序
+                        Comparator.comparing(AlertDTO::getChannel)      // 按照 channel 排序
+                                .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
+                                .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
+                                .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
+                                .thenComparing(AlertDTO::getAlertTime)     // 最后按 alertTime 排序
                 )
                 .collect(Collectors.toList());
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
-            AlertMessageDTO generatedAlert = sortedGeneratedAlerts.get(i);
-            AlertMessageDTO mongoAlert = sortedMongoAlerts.get(i);
+            AlertDTO generatedAlert = sortedGeneratedAlerts.get(i);
+            AlertDTO mongoAlert = sortedMongoAlerts.get(i);
             mongoAlert.setAlertMessage(null);
             if (!generatedAlert.equals(mongoAlert)) {
                 log.info("预警信息内容不一致！计算: {}, Mongo: {}", generatedAlert, mongoAlert);

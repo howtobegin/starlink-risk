@@ -1,6 +1,6 @@
 package com.liboshuai.slr.engine.api.dto;
 
-import com.liboshuai.slr.engine.api.type.ResultDtoType;
+import com.liboshuai.slr.engine.api.type.FlinkResultDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,23 +16,18 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(ResultDtoType.class)
-public class ResultDTO implements Serializable {
+@TypeInfo(FlinkResultDtoType.class)
+public class FlinkResultDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
     /**
-     * kafka事件数据
+     * 规则状态记录，用于运算机下线清理状态
      */
-    private FlinkEventDTO flinkEventDTO;
-
-    /**
-     * 状态历史的记录数据
-     */
-    private StateHistoryDTO stateHistoryDTO;
+    private StateDTO stateDTO;
 
     /**
      * 生成的预警信息
      */
-    private AlertMessageDTO alertMessageDTO;
+    private AlertDTO alertDTO;
 }

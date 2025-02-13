@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.api.type;
 
 import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
-import com.liboshuai.slr.engine.api.dto.StateHistoryDTO;
+import com.liboshuai.slr.engine.api.dto.StateDTO;
 import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -22,7 +22,7 @@ public class FlinkEventDtoType extends TypeInfoFactory<FlinkEventDTO> {
         typeInformationMap.put("eventField", Types.STRING);
         typeInformationMap.put("eventValue", Types.STRING);
         typeInformationMap.put("eventAttrMap", Types.MAP(Types.STRING, Types.STRING));
-        typeInformationMap.put("stateHistoryDTO", Types.POJO(StateHistoryDTO.class));
+        typeInformationMap.put("stateHistoryDTO", Types.POJO(StateDTO.class));
         return Types.POJO(FlinkEventDTO.class, typeInformationMap);
     }
 }

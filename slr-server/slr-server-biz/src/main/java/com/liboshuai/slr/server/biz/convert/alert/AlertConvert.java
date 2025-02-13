@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.convert.alert;
 
-import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
+import com.liboshuai.slr.engine.api.dto.AlertDTO;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.server.biz.dal.dataobject.alert.MongoAlertDO;
 import org.mapstruct.Mapper;
@@ -16,10 +16,10 @@ import java.util.Objects;
 public interface AlertConvert {
 
     @Mapping(source = "alertTime", target = "alertTime", qualifiedByName = "string2LocalDateTime")
-    List<MongoAlertDO> batchConvertDto2Mongo(List<AlertMessageDTO> alertMessageDTOList);
+    List<MongoAlertDO> batchConvertDto2Mongo(List<AlertDTO> alertDTOList);
 
     @Mapping(source = "alertTime", target = "alertTime", qualifiedByName = "localDateTime2String")
-    List<AlertMessageDTO> batchConvertMongo2Dto(List<MongoAlertDO> mongoAlertDOList);
+    List<AlertDTO> batchConvertMongo2Dto(List<MongoAlertDO> mongoAlertDOList);
 
     default LocalDateTime string2LocalDateTime(String string) {
         if (!StringUtils.hasText(string)) {

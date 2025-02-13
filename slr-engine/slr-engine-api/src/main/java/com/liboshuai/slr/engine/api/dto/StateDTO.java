@@ -20,7 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Accessors(chain = true)
 @TypeInfo(StateHistoryDtoType.class)
-public class StateHistoryDTO implements Serializable {
+public class StateDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
