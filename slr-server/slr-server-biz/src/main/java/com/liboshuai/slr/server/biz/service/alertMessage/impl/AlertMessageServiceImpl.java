@@ -3,12 +3,12 @@ package com.liboshuai.slr.server.biz.service.alertMessage.impl;
 import com.liboshuai.slr.engine.api.dto.AlertMessageDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessagePageReqVO;
-import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessageRespVO;
-import com.liboshuai.slr.server.biz.convert.alertMessage.AlertMessageConvert;
-import com.liboshuai.slr.server.biz.dal.dataobject.alertMessage.AlertMessageDO;
-import com.liboshuai.slr.server.biz.dal.mongo.AlertMessageMongoDAO;
-import com.liboshuai.slr.server.biz.dal.mongo.AlertMessageRepository;
+import com.liboshuai.slr.server.biz.controller.alert.vo.AlertPageReqVO;
+import com.liboshuai.slr.server.biz.controller.alert.vo.AlertRespVO;
+import com.liboshuai.slr.server.biz.convert.alert.AlertConvert;
+import com.liboshuai.slr.server.biz.dal.dataobject.alert.MongoAlertDO;
+import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertMongoDAO;
+import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertRepository;
 import com.liboshuai.slr.server.biz.service.alertMessage.AlertMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,19 +19,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AlertMessageServiceImpl implements AlertMessageService {
 
-    private final AlertMessageMongoDAO alertMessageMongoDAO;
-    private final AlertMessageRepository alertMessageRepository;
-    private final AlertMessageConvert alertMessageConvert;
+    private final AlertMongoDAO alertMongoDAO;
+    private final AlertRepository alertRepository;
+    private final AlertConvert alertConvert;
 
     @Override
-    public PageResult<AlertMessageRespVO> page(AlertMessagePageReqVO alertMessagePageReqVO) {
-        PageResult<AlertMessageDO> alertMessageDOPageResult = alertMessageMongoDAO.selectPage(alertMessagePageReqVO);
-        return BeanUtils.toBean(alertMessageDOPageResult, AlertMessageRespVO.class);
+    public PageResult<AlertRespVO> page(AlertPageReqVO alertPageReqVO) {
+        PageResult<MongoAlertDO> alertMessageDOPageResult = alertMongoDAO.selectPage(alertPageReqVO);
+        return BeanUtils.toBean(alertMessageDOPageResult, AlertRespVO.class);
     }
 
     @Override
     public List<AlertMessageDTO> findByRuleCode(Long ruleCode) {
-        List<AlertMessageDO> alertMessageDOList = alertMessageRepository.findByRuleCode(ruleCode);
-        return alertMessageConvert.batchConvertMongo2Dto(alertMessageDOList);
+        List<MongoAlertDO> mongoAlertDOList = alertRepository.findByRuleCode(ruleCode);
+        return alertConvert.batchConvertMongo2Dto(mongoAlertDOList);
     }
 }

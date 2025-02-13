@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.jobhandler;
 
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
-import com.liboshuai.slr.server.biz.service.kafkaEvent.KafkaEventService;
+import com.liboshuai.slr.server.biz.service.kafkaEvent.EventService;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class KafkaEventJob {
-    private final KafkaEventService kafkaEventService;
+    private final EventService eventService;
 
     /**
      * 删除mongo中过期事件数据
@@ -19,6 +19,6 @@ public class KafkaEventJob {
     @TakeTime
     @XxlJob("deleteOldEventFromMongo")
     public void deleteOldEventFromMongo() throws Exception {
-        kafkaEventService.deleteOldEventFromMongo();
+        eventService.deleteOldEventFromMongo();
     }
 }

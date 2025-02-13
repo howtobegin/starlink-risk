@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.riskRule;
 
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleEventAttrRespVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrRespVO;
 
 import javax.validation.constraints.NotBlank;
 import java.util.List;

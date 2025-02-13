@@ -1,7 +1,7 @@
 package com.liboshuai.slr.server.biz.service.riskRule;
 
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleEventChangeStatusReqVO;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleEventRespVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleEventChangeStatusReqVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventRespVO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;

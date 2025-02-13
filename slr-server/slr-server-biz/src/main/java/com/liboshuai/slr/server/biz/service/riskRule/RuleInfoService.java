@@ -2,10 +2,10 @@ package com.liboshuai.slr.server.biz.service.riskRule;
 
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoChangeStatusReqVO;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoPageReqVO;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleInfoSaveReqVO;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleInfoRespVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoChangeStatusReqVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoPageReqVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleInfoSaveReqVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleInfoRespVO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;

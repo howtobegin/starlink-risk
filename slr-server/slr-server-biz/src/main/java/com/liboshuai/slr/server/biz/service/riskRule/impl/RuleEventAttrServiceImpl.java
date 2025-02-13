@@ -1,9 +1,9 @@
 package com.liboshuai.slr.server.biz.service.riskRule.impl;
 
 import com.liboshuai.slr.framework.common.util.object.BeanUtils;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleEventAttrRespVO;
-import com.liboshuai.slr.server.biz.dal.dataobject.riskRule.RuleEventAttrDO;
-import com.liboshuai.slr.server.biz.dal.mysql.riskRule.RuleEventAttrMapper;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrRespVO;
+import com.liboshuai.slr.server.biz.dal.dataobject.rule.RuleEventAttrDO;
+import com.liboshuai.slr.server.biz.dal.mysql.rule.RuleEventAttrMapper;
 import com.liboshuai.slr.server.biz.service.riskRule.RuleEventAttrService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

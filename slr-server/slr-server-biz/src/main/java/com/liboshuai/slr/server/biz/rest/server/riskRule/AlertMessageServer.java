@@ -3,9 +3,9 @@ package com.liboshuai.slr.server.biz.rest.server.riskRule;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.server.biz.controller.alertMessage.AlertMessageController;
-import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessagePageReqVO;
-import com.liboshuai.slr.server.biz.controller.alertMessage.vo.AlertMessageRespVO;
+import com.liboshuai.slr.server.biz.controller.alert.AlertController;
+import com.liboshuai.slr.server.biz.controller.alert.vo.AlertPageReqVO;
+import com.liboshuai.slr.server.biz.controller.alert.vo.AlertRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +26,11 @@ import javax.validation.constraints.NotBlank;
 @RequestMapping("/alertMessageServer")
 public class AlertMessageServer {
 
-    private final AlertMessageController alertMessageController;
+    private final AlertController alertController;
 
     @PostMapping("/page")
     @Operation(summary = "分页")
-    public CommonResult<PageResult<AlertMessageRespVO>> page(@RequestBody @NotBlank String json) {
-        return alertMessageController.page(JsonUtils.parseObject(json, AlertMessagePageReqVO.class));
+    public CommonResult<PageResult<AlertRespVO>> page(@RequestBody @NotBlank String json) {
+        return alertController.page(JsonUtils.parseObject(json, AlertPageReqVO.class));
     }
 }

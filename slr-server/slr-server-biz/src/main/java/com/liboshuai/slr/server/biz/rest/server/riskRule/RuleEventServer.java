@@ -2,9 +2,9 @@ package com.liboshuai.slr.server.biz.rest.server.riskRule;
 
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.server.biz.controller.riskRule.RuleEventController;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.req.RuleEventChangeStatusReqVO;
-import com.liboshuai.slr.server.biz.controller.riskRule.vo.resp.RuleEventRespVO;
+import com.liboshuai.slr.server.biz.controller.rule.RuleEventController;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleEventChangeStatusReqVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

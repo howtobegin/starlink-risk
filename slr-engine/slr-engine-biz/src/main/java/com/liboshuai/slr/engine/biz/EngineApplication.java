@@ -59,7 +59,7 @@ public class EngineApplication {
                 .map(new Json2FlinkEventDtoMapFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-process")
                 // 过滤掉非法的事件
-                .filter(new flinkEventFilterFunction())
+                .filter(new FlinkEventFilterFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = flinkEventDtoDS
@@ -69,7 +69,7 @@ public class EngineApplication {
                 // 合并数据清洗流
                 .union(clearFlinkEventDtoSO)
                 // keyBy分组
-                .keyBy(new flinkEventKeyBy())
+                .keyBy(new FlinkEventKeyBy())
                 // 连接规则配置流
                 .connect(broadcastStream)
                 // 核心处理逻辑

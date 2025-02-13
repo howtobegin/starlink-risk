@@ -1,0 +1,38 @@
+package com.liboshuai.slr.server.biz.dal.mysql.rule;
+
+import com.liboshuai.slr.framework.common.pojo.PageResult;
+import com.liboshuai.slr.framework.mybatis.core.mapper.BaseMapperX;
+import com.liboshuai.slr.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.liboshuai.slr.server.biz.controller.rule.vo.req.RuleModelPageReqVO;
+import com.liboshuai.slr.server.biz.dal.dataobject.rule.RuleModelDO;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface RuleModelMapper extends BaseMapperX<RuleModelDO> {
+
+    default PageResult<RuleModelDO> selectPage(RuleModelPageReqVO ruleModelPageReqVO) {
+        return selectPage(ruleModelPageReqVO, new LambdaQueryWrapperX<RuleModelDO>()
+                .eqIfPresent(RuleModelDO::getModelCode, ruleModelPageReqVO.getModelCode())
+                .likeIfPresent(RuleModelDO::getModelName, ruleModelPageReqVO.getModelName())
+                .likeIfPresent(RuleModelDO::getModelDesc, ruleModelPageReqVO.getModelDesc())
+                .orderByDesc(RuleModelDO::getId)
+        );
+    }
+
+    default List<RuleModelDO> selectListByModelCodes(List<String> modelCodeList) {
+        return selectList(new LambdaQueryWrapperX<RuleModelDO>()
+                .in(RuleModelDO::getModelCode, modelCodeList));
+    }
+
+    default RuleModelDO selectOneByModelCode(Long modelCode) {
+        return selectOne(new LambdaQueryWrapperX<RuleModelDO>()
+                .eq(RuleModelDO::getModelCode, modelCode));
+    }
+
+    default void updateByModelCode(RuleModelDO ruleModelDO, Long modelCode) {
+        update(ruleModelDO, new LambdaQueryWrapperX<RuleModelDO>()
+                .eq(RuleModelDO::getModelCode, modelCode));
+    }
+}

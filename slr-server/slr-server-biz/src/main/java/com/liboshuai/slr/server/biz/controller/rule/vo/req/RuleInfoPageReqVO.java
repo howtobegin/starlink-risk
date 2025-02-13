@@ -1,0 +1,45 @@
+package com.liboshuai.slr.server.biz.controller.rule.vo.req;
+
+import com.liboshuai.slr.engine.api.enums.ChannelEnum;
+import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
+import com.liboshuai.slr.framework.common.pojo.PageParam;
+import com.liboshuai.slr.framework.common.validation.InStringEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
+@Schema(description = "管理后台 - 分页风控规则信息 Request VO")
+public class RuleInfoPageReqVO extends PageParam {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * {@link ChannelEnum}
+     */
+    @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
+    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String channel;
+
+    @Schema(description = "规则编号", example = "1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long ruleCode;
+
+    @Schema(description = "规则名称", example = "游戏高频抽奖", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String ruleName;
+
+    /**
+     * {@link CommonStatusEnum}
+     */
+    @Schema(description = "规则状态", example = "ONLINE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String ruleStatus;
+
+    @Schema(description = "模型编号", example = "1553673459123456001", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long modelCode;
+
+}
