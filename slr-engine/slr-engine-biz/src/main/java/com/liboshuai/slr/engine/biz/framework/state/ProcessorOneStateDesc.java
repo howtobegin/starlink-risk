@@ -36,8 +36,8 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(latestEventThresholdMapStateName, Types.STRING, Types.LONG);
     }
 
-    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<Tuple2<String, Long>, Long> getGigMapStateDesc(Long ruleCode, Long ruleVersion) {
         String bigMapStateName = "bigMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(FlinkEventDTO.class)));
+        return new MapStateDescriptor<>(bigMapStateName, Types.TUPLE(Types.STRING, Types.LONG), Types.LONG);
     }
 }
