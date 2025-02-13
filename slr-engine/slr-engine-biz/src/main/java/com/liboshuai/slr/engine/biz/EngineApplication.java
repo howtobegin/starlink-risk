@@ -57,10 +57,10 @@ public class EngineApplication {
         SingleOutputStreamOperator<FlinkEventDTO> kafkaEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为FlinkEventDto对象
                 .map(new Json2FlinkEventDtoMapFunction())
-                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("kafkaEventDTO-process")
+                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-process")
                 // 过滤掉非法的事件
                 .filter(new KafkaEventFilterFunction())
-                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("kafkaEventDTO-filter");
+                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
         // 实时动态规则引擎
         SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator = kafkaEventDtoDS
                 // 使用处理时间
@@ -75,8 +75,8 @@ public class EngineApplication {
                 // 核心处理逻辑
                 .process(new CoreFunction())
                 .returns(Types.POJO(ResultDTO.class)).uid("core-function");
-        // 将kafka中的事件数据同步往 doris 中留存一份
-        writeKafkaEventToDoris(resultDtoStreamOperator, parameterTool);
+        // 将事件数据同步往 doris 中留存一份
+        writeEventToDoris(resultDtoStreamOperator, parameterTool);
         // 将规则状态历史写入doris，以便规则下线清除状态使用
         writeStateHistoryToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入kafka
@@ -117,7 +117,7 @@ public class EngineApplication {
     /**
      * 将kafka中的事件数据同步往 doris 中留存一份
      */
-    private static void writeKafkaEventToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+    private static void writeEventToDoris(SingleOutputStreamOperator<ResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getFlinkEventDTO()))
