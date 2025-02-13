@@ -22,7 +22,7 @@ public class FlinkEventDtoType extends TypeInfoFactory<FlinkEventDTO> {
         typeInformationMap.put("eventField", Types.STRING);
         typeInformationMap.put("eventValue", Types.STRING);
         typeInformationMap.put("eventAttrMap", Types.MAP(Types.STRING, Types.STRING));
-        typeInformationMap.put("stateHistoryDTO", Types.POJO(StateDTO.class));
+        typeInformationMap.put("stateDTO", Types.POJO(StateDTO.class));
         return Types.POJO(FlinkEventDTO.class, typeInformationMap);
     }
 }

@@ -41,7 +41,7 @@
 //                .ruleDesc("ruleDesc1")
 //                .modelCode("modelCode1")
 //                .ruleCondCombOp("AND")
-//                .alertMessage("[异常高频抽奖]：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！")
+//                .alertTemplate("[异常高频抽奖]：${KafkaEventDTO.eventAttribute.campaignId}(${KafkaEventDTO.eventAttribute.campaignName})中游戏用户(${KafkaEventDTO.keyValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}内抽奖数量为${ProcessorDTO.eventCodeAndValueSumMap.GAME_LOTTERY}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！")
 //                .alertIntervalUnit("MINUTE")
 //                .alertIntervalValue(10L)
 //                .ruleStatus("ONLINE")
@@ -68,7 +68,7 @@
 //
 //        // 使用工具类替换模板中的占位符
 //        String finalWarnMessage = TemplateUtil.replacePlaceholders(
-//                ruleInfoDTO.getAlertMessage(),
+//                ruleInfoDTO.getalertTemplate(),
 //                ruleInfoDTO,
 //                kafkaEventDTO,
 //                processorDTO
@@ -121,7 +121,7 @@
 //                .ruleDesc("ruleDesc1")
 //                .modelCode("modelCode1")
 //                .ruleCondCombOp("AND")
-//                .alertMessage("warnMessage1")
+//                .alertTemplate("warnMessage1")
 //                .alertIntervalUnit("MINUTE")
 //                .alertIntervalValue(10L)
 //                .ruleStatus("ONLINE")

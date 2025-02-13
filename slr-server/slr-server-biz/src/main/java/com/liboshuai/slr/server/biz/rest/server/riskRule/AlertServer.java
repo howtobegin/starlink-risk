@@ -23,8 +23,8 @@ import javax.validation.constraints.NotBlank;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "风控预警消息server")
-@RequestMapping("/alertMessageServer")
-public class AlertMessageServer {
+@RequestMapping("/alertServer")
+public class AlertServer {
 
     private final AlertController alertController;
 

@@ -109,7 +109,7 @@
 //     */
 //    @Override
 //    public void processElement(String currentKey, long currentEventTimestamp, FlinkEventDTO flinkEventDTO,
-//                               Collector<ResultDTO> out) throws Exception {
+//                               Collector<FlinkResultDTO> out) throws Exception {
 //        if (Objects.isNull(ruleInfoDTO)) {
 //            log.warn("因规则信息为空，故跳过此次计算！当前事件数据：{}", flinkEventDTO);
 //            return;
@@ -154,7 +154,7 @@
 //     * @param flinkEventDTO         Kafka事件DTO
 //     */
 //    private void processRuleCondValue(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO,
-//                                      FlinkEventDTO flinkEventDTO, Collector<ResultDTO> out) throws Exception {
+//                                      FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
 //            // 事件与规则中的事件编号匹配不上，则直接跳过
@@ -172,14 +172,14 @@
 //            // 规则状态历史的记录数据
 //            Boolean hasState = hasValueState.value();
 //            if (Objects.isNull(hasState) || !hasState) {
-//                StateHistoryDTO stateHistoryDTO = StateHistoryDTO.builder()
+//                StateDTO stateDTO = StateDTO.builder()
 //                        .ruleCode(ruleInfoDTO.getRuleCode())
 //                        .ruleVersion(ruleInfoDTO.getRuleVersion())
 //                        .channel(ruleInfoDTO.getChannel())
 //                        .targetField(flinkEventDTO.getTargetField())
 //                        .targetValue(flinkEventDTO.getTargetValue())
 //                        .build();
-//                out.collect(ResultDTO.builder().stateHistoryDTO(stateHistoryDTO).build());
+//                out.collect(FlinkResultDTO.builder().stateDTO(stateDTO).build());
 //                hasValueState.update(true);
 //            }
 //            // 状态值防空
@@ -313,7 +313,7 @@
 //     * @throws Exception 可能抛出的异常
 //     */
 //    @Override
-//    public boolean onTimer(String currentKey, long timestamp, Collector<ResultDTO> out) throws Exception {
+//    public boolean onTimer(String currentKey, long timestamp, Collector<FlinkResultDTO> out) throws Exception {
 //        if (Objects.isNull(ruleInfoDTO)) {
 //            log.warn("因规则信息为空，故跳过此次计算！");
 //            return true;
@@ -348,10 +348,10 @@
 //            // 更新最后预警时间
 //            lastWarningTimeState.update(timestamp);
 //            // 发送预警信息
-//            AlertMessageDTO alertMessageDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
-//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertMessageDTO, currentKey);
-//            ResultDTO resultDTO = ResultDTO.builder().alertMessageDTO(alertMessageDTO).build();
-//            out.collect(resultDTO);
+//            AlertDTO alertDTO = buildAlert(ruleInfoDTO, processBigMapResult);
+//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
+//            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
+//            out.collect(flinkResultDTO);
 //        }
 ////        logOldState(ruleInfoDTO.getRuleCode(), currentKey);
 ////        logState(ruleInfoDTO.getRuleCode(), currentKey);
@@ -377,18 +377,18 @@
 //    /**
 //     * 构建预警信息的方法，提取重复逻辑
 //     */
-//    private AlertMessageDTO buildAlertMessage(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
+//    private AlertDTO buildAlert(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
 //        String finalWarnMessage = TemplateUtil.replacePlaceholders(
-//                ruleInfoDTO.getAlertMessage(),
+//                ruleInfoDTO.getAlertTemplate(),
 //                ruleInfoDTO,
 //                processBigMapResult.f2
 //        );
-//        return AlertMessageDTO.builder()
+//        return AlertDTO.builder()
 //                .channel(ruleInfoDTO.getChannel())
 //                .ruleCode(ruleInfoDTO.getRuleCode())
 //                .eventId(processBigMapResult.f1)
-//                .alertMessage(finalWarnMessage)
-//                .alertTime(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
+//                .message(finalWarnMessage)
+//                .time(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
 //                .targetField(ruleInfoDTO.getTargetField())
 //                .eventValueGroup(processBigMapResult.f2.getEventValueGroup())
 //                .build();
@@ -434,12 +434,12 @@
 //        // 遍历 MapState 的所有条目
 //        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, String>> entry : bigMapState.entries()) {
 //            Tuple2<String, Long> key = entry.getKey(); // 获取键，包含 eventField 和关联的时间戳值
-//            Tuple2<Long, String> value = entry.getValue(); // 获取值，包含累加值和 KafkaEventDTO 对象
+//            Tuple2<Long, String> value = entry.getValue(); // 获取值，包含累加值和 最新eventId
 //            Long currentTimestamp = key.f1; // 时间戳
 //            // 比较当前时间戳是否大于已记录的最大时间戳
 //            if (currentTimestamp > maxTimestamp) {
 //                maxTimestamp = currentTimestamp;
-//                eventId = value.f1; // 获取最新的Kafka事件id
+//                eventId = value.f1; // 获取最新的事件id
 //            }
 //            String eventField = key.f0; // Tuple2 的第一个元素作为事件字段
 //            // 使用 merge 方法高效地累加值

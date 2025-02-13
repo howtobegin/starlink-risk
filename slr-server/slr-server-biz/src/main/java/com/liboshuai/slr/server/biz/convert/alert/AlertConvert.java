@@ -15,10 +15,10 @@ import java.util.Objects;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface AlertConvert {
 
-    @Mapping(source = "alertTime", target = "alertTime", qualifiedByName = "string2LocalDateTime")
+    @Mapping(source = "time", target = "time", qualifiedByName = "string2LocalDateTime")
     List<MongoAlertDO> batchConvertDto2Mongo(List<AlertDTO> alertDTOList);
 
-    @Mapping(source = "alertTime", target = "alertTime", qualifiedByName = "localDateTime2String")
+    @Mapping(source = "time", target = "time", qualifiedByName = "localDateTime2String")
     List<AlertDTO> batchConvertMongo2Dto(List<MongoAlertDO> mongoAlertDOList);
 
     default LocalDateTime string2LocalDateTime(String string) {

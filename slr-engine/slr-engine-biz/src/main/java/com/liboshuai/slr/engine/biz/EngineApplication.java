@@ -82,21 +82,21 @@ public class EngineApplication {
         // 将规则状态写入doris，以便规则下线清除状态使用
         writeStateToDoris(resultDtoStreamOperator, parameterTool);
         // 将告警信息写入 kafka
-        writeAlertMessageToKafka(resultDtoStreamOperator, parameterTool);
+        writeAlertToKafka(resultDtoStreamOperator, parameterTool);
         env.execute();
     }
 
     /**
      * 将告警信息写入kafka
      */
-    private static void writeAlertMessageToKafka(SingleOutputStreamOperator<FlinkResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
+    private static void writeAlertToKafka(SingleOutputStreamOperator<FlinkResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> warnMessageStreamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getAlertDTO()))
-                .returns(Types.POJO(FlinkResultDTO.class)).uid("alert-message-filter")
+                .returns(Types.POJO(FlinkResultDTO.class)).uid("alert-filter")
                 // 实体类转json
                 .map(resultDTO -> JsonUtils.toJsonString(resultDTO.getAlertDTO()))
-                .returns(Types.STRING).uid("alert-message-map");
+                .returns(Types.STRING).uid("alert-map");
         FlinkKafkaConnector.writer(warnMessageStreamOperator, parameterTool);
     }
 
@@ -107,10 +107,10 @@ public class EngineApplication {
         SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
                 // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getStateDTO()))
-                .returns(Types.POJO(FlinkResultDTO.class)).uid("state-history-filter")
+                .returns(Types.POJO(FlinkResultDTO.class)).uid("state-filter")
                 // 实体类转json
                 .map(resultDTO -> JsonUtils.toJsonStringWithUpperSnakeCaseKeys(resultDTO.getStateDTO()))
-                .returns(Types.STRING).uid("state-history-map");
+                .returns(Types.STRING).uid("state-map");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableName = parameterTool.get(ParameterConstants.DORIS_TABLE_STATE);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableName, streamOperator, parameterTool);

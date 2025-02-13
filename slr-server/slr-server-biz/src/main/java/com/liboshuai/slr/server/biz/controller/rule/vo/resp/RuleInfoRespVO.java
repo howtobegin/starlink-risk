@@ -67,8 +67,8 @@ public class RuleInfoRespVO extends BaseRespVO {
     @Schema(description = "预警等级", example = "4")
     private String alertLevel;
 
-    @Schema(description = "预警消息", example = "触发xxx预警啦！")
-    private String alertMessage;
+    @Schema(description = "预警模板", example = "触发xxx预警啦！")
+    private String alertTemplate;
 
     /**
      * {@link RuleTargetRespVO#getTargetCode()}

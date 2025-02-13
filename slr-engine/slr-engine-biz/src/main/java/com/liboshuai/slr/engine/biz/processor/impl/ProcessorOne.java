@@ -351,7 +351,7 @@ public class ProcessorOne implements Processor {
             // 更新最后预警时间
             lastWarningTimeState.update(timestamp);
             // 发送预警信息
-            AlertDTO alertDTO = buildAlertMessage(ruleInfoDTO, processBigMapResult);
+            AlertDTO alertDTO = buildAlert(ruleInfoDTO, processBigMapResult);
             log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
             FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
             out.collect(flinkResultDTO);
@@ -380,9 +380,9 @@ public class ProcessorOne implements Processor {
     /**
      * 构建预警信息的方法，提取重复逻辑
      */
-    private AlertDTO buildAlertMessage(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
+    private AlertDTO buildAlert(RuleInfoDTO ruleInfoDTO, Tuple3<Boolean, String, ProcessorDTO> processBigMapResult) {
         String finalWarnMessage = TemplateUtil.replacePlaceholders(
-                ruleInfoDTO.getAlertMessage(),
+                ruleInfoDTO.getAlertTemplate(),
                 ruleInfoDTO,
                 processBigMapResult.f2
         );

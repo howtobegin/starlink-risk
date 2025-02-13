@@ -38,19 +38,19 @@ public class AlertMongoDAO {
         if (ruleCode != null && !ruleCode.isEmpty()) {
             criteriaList.add(Criteria.where("ruleCode").is(ruleCode));
         }
-        String alertMessage = alertPageReqVO.getMessage();
-        if (alertMessage != null && !alertMessage.isEmpty()) {
+        String message = alertPageReqVO.getMessage();
+        if (message != null && !message.isEmpty()) {
             // 使用正则表达式进行模糊查询，'i'表示不区分大小写
-            criteriaList.add(Criteria.where("alertMessage").regex(alertMessage, "i"));
+            criteriaList.add(Criteria.where("message").regex(message, "i"));
         }
-        LocalDateTime alertTimeStart = alertPageReqVO.getTimeStart();
-        LocalDateTime alertTimeEnd = alertPageReqVO.getTimeEnd();
-        if (alertTimeStart != null && alertTimeEnd != null) {
-            criteriaList.add(Criteria.where("alertTime").gte(alertTimeStart).lte(alertTimeEnd));
-        } else if (alertTimeStart != null) {
-            criteriaList.add(Criteria.where("alertTime").gte(alertTimeStart));
-        } else if (alertTimeEnd != null) {
-            criteriaList.add(Criteria.where("alertTime").lte(alertTimeEnd));
+        LocalDateTime timeStart = alertPageReqVO.getTimeStart();
+        LocalDateTime timeEnd = alertPageReqVO.getTimeEnd();
+        if (timeStart != null && timeEnd != null) {
+            criteriaList.add(Criteria.where("time").gte(timeStart).lte(timeEnd));
+        } else if (timeStart != null) {
+            criteriaList.add(Criteria.where("time").gte(timeStart));
+        } else if (timeEnd != null) {
+            criteriaList.add(Criteria.where("time").lte(timeEnd));
         }
 
         if (!criteriaList.isEmpty()) {
@@ -62,17 +62,17 @@ public class AlertMongoDAO {
         int pageSize = alertPageReqVO.getPageSize();
         // 设置分页参数
         // 页码从0开始，需要减1
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(Sort.Direction.DESC, "alertTime"));
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(Sort.Direction.DESC, "time"));
         query.with(pageable);
         // 执行查询
         List<MongoAlertDO> list = mongoTemplate.find(query, MongoAlertDO.class);
         // 查询总记录数
         long total = mongoTemplate.count(query.skip(-1).limit(-1), MongoAlertDO.class);
         // 返回分页结果
-        Page<MongoAlertDO> alertMessageDOPage = new PageImpl<>(list, pageable, total);
+        Page<MongoAlertDO> alertDOPage = new PageImpl<>(list, pageable, total);
         return new PageResult<>(
-                alertMessageDOPage.getContent(),
-                alertMessageDOPage.getTotalElements()
+                alertDOPage.getContent(),
+                alertDOPage.getTotalElements()
         );
     }
 }

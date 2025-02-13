@@ -42,7 +42,7 @@ public class AlertListener {
             containerFactory = "kafkaListenerContainerFactory",
             errorHandler = "kafkaConsumerExceptionHandler"
     )
-    public void flinkAlertMessage(List<ConsumerRecord<String, String>> consumerRecordList, Acknowledgment ack) {
+    public void handleAlert(List<ConsumerRecord<String, String>> consumerRecordList, Acknowledgment ack) {
         List<AlertDTO> validAlertDTOList = new ArrayList<>();
 
         for (ConsumerRecord<String, String> record : consumerRecordList) {
@@ -50,13 +50,13 @@ public class AlertListener {
 //            log.info("消费到预警消息：{}", recordValue);
             AlertDTO alertDTO = JsonUtils.parseObject(recordValue, AlertDTO.class);
             if (alertDTO == null) {
-                log.warn("无效的 AlertMessageDTO 数据：解析结果为空！原始数据：{}", recordValue);
+                log.warn("无效的 alertDTO 数据：解析结果为空！原始数据：{}", recordValue);
                 continue;
             }
-            // 效验 AlertMessageDTO 是否包含所有必要字段
-            ValidationResult validationResult = validateAlertMessageDTO(alertDTO);
+            // 效验 AlertDTO 是否包含所有必要字段
+            ValidationResult validationResult = validateAlertDTO(alertDTO);
             if (!validationResult.isValid()) {
-                log.warn("无效的 AlertMessageDTO 数据：缺少必要字段 [{}]！数据内容：{}",
+                log.warn("无效的 alertDTO 数据：缺少必要字段 [{}]！数据内容：{}",
                         String.join(" ", validationResult.getMissingFields()), alertDTO);
                 continue;
             }
@@ -69,24 +69,24 @@ public class AlertListener {
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertDTO alertDTO : validAlertDTOList) {
                 // 根据mongo中的事件数据补充预警信息
-                String alertMessage = alertDTO.getMessage();
+                String message = alertDTO.getMessage();
                 String eventId = alertDTO.getEventId();
                 FlinkEventDTO flinkEventDTO = eventIdAndKafkaEventMap.get(eventId);
                 if (Objects.isNull(flinkEventDTO)) {
                     flinkEventDTO = new FlinkEventDTO();
                 }
-                alertMessage = TemplateUtil.replacePlaceholders(alertMessage, flinkEventDTO);
+                message = TemplateUtil.replacePlaceholders(message, flinkEventDTO);
                 // 将预警信息异步推送给微信预警平台
                 RuleInfoDTO ruleInfoDTO = ruleInfoService.getCacheRuleInfo(alertDTO.getRuleCode());
                 // FIXME: 测试时，临时注释
 //                rsoAlarmClient.sendMsgToRso(
 //                        ruleInfoDTO.getAlertProjectNo(),
 //                        ruleInfoDTO.getAlertLevel(),
-//                        LocalDateTimeUtils.convertLocalDateTime2Str(alertMessageDTO.getAlertTime()),
-//                        alertMessage
+//                        LocalDateTimeUtils.convertLocalDateTime2Str(alertDTO.getTime()),
+//                        message
 //                );
-                // 添加到 finalAlertMessageDtoList 中，并补充字段数据
-                alertDTO.setMessage(alertMessage);
+                // 添加到 finalAlertDtoList 中，并补充字段数据
+                alertDTO.setMessage(message);
                 alertDTO.setTargetValue(flinkEventDTO.getTargetValue());
                 finalAlertDtoList.add(alertDTO);
             }
@@ -118,12 +118,12 @@ public class AlertListener {
     }
 
     /**
-     * 验证 AlertMessageDTO 是否包含所有必要字段。
+     * 验证 AlertDTO 是否包含所有必要字段。
      *
-     * @param dto 要验证的 AlertMessageDTO 对象
+     * @param dto 要验证的 AlertDTO 对象
      * @return ValidationResult 包含验证结果和缺失的字段列表
      */
-    private ValidationResult validateAlertMessageDTO(AlertDTO dto) {
+    private ValidationResult validateAlertDTO(AlertDTO dto) {
         List<String> missingFields = new ArrayList<>();
 
         if (!StringUtils.hasText(dto.getChannel())) {
@@ -133,10 +133,10 @@ public class AlertListener {
             missingFields.add("ruleCode");
         }
         if (!StringUtils.hasText(dto.getMessage())) {
-            missingFields.add("alertMessage");
+            missingFields.add("message");
         }
         if (Objects.isNull(dto.getTime())) {
-            missingFields.add("alertTime");
+            missingFields.add("time");
         }
 
         return new ValidationResult(missingFields.isEmpty(), missingFields);

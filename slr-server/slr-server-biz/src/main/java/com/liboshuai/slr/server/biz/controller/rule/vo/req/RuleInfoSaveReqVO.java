@@ -86,9 +86,9 @@ public class RuleInfoSaveReqVO implements Serializable {
     @Schema(description = "预警等级", example = "4")
     private String alertLevel;
 
-    @NotBlank(message = "预警消息[alertMessage]，不能为空")
-    @Schema(description = "预警消息", example = "触发xxx预警啦！", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String alertMessage;
+    @NotBlank(message = "预警模板[alertTemplate]，不能为空")
+    @Schema(description = "预警模板", example = "触发xxx预警啦！", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String alertTemplate;
 
     /**
      * {@link RuleTargetSaveReqVO#getTargetCode()}

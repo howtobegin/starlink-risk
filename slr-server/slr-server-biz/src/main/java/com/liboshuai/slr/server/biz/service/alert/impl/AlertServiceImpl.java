@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.alertMessage.impl;
+package com.liboshuai.slr.server.biz.service.alert.impl;
 
 import com.liboshuai.slr.engine.api.dto.AlertDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
@@ -9,7 +9,7 @@ import com.liboshuai.slr.server.biz.convert.alert.AlertConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.alert.MongoAlertDO;
 import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertMongoDAO;
 import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertRepository;
-import com.liboshuai.slr.server.biz.service.alertMessage.AlertMessageService;
+import com.liboshuai.slr.server.biz.service.alert.AlertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AlertMessageServiceImpl implements AlertMessageService {
+public class AlertServiceImpl implements AlertService {
 
     private final AlertMongoDAO alertMongoDAO;
     private final AlertRepository alertRepository;
@@ -25,8 +25,8 @@ public class AlertMessageServiceImpl implements AlertMessageService {
 
     @Override
     public PageResult<AlertRespVO> page(AlertPageReqVO alertPageReqVO) {
-        PageResult<MongoAlertDO> alertMessageDOPageResult = alertMongoDAO.selectPage(alertPageReqVO);
-        return BeanUtils.toBean(alertMessageDOPageResult, AlertRespVO.class);
+        PageResult<MongoAlertDO> alertDOPageResult = alertMongoDAO.selectPage(alertPageReqVO);
+        return BeanUtils.toBean(alertDOPageResult, AlertRespVO.class);
     }
 
     @Override

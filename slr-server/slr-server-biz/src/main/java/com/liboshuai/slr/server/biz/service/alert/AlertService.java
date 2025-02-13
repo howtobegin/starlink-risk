@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.alertMessage;
+package com.liboshuai.slr.server.biz.service.alert;
 
 import com.liboshuai.slr.engine.api.dto.AlertDTO;
 import com.liboshuai.slr.framework.common.pojo.PageResult;
@@ -7,7 +7,7 @@ import com.liboshuai.slr.server.biz.controller.alert.vo.AlertRespVO;
 
 import java.util.List;
 
-public interface AlertMessageService {
+public interface AlertService {
     /**
      * 预警信息 分页查询
      */

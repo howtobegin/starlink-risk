@@ -24,7 +24,7 @@ public class RuleInfoType extends TypeInfoFactory<RuleInfoDTO> {
         typeInformationMap.put("alertIntervalUnit", Types.STRING);
         typeInformationMap.put("alertProjectNo", Types.STRING);
         typeInformationMap.put("alertLevel", Types.STRING);
-        typeInformationMap.put("alertMessage", Types.STRING);
+        typeInformationMap.put("alertTemplate", Types.STRING);
         typeInformationMap.put("targetCode", Types.STRING);
         typeInformationMap.put("targetField", Types.STRING);
         typeInformationMap.put("targetName", Types.STRING);

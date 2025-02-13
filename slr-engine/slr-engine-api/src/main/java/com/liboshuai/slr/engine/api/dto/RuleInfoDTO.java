@@ -86,10 +86,10 @@ public class RuleInfoDTO implements Serializable {
     private String alertLevel;
 
     /**
-     * 预警消息
+     * 预警模板
      * （例如：触发xxx预警啦！）
      */
-    private String alertMessage;
+    private String alertTemplate;
 
     /**
      * 目标编号

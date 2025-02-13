@@ -68,9 +68,9 @@ public class RuleInfoDO extends BaseDO {
      */
     private String alertLevel;
     /**
-     * 预警消息
+     * 预警模板
      */
-    private String alertMessage;
+    private String alertTemplate;
     /**
      * 条件组合符
      * {@link RuleCondCombOpEnum}

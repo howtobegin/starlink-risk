@@ -24,7 +24,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleInfoRespVO;
 import com.liboshuai.slr.server.biz.convert.rule.DorisEventConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.*;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.*;
-import com.liboshuai.slr.server.biz.service.alertMessage.AlertMessageService;
+import com.liboshuai.slr.server.biz.service.alert.AlertService;
 import com.liboshuai.slr.server.biz.service.riskRule.RuleInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private final DorisEventMapper dorisEventMapper;
     private final DorisEventConvert dorisEventConvert;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
-    private final AlertMessageService alertMessageService;
+    private final AlertService alertService;
     private final MultilevelCache multilevelCache;
 
     @Override
@@ -583,7 +583,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 遍历每个targetValue下的数据，进行风控规则判断
         process(ruleCode, targetValueAndKafkaEventDtoMap, windowSize, windowStep, ruleCondDTO, alertInterval, channel, targetField, eventField, alertDTOS);
         // 查询mongo中对应规则产生的预警信息
-        List<AlertDTO> mongoAlertDtoList = alertMessageService.findByRuleCode(ruleCode);
+        List<AlertDTO> mongoAlertDtoList = alertService.findByRuleCode(ruleCode);
         if (CollectionUtils.isEmpty(alertDTOS) && CollectionUtils.isEmpty(mongoAlertDtoList)) {
             log.info("计算得出的预警信息条数与mongo中的预警信息条数都为0");
             return true;
@@ -710,7 +710,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                                 .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
                                 .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
                                 .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertDTO::getTime)     // 最后按 alertTime 排序
+                                .thenComparing(AlertDTO::getTime)     // 最后按 预警时间 排序
                 )
                 .collect(Collectors.toList());
         List<AlertDTO> sortedMongoAlerts = mongoAlerts.stream()
@@ -719,7 +719,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                                 .thenComparing(AlertDTO::getRuleCode)       // 然后按 ruleCode 排序
                                 .thenComparing(AlertDTO::getTargetField)   // 然后按 targetField 排序
                                 .thenComparing(AlertDTO::getTargetValue)   // 然后按 targetValue 排序
-                                .thenComparing(AlertDTO::getTime)     // 最后按 alertTime 排序
+                                .thenComparing(AlertDTO::getTime)     // 最后按 预警时间 排序
                 )
                 .collect(Collectors.toList());
         for (int i = 0; i < sortedGeneratedAlerts.size(); i++) {
