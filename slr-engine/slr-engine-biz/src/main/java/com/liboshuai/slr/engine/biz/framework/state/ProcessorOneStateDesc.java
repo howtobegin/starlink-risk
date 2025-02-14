@@ -26,6 +26,11 @@ public class ProcessorOneStateDesc {
         return new ValueStateDescriptor<>(hahValueStateName, Types.BOOLEAN);
     }
 
+    public static ValueStateDescriptor<FlinkEventDTO> getLastEventStateDesc(Long ruleCode, Long ruleVersion) {
+        String lastEventStateName = "lastEventState_" + ruleCode + "_" + ruleVersion;
+        return new ValueStateDescriptor<>(lastEventStateName, Types.POJO(FlinkEventDTO.class));
+    }
+
     public static ValueStateDescriptor<Long> getLastWarningTimeStateDesc(Long ruleCode, Long ruleVersion) {
         String lastWarningTimeStateName = "lastWarningTimeState_" + ruleCode + "_" + ruleVersion;
         return new ValueStateDescriptor<>(lastWarningTimeStateName, Types.LONG);

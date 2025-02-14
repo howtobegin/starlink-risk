@@ -65,6 +65,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Boolean> hasValueState;
+    private ValueState<FlinkEventDTO> lastEventState;
     private ValueState<Long> lastWarningTimeState;
     private MapState<String, Long> latestEventThresholdMapState;
     private MapState<Tuple2<String, Long>, Long> bigMapState;
@@ -154,6 +155,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
         smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
         hasValueState = runtimeContext.getState(ProcessorOneStateDesc.getHasValueState(ruleCode, ruleVersion));
+        lastEventState = runtimeContext.getState(ProcessorOneStateDesc.getLastEventStateDesc(ruleCode, ruleVersion));
         lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
         latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
         bigMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
@@ -162,6 +164,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         smallMapState.clear();
         smallInitMapState.clear();
         hasValueState.clear();
+        lastEventState.clear();
         lastWarningTimeState.clear();
         latestEventThresholdMapState.clear();
         bigMapState.clear();
@@ -188,6 +191,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
 
         Boolean hasValue = hasValueState.value();
 
+        FlinkEventDTO flinkEventDTO = lastEventState.value();
+
         Long lastWarningTime = lastWarningTimeState.value();
 
         Map<String, Long> latestEventThresholdMap = new HashMap<>();
@@ -208,6 +213,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         log.warn("smallMap: {}", JsonUtils.toJsonString(smallMap));
         log.warn("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
         log.warn("hasValue: {}", JsonUtils.toJsonString(hasValue));
+        log.warn("flinkEventDTO: {}", JsonUtils.toJsonString(flinkEventDTO));
         log.warn("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
         log.warn("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
         log.warn("bigMap: {}", JsonUtils.toJsonString(bigMap));

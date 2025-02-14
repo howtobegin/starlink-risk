@@ -47,6 +47,10 @@
 //     */
 //    private ValueState<Boolean> hasValueState;
 //    /**
+//     * 最新的事件数据
+//     */
+//    private ValueState<FlinkEventDTO> lastEventState;
+//    /**
 //     * 规则最近一次触发预警时间
 //     */
 //    private ValueState<Long> lastWarningTimeState;
@@ -82,6 +86,7 @@
 //        smallMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
 //        smallInitMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
 //        hasValueState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getHasValueState(ruleCode, ruleVersion));
+//        lastEventState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastEventStateDesc(ruleCode, ruleVersion));
 //        lastWarningTimeState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
 //        latestEventThresholdMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
 //        bigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
@@ -329,7 +334,7 @@
 //            ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
 //        }
 //        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
-//        FlinkEventDTO latestFlinkEventDTO = aggregateSmallMapToBigMapAndGetLatestEvent(timestamp);
+//        aggregateSmallMapToBigMap(timestamp);
 //        // 清理窗口大小之外的数据
 //        cleanupWindowData(timestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
@@ -347,22 +352,24 @@
 //            // 更新最后预警时间
 //            lastWarningTimeState.update(timestamp);
 //            // 发送预警信息
-//            AlertDTO alertDTO = buildAlert(ruleInfoDTO, latestFlinkEventDTO, processBigMapResult);
+//            AlertDTO alertDTO = buildAlert(ruleInfoDTO, lastEventState.value(), processBigMapResult);
 //            log.warn("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
 //            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
 //            out.collect(flinkResultDTO);
 //        }
-////        logOldState(ruleInfoDTO.getRuleCode(), currentKey);
-////        logState(ruleInfoDTO.getRuleCode(), currentKey);
 //        return hasActiveEvents();
 //    }
 //
 //    private void logState(Long ruleCode, String currentKey) throws Exception {
+//        Map<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
+//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : smallMapState.entries()) {
+//            smallMap.put(entry.getKey(), entry.getValue());
+//        }
 //        Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
 //        for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue());
 //        }
-//        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+//        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
 //    }
 //
 ////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
@@ -389,6 +396,7 @@
 //                .message(finalWarnMessage)
 //                .time(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
 //                .targetField(ruleInfoDTO.getTargetField())
+//                .targetValue(latestFlinkEventDTO.getTargetValue())
 //                .eventValueGroup(processBigMapResult.f1.getEventValueGroup())
 //                .build();
 //    }
@@ -482,12 +490,11 @@
 //
 //
 //    /**
-//     * 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
+//     * 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并更新最新（时间戳最大）的事件数据。
 //     */
-//    private FlinkEventDTO aggregateSmallMapToBigMapAndGetLatestEvent(long timestamp) throws Exception {
+//    private void aggregateSmallMapToBigMap(long timestamp) throws Exception {
 //        // 遍历 smallMapState 的所有条目
 //        Long timestampMax = 0L;
-//        FlinkEventDTO latestFlinkEventDTO = null;
 //        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
 //            Tuple2<String, Long> eventFieldAndTimeTuple2 = smallMapEntry.getKey();
 //            Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = smallMapEntry.getValue();
@@ -495,15 +502,16 @@
 //            Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, timestamp);
 //            // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
 //            bigMapState.put(tupleKey, eventValueAndEventDataTuple2.f0);
+//            // 更新最新的事件数据
 //            Long eventTime = eventFieldAndTimeTuple2.f1;
 //            if (eventTime > timestampMax) {
 //                timestampMax = eventTime;
-//                latestFlinkEventDTO = eventValueAndEventDataTuple2.f1;
+//                lastEventState.update(eventValueAndEventDataTuple2.f1);
 //            }
 //        }
+////        logState(xxx, xxx);
 //        // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
 //        smallMapState.clear();
-//        return latestFlinkEventDTO;
 //    }
 //
 //    /**
