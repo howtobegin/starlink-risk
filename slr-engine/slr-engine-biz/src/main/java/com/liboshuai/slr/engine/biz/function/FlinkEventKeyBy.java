@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.biz.function;
 
 import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
-import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import org.apache.flink.api.java.functions.KeySelector;
 
 /**
@@ -14,6 +14,6 @@ public class FlinkEventKeyBy implements KeySelector<FlinkEventDTO, String> {
         String channel = flinkEventDTO.getChannel();
         String targetField = flinkEventDTO.getTargetField();
         String targetValue = flinkEventDTO.getTargetValue();
-        return String.join(DefaultConstants.COLON, channel, targetField, targetValue);
+        return String.join(RedisKeyConstants.REDIS_KEY_SPLIT, channel, targetField, targetValue);
     }
 }
