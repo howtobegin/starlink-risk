@@ -78,10 +78,10 @@ spring:
     mongodb:
       host: docker
       port: 27018
-      username: lbs
+      username: root
       password: Rongshu@2024
       database: starlink_risk_test
-      authentication-database: starlink_risk_test
+      authentication-database: admin
 
 ############################## [xxl-job 配置项] ##############################
 xxl:
