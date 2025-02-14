@@ -209,15 +209,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             bigMap.put(next.getKey(), next.getValue());
         }
 
-        log.warn("========================================清理状态值-{}========================================", status);
-        log.warn("smallMap: {}", JsonUtils.toJsonString(smallMap));
-        log.warn("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
-        log.warn("hasValue: {}", JsonUtils.toJsonString(hasValue));
-        log.warn("flinkEventDTO: {}", JsonUtils.toJsonString(flinkEventDTO));
-        log.warn("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
-        log.warn("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
-        log.warn("bigMap: {}", JsonUtils.toJsonString(bigMap));
-        log.warn("========================================清理状态值-{}========================================", status);
+        log.info("========================================清理状态值-{}========================================", status);
+        log.info("smallMap: {}", JsonUtils.toJsonString(smallMap));
+        log.info("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
+        log.info("hasValue: {}", JsonUtils.toJsonString(hasValue));
+        log.info("flinkEventDTO: {}", JsonUtils.toJsonString(flinkEventDTO));
+        log.info("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
+        log.info("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
+        log.info("bigMap: {}", JsonUtils.toJsonString(bigMap));
+        log.info("========================================清理状态值-{}========================================", status);
     }
 
     @Override
@@ -257,7 +257,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             // delete: 删除操作顾名思义，就是执行了下线操作，这个时候，我们只需要将规则运算机移除即可
             removeProcessor(ruleCodeBefore);
         }
-        log.warn("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
+        log.info("当前规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
 
     /**
@@ -275,7 +275,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         }
         ruleProcessorPool.remove(ruleCode);
         ruleInfoPool.remove(ruleCode);
-        log.warn("下线一个规则运算机，规则编号为: {}", ruleCode);
+        log.info("下线一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -298,7 +298,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         if (Objects.nonNull(processor)) {
             ruleProcessorPool.put(ruleCode, processor);
             ruleInfoPool.put(ruleCode, ruleInfoDTO);
-            log.warn("上线一个规则运算机，规则编号为: {}", ruleCode);
+            log.info("上线一个规则运算机，规则编号为: {}", ruleCode);
         }
     }
 
@@ -321,7 +321,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         Processor processor = buildProcessor(null, keyedStateStore, ruleInfoDTO);
         ruleProcessorPool.put(ruleCode, processor);
         ruleInfoPool.put(ruleCode, ruleInfoDTO);
-        log.warn("恢复了一个规则运算机，规则编号为: {}", ruleCode);
+        log.info("恢复了一个规则运算机，规则编号为: {}", ruleCode);
     }
 
     /**
@@ -407,6 +407,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         for (RuleInfoDTO ruleInfoDTO : restoreRuleInfoListState.get()) {
             loadProcessor(functionInitializationContext.getKeyedStateStore(), ruleInfoDTO.getRuleCode(), ruleInfoDTO);
         }
-        log.warn("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
+        log.info("恢复后的规则运算机数量: {}, 规则编号列表: {}", ruleProcessorPool.size(), ruleProcessorPool.keySet());
     }
 }

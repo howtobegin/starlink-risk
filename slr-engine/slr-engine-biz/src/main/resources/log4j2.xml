@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration monitorInterval="5">
     <Properties>
-        <property name="LOG_PATTERN" value="%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
-        <property name="LOG_LEVEL" value="WARN"/>
+        <property name="LOG_PATTERN" value="%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+        <property name="ME_LOG_LEVEL" value="DEBUG"/>
+        <property name="OTHER_LOG_LEVEL" value="WARN"/>
     </Properties>
 
     <appenders>
         <console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
-            <ThresholdFilter level="${LOG_LEVEL}" onMatch="ACCEPT" onMismatch="DENY"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
         </console>
     </appenders>
 
     <loggers>
-        <root level="${LOG_LEVEL}">
+        <!-- com.liboshuai 包的级别日志 -->
+        <logger name="com.liboshuai" level="${ME_LOG_LEVEL}" additivity="false">
+            <appender-ref ref="Console"/>
+        </logger>
+
+        <!-- 其他所有包的级别日志 -->
+        <root level="${OTHER_LOG_LEVEL}">
             <appender-ref ref="Console"/>
         </root>
     </loggers>

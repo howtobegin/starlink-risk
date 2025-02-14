@@ -353,7 +353,7 @@
 //            lastWarningTimeState.update(timestamp);
 //            // 发送预警信息
 //            AlertDTO alertDTO = buildAlert(ruleInfoDTO, lastEventState.value(), processBigMapResult);
-//            log.warn("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
+//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
 //            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
 //            out.collect(flinkResultDTO);
 //        }
@@ -369,7 +369,7 @@
 //        for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue());
 //        }
-//        log.warn("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
+//        log.info("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
 //    }
 //
 ////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
@@ -377,7 +377,7 @@
 ////        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : oldBigMapState.entries()) {
 ////            bigMap.put(entry.getKey(), entry.getValue());
 ////        }
-////        log.warn("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+////        log.info("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
 ////    }
 //
 //    /**
