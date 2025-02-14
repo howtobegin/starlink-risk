@@ -369,7 +369,7 @@
 //        for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue());
 //        }
-//        log.info("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
+//        log.debug("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
 //    }
 //
 ////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
@@ -377,7 +377,7 @@
 ////        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : oldBigMapState.entries()) {
 ////            bigMap.put(entry.getKey(), entry.getValue());
 ////        }
-////        log.info("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+////        log.debug("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
 ////    }
 //
 //    /**
