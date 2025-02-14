@@ -13,6 +13,7 @@ import com.liboshuai.slr.engine.biz.util.RuleEventAttrCompUtil;
 import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
+import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
@@ -321,6 +322,19 @@ public class ProcessorOne implements Processor {
      */
     @Override
     public boolean onTimer(String currentKey, long timestamp, Collector<FlinkResultDTO> out) throws Exception {
+        // TODO: 临时用于debug条件判断，待删除
+        boolean debug = true;
+        Long ruleCode = ruleInfoDTO.getRuleCode();
+        if (ruleCode != 1890222324268011520L) {
+            debug = false;
+        }
+        if (!Objects.equals(currentKey, "game::userId::U000000001") || !Objects.equals(currentKey, "game::userId::U000000002")) {
+            debug = false;
+        }
+        if (debug) {
+            logSmallMapState(ruleCode, currentKey);
+        }
+
         if (Objects.isNull(ruleInfoDTO)) {
             log.warn("因规则信息为空，故跳过此次计算！");
             return true;
@@ -355,24 +369,32 @@ public class ProcessorOne implements Processor {
             // 更新最后预警时间
             lastWarningTimeState.update(timestamp);
             // 发送预警信息
-            AlertDTO alertDTO = buildAlert(ruleInfoDTO, lastEventState.value(), processBigMapResult);
-            log.info("最终推送的预警信息内容：{}, 当前Key: {}", alertDTO, currentKey);
+            AlertDTO alertDTO = buildAlert(timestamp, ruleInfoDTO, lastEventState.value(), processBigMapResult);
+            log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
             FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
             out.collect(flinkResultDTO);
+        }
+        // TODO: 临时用于debug条件判断，待删除
+        if (debug) {
+            logBigMapState(ruleCode, currentKey);
         }
         return hasActiveEvents();
     }
 
-    private void logState(Long ruleCode, String currentKey) throws Exception {
+    private void logSmallMapState(Long ruleCode, String currentKey) throws Exception {
         Map<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
         for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : smallMapState.entries()) {
             smallMap.put(entry.getKey(), entry.getValue());
         }
+        log.debug("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
+    }
+
+    private void logBigMapState(Long ruleCode, String currentKey) throws Exception {
         Map<Tuple2<String, Long>, Long> bigMap = new HashMap<>();
         for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
             bigMap.put(entry.getKey(), entry.getValue());
         }
-        log.debug("onTime计算触发，ruleCode:{}, currentKey：{}, smallMap:{}, bigMap：{}", ruleCode, currentKey, smallMap, bigMap);
+        log.debug("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
     }
 
 //    private void logOldState(Long ruleCode, String currentKey) throws Exception {
@@ -386,7 +408,7 @@ public class ProcessorOne implements Processor {
     /**
      * 构建预警信息的方法，提取重复逻辑
      */
-    private AlertDTO buildAlert(RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO, Tuple2<Boolean, ProcessorDTO> processBigMapResult) {
+    private AlertDTO buildAlert(long timestamp, RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO, Tuple2<Boolean, ProcessorDTO> processBigMapResult) {
         String finalWarnMessage = TemplateUtil.replacePlaceholders(
                 ruleInfoDTO.getAlertTemplate(),
                 ruleInfoDTO,
@@ -397,7 +419,7 @@ public class ProcessorOne implements Processor {
                 .channel(ruleInfoDTO.getChannel())
                 .ruleCode(ruleInfoDTO.getRuleCode())
                 .message(finalWarnMessage)
-                .time(LocalDateTimeUtils.convertTimestamp2String(System.currentTimeMillis()))
+                .time(LocalDateTimeUtils.convertTimestamp2String(timestamp))
                 .targetField(ruleInfoDTO.getTargetField())
                 .targetValue(latestFlinkEventDTO.getTargetValue())
                 .eventValueGroup(processBigMapResult.f1.getEventValueGroup())
@@ -512,7 +534,6 @@ public class ProcessorOne implements Processor {
                 lastEventState.update(eventValueAndEventDataTuple2.f1);
             }
         }
-//        logState(xxx, xxx);
         // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态
         smallMapState.clear();
     }

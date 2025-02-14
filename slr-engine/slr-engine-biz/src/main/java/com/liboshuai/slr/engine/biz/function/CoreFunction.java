@@ -4,6 +4,7 @@ import com.liboshuai.slr.engine.api.dto.*;
 import com.liboshuai.slr.engine.biz.framework.state.CommonStateDesc;
 import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.engine.biz.processor.Processor;
+import com.liboshuai.slr.engine.biz.processor.impl.ProcessorOne;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import groovy.lang.GroovyClassLoader;
@@ -294,7 +295,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 构建规则运算机
-        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
+//        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
+        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
         if (Objects.nonNull(processor)) {
             ruleProcessorPool.put(ruleCode, processor);
             ruleInfoPool.put(ruleCode, ruleInfoDTO);
@@ -373,15 +375,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     }
 
     // mock运算机对象
-//    private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
-//        Processor processor = new ProcessorOne();
-//        if (Objects.nonNull(runtimeContext)) {
-//            processor.init(runtimeContext, null, ruleInfoDTO);
-//        } else {
-//            processor.init(null, keyedStateStore, ruleInfoDTO);
-//        }
-//        return processor;
-//    }
+    private Processor mockProcessor(RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, RuleInfoDTO ruleInfoDTO) throws Exception {
+        Processor processor = new ProcessorOne();
+        if (Objects.nonNull(runtimeContext)) {
+            processor.init(runtimeContext, null, ruleInfoDTO);
+        } else {
+            processor.init(null, keyedStateStore, ruleInfoDTO);
+        }
+        return processor;
+    }
 
     /**
      * checkpoint时调用的方法
