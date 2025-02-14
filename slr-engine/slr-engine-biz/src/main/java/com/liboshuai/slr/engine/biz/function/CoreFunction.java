@@ -209,15 +209,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             bigMap.put(next.getKey(), next.getValue());
         }
 
-        log.info("========================================清理状态值-{}========================================", status);
-        log.info("smallMap: {}", JsonUtils.toJsonString(smallMap));
-        log.info("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
-        log.info("hasValue: {}", JsonUtils.toJsonString(hasValue));
-        log.info("flinkEventDTO: {}", JsonUtils.toJsonString(flinkEventDTO));
-        log.info("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
-        log.info("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
-        log.info("bigMap: {}", JsonUtils.toJsonString(bigMap));
-        log.info("========================================清理状态值-{}========================================", status);
+        log.debug("========================================清理状态值-{}========================================", status);
+        log.debug("smallMap: {}", JsonUtils.toJsonString(smallMap));
+        log.debug("smallInitMap: {}", JsonUtils.toJsonString(smallInitMap));
+        log.debug("hasValue: {}", JsonUtils.toJsonString(hasValue));
+        log.debug("flinkEventDTO: {}", JsonUtils.toJsonString(flinkEventDTO));
+        log.debug("lastWarningTime: {}", JsonUtils.toJsonString(lastWarningTime));
+        log.debug("latestEventThresholdMap: {}", JsonUtils.toJsonString(latestEventThresholdMap));
+        log.debug("bigMap: {}", JsonUtils.toJsonString(bigMap));
+        log.debug("========================================清理状态值-{}========================================", status);
     }
 
     @Override
