@@ -60,7 +60,7 @@ public class RedisUtil {
         } else {
             jedisCluster = new JedisCluster(jedisClusterNodes, connectionTimeout, soTimeout, maxAttempts, poolConfig);
         }
-        log.info("RedisUtil 初始化完成，命名空间为: {}", NAMESPACE);
+        log.warn("RedisUtil 初始化完成，命名空间为: {}", NAMESPACE);
     }
 
     /**

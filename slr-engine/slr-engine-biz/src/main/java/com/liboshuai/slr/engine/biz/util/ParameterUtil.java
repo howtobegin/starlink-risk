@@ -219,13 +219,13 @@ public class ParameterUtil {
             if (Files.notExists(checkpointPath)) {
                 try {
                     Files.createDirectories(checkpointPath);
-                    log.info("已成功创建 checkpoint 目录: {}", checkpointPath.toAbsolutePath());
+                    log.warn("已成功创建 checkpoint 目录: {}", checkpointPath.toAbsolutePath());
                 } catch (IOException e) {
                     log.error("无法创建 checkpoint 目录: {}", checkpointPath.toAbsolutePath(), e);
                     throw new IOException("无法创建 checkpoint 目录: " + checkpointPath.toAbsolutePath(), e);
                 }
             } else {
-                log.info("checkpoint 目录已存在: {}", checkpointPath.toAbsolutePath());
+                log.warn("checkpoint 目录已存在: {}", checkpointPath.toAbsolutePath());
             }
         } else {
             // 非本地环境，设置 HDFS 的用户名
@@ -234,10 +234,10 @@ public class ParameterUtil {
                 throw new IllegalArgumentException("FLINK_CHECKPOINT_HDFS_USERNAME 参数在非本地环境下必须配置");
             }
             System.setProperty("HADOOP_USER_NAME", hdfsUsername);
-            log.info("已设置 HADOOP_USER_NAME 为: {}", hdfsUsername);
+            log.warn("已设置 HADOOP_USER_NAME 为: {}", hdfsUsername);
         }
         // 配置 checkpoint 存储路径
         checkpointConfig.setCheckpointStorage(flinkCheckpointUrl);
-        log.info("已设置 checkpoint 存储路径为: {}", flinkCheckpointUrl);
+        log.warn("已设置 checkpoint 存储路径为: {}", flinkCheckpointUrl);
     }
 }
