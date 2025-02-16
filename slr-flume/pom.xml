@@ -17,39 +17,12 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.liboshuai.starlink</groupId>
-            <artifactId>slr-engine-api</artifactId>
-        </dependency>
-
         <!-- =============== Flume ===================== -->
         <dependency>
             <groupId>org.apache.flume</groupId>
             <artifactId>flume-ng-core</artifactId>
-            <scope>provided</scope>
         </dependency>
 
-        <!-- =============== Jackson ===================== -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -63,41 +36,6 @@
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-
-            <!-- 关键配置：打包包含依赖的fat jar -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <!-- 排除Flume环境已提供的依赖 -->
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.flume:*</exclude>
-                                    <!-- 排除Flume核心库 -->
-                                </excludes>
-                            </artifactSet>
-                            <filters>
-                                <!-- 排除签名文件避免冲突 -->
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

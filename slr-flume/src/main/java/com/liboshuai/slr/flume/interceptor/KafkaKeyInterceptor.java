@@ -1,92 +1,100 @@
 package com.liboshuai.slr.flume.interceptor;
 
-import com.liboshuai.slr.engine.api.dto.NginxEventDTO;
-import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
-import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import lombok.extern.slf4j.Slf4j;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Kafka Key 拦截器，用于从事件数据中提取键
- */
-@Slf4j
 public class KafkaKeyInterceptor implements Interceptor {
+    private static final Logger log = LoggerFactory.getLogger(KafkaKeyInterceptor.class);
 
     @Override
     public void initialize() {
-        // 此拦截器不需要初始化
+        log.info("初始化Kafka键拦截器");
     }
 
     @Override
     public Event intercept(Event event) {
         if (event == null) {
-            log.warn("收到空的事件，跳过拦截处理。");
+            log.warn("接收到空事件，跳过处理");
             return null;
         }
 
         try {
-            // 将事件的 body 从 byte[] 转换为 String
             String eventData = new String(event.getBody(), StandardCharsets.UTF_8);
-            log.debug("正在处理事件数据: {}", eventData);
+            log.debug("正在处理事件数据：{}", eventData);
 
-            // 将事件数据解析为 JSON 的 NginxEventDTO 对象
-            NginxEventDTO nginxEventDTO = JsonUtils.parseObject(eventData, NginxEventDTO.class);
-            if (nginxEventDTO == null) {
-                log.error("解析事件数据到 JSON 失败。事件数据: {}", eventData);
+            // 使用 Gson 解析 JSON
+            JsonObject jsonObject;
+            try {
+                jsonObject = JsonParser.parseString(eventData).getAsJsonObject();
+            } catch (JsonSyntaxException e) {
+                log.error("无效的JSON格式：{}", eventData);
                 return null;
             }
 
-            // 提取需要的字段
-            String channel = nginxEventDTO.getChannel();
-            String targetField = nginxEventDTO.getTargetField();
-            String targetValue = nginxEventDTO.getTargetValue();
+            // 直接提取字段
+            String channel = getJsonStringField(jsonObject, "channel");
+            String targetField = getJsonStringField(jsonObject, "targetField");
+            String targetValue = getJsonStringField(jsonObject, "targetValue");
 
             if (StringUtils.isAnyEmpty(channel, targetField, targetValue)) {
-                log.error("事件数据中某些字段为空或缺失。nginxEventDTO: {}", nginxEventDTO);
+                log.error("JSON中缺少必填字段。渠道: {}, 目标字段: {}, 目标值: {}",
+                        channel, targetField, targetValue);
                 return null;
             }
 
-            // 构建 Kafka 键
-            String kafkaKey = channel + RedisKeyConstants.REDIS_KEY_SPLIT + targetField + RedisKeyConstants.REDIS_KEY_SPLIT + targetValue;
-            log.debug("生成的 Kafka 键: {}", kafkaKey);
+            String kafkaKey = String.format("%s::%s::%s", channel, targetField, targetValue);
+            log.debug("生成的Kafka键：{}", kafkaKey);
 
-            // 将生成的键添加到事件的头部
             event.getHeaders().put("kafkaKey", kafkaKey);
-
             return event;
+
         } catch (Exception e) {
-            log.error("处理事件数据时发生错误。异常信息: {}", e.getMessage(), e);
+            log.error("处理事件时发生错误：{}", e.getMessage(), e);
             return null;
         }
     }
 
+    private String getJsonStringField(JsonObject jsonObject, String fieldName) {
+        if (jsonObject.has(fieldName) && !jsonObject.get(fieldName).isJsonNull()) {
+            return jsonObject.get(fieldName).getAsString();
+        }
+        log.warn("字段缺失或为空：{}", fieldName);
+        return null;
+    }
+
     @Override
     public List<Event> intercept(List<Event> events) {
-        List<Event> interceptedEvents = new ArrayList<>();
+        List<Event> validEvents = new ArrayList<>();
+        log.info("开始处理批量事件，数量：{}", events.size());
+
         for (Event event : events) {
-            Event intercepted = intercept(event);
-            if (intercepted != null) {
-                interceptedEvents.add(intercepted);
+            Event processed = intercept(event);
+            if (processed != null) {
+                validEvents.add(processed);
             }
         }
-        log.debug("拦截了 {} 个事件，共处理了 {} 个事件。", interceptedEvents.size(), events.size());
-        return interceptedEvents;
+
+        log.info("处理完成。有效事件数：{}/{}", validEvents.size(), events.size());
+        return validEvents;
     }
 
     @Override
     public void close() {
-        // 此拦截器不需要释放资源
+        log.info("关闭Kafka键拦截器");
     }
 
     public static class Builder implements Interceptor.Builder {
-
         @Override
         public Interceptor build() {
             return new KafkaKeyInterceptor();
@@ -94,7 +102,7 @@ public class KafkaKeyInterceptor implements Interceptor {
 
         @Override
         public void configure(Context context) {
-            // 此拦截器不需要配置
+            log.debug("正在配置Kafka键拦截器");
         }
     }
 }

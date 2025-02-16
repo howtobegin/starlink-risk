@@ -32,7 +32,7 @@
         <Logger name="org.apache.avro.ipc.netty.NettyTransceiver" level="WARN"/>
         <Logger name="org.apache.hadoop" level="INFO"/>
         <Logger name="org.apache.hadoop.hive" level="ERROR"/>
-        <Root level="INFO">
+        <Root level="DEBUG">
             <AppenderRef ref="LogFile"/>
         </Root>
     </Loggers>
