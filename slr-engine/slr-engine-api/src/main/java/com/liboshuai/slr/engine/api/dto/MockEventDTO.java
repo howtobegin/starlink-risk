@@ -1,7 +1,7 @@
 package com.liboshuai.slr.engine.api.dto;
 
 import com.liboshuai.slr.engine.api.enums.ChannelEnum;
-import com.liboshuai.slr.engine.api.type.FlinkEventDtoType;
+import com.liboshuai.slr.engine.api.type.MockEventDtoType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,18 +13,22 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * 上送事件 DTO
+ * 上送事件Nginx DTO
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@TypeInfo(FlinkEventDtoType.class)
-public class EventDTO implements Serializable {
+@TypeInfo(MockEventDtoType.class)
+public class MockEventDTO implements Serializable {
 
     private static final long serialVersionUID = -3125924174631531244L;
 
+    /**
+     * 事件时间（例如：1736732339769）
+     */
+    private String eventTime;
     /**
      * 渠道
      * {@link ChannelEnum}

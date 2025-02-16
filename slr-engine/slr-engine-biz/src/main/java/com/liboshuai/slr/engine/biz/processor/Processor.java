@@ -20,10 +20,10 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(String currentKey, long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
+    void processElement(String currentKey, long currentEventTimestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
 
     /**
      * 定时器
      */
-    boolean onTimer(String currentKey, long timestamp, Collector<FlinkResultDTO> out) throws Exception;
+    boolean onTimer(String currentKey, long currentEventTimestamp, Collector<FlinkResultDTO> out) throws Exception;
 }

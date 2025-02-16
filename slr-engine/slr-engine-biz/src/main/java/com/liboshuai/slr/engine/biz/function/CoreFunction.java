@@ -94,9 +94,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 获取当前事件时间
-        Long eventTime = flinkEventDTO.getEventTime();
+        Long currentEventTimestamp = flinkEventDTO.getEventTime();
         // 将事件添加到缓存列表中并移除超过5分钟的过期数据
-        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, eventTime);
+        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, currentEventTimestamp);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Long ruleCode = stringProcessorEntry.getKey();
@@ -108,16 +108,16 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                     continue;
                 }
                 for (FlinkEventDTO historyFlinkEventDto : historyFlinkEventDTOList) {
-                    processor.processElement(currentKey, eventTime, historyFlinkEventDto, out);
+                    processor.processElement(currentKey, currentEventTimestamp, historyFlinkEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, eventTime, flinkEventDTO, out);
+                processor.processElement(currentKey, currentEventTimestamp, flinkEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
-        long fireTime = WindowUtil.getWindowStartWithOffset(eventTime, 0, TimeUnit.MINUTES.toMillis(1))
+        long fireTime = WindowUtil.getWindowStartWithOffset(currentEventTimestamp, 0, TimeUnit.MINUTES.toMillis(1))
                 + TimeUnit.MINUTES.toMillis(1);
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
@@ -127,9 +127,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      *
      * @param currentKey            当前的键值
      * @param flinkEventDTO         要添加的事件对象
-     * @param currentProcessingTime 当前的处理时间
+     * @param currentEventTimestamp 当前事件时间
      */
-    private void addEventToCacheAndRemoveExpired(String currentKey, FlinkEventDTO flinkEventDTO, long currentProcessingTime) {
+    private void addEventToCacheAndRemoveExpired(String currentKey, FlinkEventDTO flinkEventDTO, long currentEventTimestamp) {
         // 将事件放入缓存列表中
         recentEventMap
                 .computeIfAbsent(currentKey, k -> new ArrayList<>())
@@ -140,7 +140,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         while (iterator.hasNext()) {
             FlinkEventDTO eventDTO = iterator.next();
             Long eventTime = eventDTO.getEventTime();
-            if (eventTime < currentProcessingTime - TimeUnit.MINUTES.toMillis(5)) {
+            if (eventTime < currentEventTimestamp - TimeUnit.MINUTES.toMillis(5)) {
                 // 移除过期数据
                 iterator.remove();
             }

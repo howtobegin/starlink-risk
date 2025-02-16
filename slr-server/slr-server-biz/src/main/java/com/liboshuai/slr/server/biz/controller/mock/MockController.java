@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.controller.mock;
 
-import com.liboshuai.slr.engine.api.dto.EventDTO;
+import com.liboshuai.slr.engine.api.dto.MockEventDTO;
 import com.liboshuai.slr.framework.common.pojo.CommonResult;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdGenerator;
 import com.liboshuai.slr.framework.snowflakeId.core.SnowflakeIdProperties;
@@ -45,8 +45,8 @@ public class MockController {
 
     @PostMapping("/pushEventToNginx")
     @Operation(summary = "推送数据到nginx")
-    public CommonResult<Boolean> pushEventToNginx(@RequestBody List<EventDTO> eventDTOList) {
-        mockService.pushEventToNginx(eventDTOList);
+    public CommonResult<Boolean> pushEventToNginx(@RequestBody List<MockEventDTO> mockEventDTOList) {
+        mockService.pushEventToNginx(mockEventDTOList);
         return CommonResult.success(true);
     }
 

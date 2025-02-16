@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.mock.impl;
 
-import com.liboshuai.slr.engine.api.dto.EventDTO;
+import com.liboshuai.slr.engine.api.dto.MockEventDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.framework.takeTime.core.aop.TakeTime;
 import com.liboshuai.slr.server.biz.constants.AsyncExecutorConstants;
@@ -88,8 +88,8 @@ public class MockServiceImpl implements MockService {
 
                 // 生成事件
                 String channel = random.nextBoolean() ? "GAME" : "HJF";
-                EventDTO eventDTO = generateEvent(channel);
-                String urlParams = convertToParams(eventDTO);
+                MockEventDTO mockEventDTO = generateEvent(channel);
+                String urlParams = convertToParams(mockEventDTO);
 
                 // 添加到批次列表
                 urlParamsBatch.add(urlParams);
@@ -111,14 +111,14 @@ public class MockServiceImpl implements MockService {
     }
 
     @Override
-    public void pushEventToNginx(List<EventDTO> eventDTOList) {
-        for (EventDTO eventDTO : eventDTOList) {
-            nginxService.sendEventRequest(eventDTO);
+    public void pushEventToNginx(List<MockEventDTO> mockEventDTOList) {
+        for (MockEventDTO mockEventDTO : mockEventDTOList) {
+            nginxService.sendEventRequest(mockEventDTO);
         }
     }
 
-    private EventDTO generateEvent(String channel) {
-        EventDTO.EventDTOBuilder builder = EventDTO.builder();
+    private MockEventDTO generateEvent(String channel) {
+        MockEventDTO.MockEventDTOBuilder builder = MockEventDTO.builder();
 
         Map<String, String> eventAttrMap = new HashMap<>();
 
@@ -191,18 +191,19 @@ public class MockServiceImpl implements MockService {
     /**
      * 将 EventDTO 转换为 url参数
      */
-    private String convertToParams(EventDTO eventDTO) throws IOException {
+    private String convertToParams(MockEventDTO mockEventDTO) throws IOException {
         // 打点服务器的请求 URI 地址（建议动态配置）
         String baseUri = "http://docker:48881/slr_event_" + slrServerProperties.getActive() + ".gif ";
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
-                .queryParam("channel", eventDTO.getChannel())
-                .queryParam("targetField", eventDTO.getTargetField())
-                .queryParam("targetValue", eventDTO.getTargetValue())
-                .queryParam("eventField", eventDTO.getEventField())
-                .queryParam("eventValue", eventDTO.getEventValue())
-                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventDTO.getEventAttrMap()))
+                .queryParam("eventTime", mockEventDTO.getEventTime())
+                .queryParam("channel", mockEventDTO.getChannel())
+                .queryParam("targetField", mockEventDTO.getTargetField())
+                .queryParam("targetValue", mockEventDTO.getTargetValue())
+                .queryParam("eventField", mockEventDTO.getEventField())
+                .queryParam("eventValue", mockEventDTO.getEventValue())
+                .queryParam("eventAttrMap", JsonUtils.toJsonString(mockEventDTO.getEventAttrMap()))
                 .build()
                 .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
         String[] split = uriComponents.toUriString().split("\\?");

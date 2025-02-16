@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.mock.impl;
 
-import com.liboshuai.slr.engine.api.dto.EventDTO;
+import com.liboshuai.slr.engine.api.dto.MockEventDTO;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.NginxService;
@@ -29,24 +29,24 @@ public class NginxServiceImpl implements NginxService {
     @Override
     public void testNginxBackendRequest() {
         // 模拟业务系统产生事件数据
-        EventDTO eventData = createEventData();
+        MockEventDTO mockEventDTO = createEventData();
         // 向打点服务器发送请求（示例代码为同步调用，生产实践推荐修改为异步调用）
-        sendEventRequest(eventData);
+        sendEventRequest(mockEventDTO);
     }
 
     /**
      * 模拟业务系统产生事件数据
      *
-     * @return 构建好的 KafkaEventDTO 对象
+     * @return 构建好的 NginxEventDTO 对象
      */
-    public EventDTO createEventData() {
+    public MockEventDTO createEventData() {
         Map<String, String> eventAttributes = new HashMap<>();
         eventAttributes.put("campaignId", "C000000004");
         eventAttributes.put("campaignName", "活动4");
         eventAttributes.put("bankName", "邮储银行");
         eventAttributes.put("bankNo", "6100");
 
-        return EventDTO.builder()
+        return MockEventDTO.builder()
                 .channel("game")
                 .targetField("userId")
                 .targetValue("U000000002")
@@ -59,20 +59,21 @@ public class NginxServiceImpl implements NginxService {
     /**
      * 向打点服务器发送请求
      *
-     * @param eventDTO 要发送的事件数据
+     * @param mockEventDTO 要发送的事件数据
      */
-    public void sendEventRequest(EventDTO eventDTO) {
+    public void sendEventRequest(MockEventDTO mockEventDTO) {
         // 打点服务器的请求 URI 地址
         String slrGifApiAddress = slrServerProperties.getSlrGifApiAddress();
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(slrGifApiAddress)
-                .queryParam("channel", eventDTO.getChannel())
-                .queryParam("targetField", eventDTO.getTargetField())
-                .queryParam("targetValue", eventDTO.getTargetValue())
-                .queryParam("eventField", eventDTO.getEventField())
-                .queryParam("eventValue", eventDTO.getEventValue())
-                .queryParam("eventAttrMap", JsonUtils.toJsonString(eventDTO.getEventAttrMap()))
+                .queryParam("eventTime", mockEventDTO.getEventTime())
+                .queryParam("channel", mockEventDTO.getChannel())
+                .queryParam("targetField", mockEventDTO.getTargetField())
+                .queryParam("targetValue", mockEventDTO.getTargetValue())
+                .queryParam("eventField", mockEventDTO.getEventField())
+                .queryParam("eventValue", mockEventDTO.getEventValue())
+                .queryParam("eventAttrMap", JsonUtils.toJsonString(mockEventDTO.getEventAttrMap()))
                 .build()
                 .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
 

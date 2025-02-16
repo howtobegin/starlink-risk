@@ -1,6 +1,6 @@
 package com.liboshuai.slr.server.biz.service.mock;
 
-import com.liboshuai.slr.engine.api.dto.EventDTO;
+import com.liboshuai.slr.engine.api.dto.MockEventDTO;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ public interface MockService {
      */
     void createEventFile(Long totalCount, Long maxEntries);
 
-    void pushEventToNginx(List<EventDTO> eventDTOList);
+    void pushEventToNginx(List<MockEventDTO> mockEventDTOList);
 }

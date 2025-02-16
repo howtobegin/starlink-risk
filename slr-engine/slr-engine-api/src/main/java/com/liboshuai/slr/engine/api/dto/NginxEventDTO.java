@@ -26,8 +26,6 @@ public class NginxEventDTO implements Serializable {
 
     /**
      * 事件时间（例如：1736732339769）
-     * 13位，毫秒级
-     * 第一版本使用flink处理时间，暂不使用业务平传输的时间
      */
     private String eventTime;
     /**

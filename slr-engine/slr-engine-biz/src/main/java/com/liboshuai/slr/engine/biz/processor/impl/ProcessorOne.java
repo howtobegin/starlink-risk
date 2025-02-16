@@ -316,12 +316,12 @@ public class ProcessorOne implements Processor {
     /**
      * 定时器触发时执行的方法
      *
-     * @param timestamp 时间戳，表示当前时间
+     * @param currentEventTimestamp 时间戳，表示当前时间
      * @param out       输出收集器，用于收集和输出预警信息
      * @throws Exception 可能抛出的异常
      */
     @Override
-    public boolean onTimer(String currentKey, long timestamp, Collector<FlinkResultDTO> out) throws Exception {
+    public boolean onTimer(String currentKey, long currentEventTimestamp, Collector<FlinkResultDTO> out) throws Exception {
         // TODO: 临时用于debug条件判断，待删除
         boolean debug = true;
         Long ruleCode = ruleInfoDTO.getRuleCode();
@@ -351,9 +351,9 @@ public class ProcessorOne implements Processor {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
         // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
-        aggregateSmallMapToBigMap(timestamp);
+        aggregateSmallMapToBigMap(currentEventTimestamp);
         // 清理窗口大小之外的数据
-        cleanupWindowData(timestamp, ruleConditionMapByEventField);
+        cleanupWindowData(currentEventTimestamp, ruleConditionMapByEventField);
         // 处理bigMapState
         Tuple2<Boolean, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
         // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
@@ -364,12 +364,12 @@ public class ProcessorOne implements Processor {
         Long alertInterval = getAlertInterval(ruleInfoDTO);
         // 检查是否需要发送预警
         boolean shouldAlert = processBigMapResult.f0 &&
-                (alertInterval == null || (timestamp - lastWarningTimeState.value() >= alertInterval));
+                (alertInterval == null || (currentEventTimestamp - lastWarningTimeState.value() >= alertInterval));
         if (shouldAlert) {
             // 更新最后预警时间
-            lastWarningTimeState.update(timestamp);
+            lastWarningTimeState.update(currentEventTimestamp);
             // 发送预警信息
-            AlertDTO alertDTO = buildAlert(timestamp, ruleInfoDTO, lastEventState.value(), processBigMapResult);
+            AlertDTO alertDTO = buildAlert(currentEventTimestamp, ruleInfoDTO, lastEventState.value(), processBigMapResult);
             log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
             FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
             out.collect(flinkResultDTO);
