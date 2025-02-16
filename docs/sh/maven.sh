@@ -1,2 +1,0 @@
-# 将doris jar包安装到本地maven仓库
-mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/libs/flink-doris-connector-1.14_2.12-1.1.1.jar
