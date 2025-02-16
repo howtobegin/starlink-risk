@@ -8,7 +8,7 @@ import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,7 +58,14 @@ public class KafkaKeyInterceptor implements Interceptor {
 
     @Override
     public List<Event> intercept(List<Event> list) {
-        return Collections.emptyList();
+        List<Event> eventList = new ArrayList<>();
+        for (Event event : list) {
+            Event intercept = intercept(event);
+            if (Objects.nonNull(intercept)) {
+                eventList.add(intercept);
+            }
+        }
+        return eventList;
     }
 
     @Override
