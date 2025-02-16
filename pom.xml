@@ -15,6 +15,7 @@
         <module>slr-dependencies</module>
         <module>slr-engine</module>
         <module>slr-server</module>
+        <module>slr-flume</module>
     </modules>
 
     <profiles>

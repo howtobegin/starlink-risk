@@ -79,6 +79,8 @@
         <jimureport.version>1.7.8</jimureport.version>
         <xercesImpl.version>2.12.2</xercesImpl.version>
         <weixin-java.version>4.6.0</weixin-java.version>
+        <!-- flume 项目相关 -->
+        <flume.version>1.11.0</flume.version>
         <!-- flink 项目相关-->
         <flink.version>1.14.2</flink.version>
         <scala.binary.version>2.12</scala.binary.version>
@@ -451,6 +453,13 @@
                         <groupId>org.yaml</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Flume -->
+            <dependency>
+                <groupId>org.apache.flume</groupId>
+                <artifactId>flume-ng-core</artifactId>
+                <version>${flume.version}</version>
             </dependency>
 
             <!-- ========== Flink ========== -->
