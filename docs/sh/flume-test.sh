@@ -2,9 +2,10 @@
 
 # 定义 Flume 配置相关的变量
 FLUME_AGENT_NAME="slr_test"
-FLUME_CONF_DIR="/home/lbs/software/flume/data/properties"
-FLUME_CONF_FILE="${FLUME_CONF_DIR}/fileToKafka-test.properties"
-FLUME_BIN="/home/lbs/software/flume/bin/flume-ng"
+FLUME_HOME="/home/lbs/software/flume"
+FLUME_CONF_DIR="${FLUME_HOME}/conf"
+FLUME_PROPERTIES_FILE="${FLUME_HOME}/data/properties/fileToKafka-test.properties"
+FLUME_BIN="${FLUME_HOME}/bin/flume-ng"
 PROCESS_NAME="fileToKafka-test.properties"
 
 start() {
@@ -14,7 +15,7 @@ start() {
         exit 1
     fi
 
-    nohup ${FLUME_BIN} agent -c "${FLUME_CONF_DIR}" -f "${FLUME_CONF_FILE}" \
+    nohup ${FLUME_BIN} agent -c "${FLUME_CONF_DIR}" -f "${FLUME_PROPERTIES_FILE}" \
         -n "${FLUME_AGENT_NAME}" >/dev/null 2>&1 &
 
     echo "Flume agent '${FLUME_AGENT_NAME}' 已启动。"
