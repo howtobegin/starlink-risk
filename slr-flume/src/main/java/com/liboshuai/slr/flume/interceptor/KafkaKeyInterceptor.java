@@ -5,6 +5,7 @@ import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
@@ -82,5 +83,18 @@ public class KafkaKeyInterceptor implements Interceptor {
     @Override
     public void close() {
         // 此拦截器不需要释放资源
+    }
+
+    public static class Builder implements Interceptor.Builder {
+
+        @Override
+        public Interceptor build() {
+            return new KafkaKeyInterceptor();
+        }
+
+        @Override
+        public void configure(Context context) {
+            // 此拦截器不需要配置
+        }
     }
 }
