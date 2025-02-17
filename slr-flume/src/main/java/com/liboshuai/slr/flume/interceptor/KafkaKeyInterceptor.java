@@ -54,11 +54,11 @@ public class KafkaKeyInterceptor implements Interceptor {
             }
 
             // 构建 Kafka 键
-            String kafkaKey = channel + RedisKeyConstants.REDIS_KEY_SPLIT + targetField + RedisKeyConstants.REDIS_KEY_SPLIT + targetValue;
-            log.debug("生成的 Kafka 键: {}", kafkaKey);
+            String key = channel + RedisKeyConstants.REDIS_KEY_SPLIT + targetField + RedisKeyConstants.REDIS_KEY_SPLIT + targetValue;
+            log.debug("生成的 Kafka 键: {}", key);
 
             // 将生成的键添加到事件的头部
-            event.getHeaders().put("kafkaKey", kafkaKey);
+            event.getHeaders().put("key", key);
 
             return event;
         } catch (Exception e) {
