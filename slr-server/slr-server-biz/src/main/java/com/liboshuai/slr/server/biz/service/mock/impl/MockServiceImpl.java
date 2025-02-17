@@ -152,7 +152,8 @@ public class MockServiceImpl implements MockService {
 
         builder.eventAttrMap(eventAttrMap);
 
-        builder.channel(channel)
+        builder.eventTime(String.valueOf(System.currentTimeMillis()))
+                .channel(channel)
                 .targetField("userId")
                 .targetValue(generateUserId())
                 .eventValue(String.valueOf(random.nextInt(11)));
