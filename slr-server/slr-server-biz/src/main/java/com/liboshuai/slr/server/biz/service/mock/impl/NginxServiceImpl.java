@@ -47,6 +47,7 @@ public class NginxServiceImpl implements NginxService {
         eventAttributes.put("bankNo", "6100");
 
         return MockEventDTO.builder()
+                .eventTime("1739773482232")
                 .channel("game")
                 .targetField("userId")
                 .targetValue("U000000002")
