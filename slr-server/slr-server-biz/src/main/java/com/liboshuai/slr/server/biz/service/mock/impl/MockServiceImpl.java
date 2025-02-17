@@ -34,6 +34,8 @@ public class MockServiceImpl implements MockService {
     private long campaignIdCounter = 1;
     private long productIdCounter = 1;
 
+    private static final int BUFFER_SIZE = 64 * 1024; // 64KB 的 Buffer，提升 I/O 写入效率
+
     @Resource
     private SlrServerProperties slrServerProperties;
     @Resource
@@ -73,16 +75,18 @@ public class MockServiceImpl implements MockService {
         return String.valueOf(base + (index % 100));
     }
 
+
     @Override
     @TakeTime
     @Async(AsyncExecutorConstants.MOCK_EVENT_FILE_ASYNC_EXECUTOR)
     public void createEventFile(Long totalCount, Long maxEntries) {
         long generatedCount = 0;
-        int batchSize = 1000;
+        int batchSize = 5000; // 增加批处理大小，减少 I/O 次数
 
         List<String> urlParamsBatch = new ArrayList<>(batchSize);
+        StringBuilder batchBuffer = new StringBuilder(batchSize * 250); // 预分配容量，降低扩容开销
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(slrServerProperties.getEventLogFilePath(), false))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(slrServerProperties.getEventLogFilePath(), false), BUFFER_SIZE)) {
             while (generatedCount < totalCount) {
                 generatedCount++;
 
@@ -91,19 +95,20 @@ public class MockServiceImpl implements MockService {
                 MockEventDTO mockEventDTO = generateEvent(channel);
                 String urlParams = convertToParams(mockEventDTO);
 
-                // 添加到批次列表
+                // 批量收集数据
                 urlParamsBatch.add(urlParams);
 
-                // 如果达到批量阈值，则一次性写入文件
+                // 如果达到批量写入阈值，则一次性写入
                 if (urlParamsBatch.size() >= batchSize) {
-                    writeBatchToFile(writer, urlParamsBatch);
-                    urlParamsBatch.clear(); // 清空列表，继续收集下一批数据
+                    writeBatchToFile(writer, urlParamsBatch, batchBuffer);
+                    urlParamsBatch.clear(); // 清空列表
+                    batchBuffer.setLength(0); // 清空 StringBuilder
                 }
             }
 
-            // 处理剩余的事件
+            // 处理剩余数据
             if (!urlParamsBatch.isEmpty()) {
-                writeBatchToFile(writer, urlParamsBatch);
+                writeBatchToFile(writer, urlParamsBatch, batchBuffer);
             }
         } catch (IOException e) {
             log.error("写入事件文件时发生错误", e);
@@ -212,14 +217,14 @@ public class MockServiceImpl implements MockService {
     }
 
     /**
-     * 一次性写入一批事件到文件
+     * 一次性写入一批事件到文件（使用 StringBuilder 提高批量写入性能）
      */
-    private void writeBatchToFile(BufferedWriter writer, List<String> urlParamsBatch) throws IOException {
+    private void writeBatchToFile(BufferedWriter writer, List<String> urlParamsBatch, StringBuilder batchBuffer) throws IOException {
         for (String urlParams : urlParamsBatch) {
-            writer.write(urlParams);
-            writer.newLine();
+            batchBuffer.append(urlParams).append("\n"); // 使用 StringBuilder 避免频繁调用 writer.write()
         }
-        writer.flush(); // 确保数据写入磁盘
+        writer.write(batchBuffer.toString()); // 一次性写入文件，减少 IO 交互
+        writer.flush(); // 强制刷盘，提升数据可靠性
     }
 
 }
