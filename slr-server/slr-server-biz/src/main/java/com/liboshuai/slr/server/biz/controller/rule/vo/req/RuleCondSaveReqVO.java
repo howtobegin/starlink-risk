@@ -30,7 +30,7 @@ public class RuleCondSaveReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Size(max = 256, message = "条件编号[condCode]，长度不能超过 256 个字符")
-    @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "条件编号", example = "R1553673459123456000_game_userId_lottery", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String condCode;
 
     /**
@@ -82,7 +82,7 @@ public class RuleCondSaveReqVO implements Serializable {
 
     @Size(max = 256, message = "事件编号[eventCode]，长度不能超过 256 个字符")
     @NotBlank(message = "事件编号[eventCode]，不能为空")
-    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "事件编号", example = "game_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
     @Valid

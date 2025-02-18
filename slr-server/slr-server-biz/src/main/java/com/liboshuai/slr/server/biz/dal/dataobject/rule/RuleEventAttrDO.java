@@ -21,7 +21,7 @@ public class RuleEventAttrDO extends BaseDO {
 
     /**
      * 属性编号
-     * （例如：GAME_userId_lottery_campaignId）
+     * （例如：game_userId_lottery_campaignId）
      */
     private String attrCode;
     /**
@@ -42,7 +42,7 @@ public class RuleEventAttrDO extends BaseDO {
     private String attrType;
     /**
      * 事件编号
-     * （例如：GAME_userId_lottery）
+     * （例如：game_userId_lottery）
      * {@link RuleEventDO#getEventCode()}
      */
     private String eventCode;

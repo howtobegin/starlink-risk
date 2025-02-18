@@ -26,7 +26,7 @@ public class RuleTargetDO extends BaseDO {
     private String channel;
     /**
      * 目标编号
-     * （例如：GAME_userId）
+     * （例如：game_userId）
      */
     private String targetCode;
     /**

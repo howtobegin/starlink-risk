@@ -22,7 +22,7 @@ public class RuleEventAttrValueRespVO extends BaseRespVO {
     /**
      * {@link RuleEventAttrRespVO#getAttrCode()}
      */
-    @Schema(description = "属性编号", example = "GAME_userId_lottery_campaignId")
+    @Schema(description = "属性编号", example = "game_userId_lottery_campaignId")
     private String attrCode;
 
     @Schema(description = "属性字段", example = "campaignId")
@@ -49,6 +49,6 @@ public class RuleEventAttrValueRespVO extends BaseRespVO {
     /**
      * {@link RuleCondRespVO#getCondCode()}
      */
-    @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery")
+    @Schema(description = "条件编号", example = "R1553673459123456000_game_userId_lottery")
     private String condCode;
 }

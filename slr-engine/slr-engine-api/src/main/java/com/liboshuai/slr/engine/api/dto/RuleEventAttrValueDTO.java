@@ -26,7 +26,7 @@ public class RuleEventAttrValueDTO implements Serializable {
 
     /**
      * 属性编号
-     * （例如：GAME_userId_lottery_campaignId）
+     * （例如：game_userId_lottery_campaignId）
      */
     private String attrCode;
 
@@ -64,7 +64,7 @@ public class RuleEventAttrValueDTO implements Serializable {
 
     /**
      * 条件编号
-     * （例如：R1553673459123456000_GAME_userId_lottery）
+     * （例如：R1553673459123456000_game_userId_lottery）
      * {@link RuleCondDTO#getCondCode()}
      */
     private String condCode;

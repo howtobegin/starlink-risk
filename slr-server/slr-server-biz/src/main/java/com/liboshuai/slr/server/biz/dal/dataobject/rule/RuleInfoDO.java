@@ -78,7 +78,7 @@ public class RuleInfoDO extends BaseDO {
     private String ruleCondCombOp;
     /**
      * 规则目标
-     * （例如：GAME_userId）
+     * （例如：game_userId）
      * {@link RuleTargetDO#getTargetCode()}
      */
     private String targetCode;

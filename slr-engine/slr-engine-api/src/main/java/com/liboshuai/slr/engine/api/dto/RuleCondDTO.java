@@ -28,7 +28,7 @@ public class RuleCondDTO implements Serializable {
 
     /**
      * 条件编号
-     * （例如：R1553673459123456000_GAME_userId_lottery）
+     * （例如：R1553673459123456000_game_userId_lottery）
      */
     private String condCode;
 
@@ -91,7 +91,7 @@ public class RuleCondDTO implements Serializable {
 
     /**
      * 事件编号
-     * （例如：GAME_userId_lottery）
+     * （例如：game_userId_lottery）
      */
     private String eventCode;
 

@@ -34,7 +34,7 @@ public class RuleInfoSaveReqVO implements Serializable {
      */
     @NotBlank(message = "渠道[channel]，不能为空")
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "渠道", example = "game", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
     @Schema(description = "规则编号", example = "175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -94,7 +94,7 @@ public class RuleInfoSaveReqVO implements Serializable {
      * {@link RuleTargetSaveReqVO#getTargetCode()}
      */
     @NotBlank(message = "规则目标[targetCode]，不能为空")
-    @Schema(description = "规则目标", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "规则目标", example = "game_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetCode;
 
     @NotNull(message = "模型编号[modelCode]，不能为空")

@@ -21,7 +21,7 @@ public class RuleEventDO extends BaseDO {
 
     /**
      * 事件编号
-     * （例如：GAME_userId_lottery)
+     * （例如：game_userId_lottery)
      */
     private String eventCode;
     /**
@@ -44,7 +44,7 @@ public class RuleEventDO extends BaseDO {
     private String eventStatus;
     /**
      * 目标编号
-     * （例如：GAME_userId）
+     * （例如：game_userId）
      * {@link RuleTargetDO#getTargetCode()}
      */
     private String targetCode;

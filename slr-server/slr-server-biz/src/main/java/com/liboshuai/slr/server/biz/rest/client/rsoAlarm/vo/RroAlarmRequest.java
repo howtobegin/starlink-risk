@@ -10,7 +10,7 @@ public class RroAlarmRequest implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
-     * 项目编号 HJF
+     * 项目编号 hjf
      */
     private String projectNo;
     /**

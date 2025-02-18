@@ -24,7 +24,7 @@ import java.util.List;
 public class RuleCondRespVO extends BaseRespVO {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "条件编号", example = "R1553673459123456000_GAME_userId_lottery")
+    @Schema(description = "条件编号", example = "R1553673459123456000_game_userId_lottery")
     private String condCode;
 
     /**
@@ -75,7 +75,7 @@ public class RuleCondRespVO extends BaseRespVO {
     /**
      * {@link RuleEventRespVO#getEventCode()}
      */
-    @Schema(description = "事件编号", example = "GAME_userId_lottery")
+    @Schema(description = "事件编号", example = "game_userId_lottery")
     private String eventCode;
 
     @Schema(description = "事件字段", example = "lottery")

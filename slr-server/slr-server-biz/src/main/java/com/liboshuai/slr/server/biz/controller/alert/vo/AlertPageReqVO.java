@@ -25,7 +25,7 @@ public class AlertPageReqVO extends PageParam {
     private static final long serialVersionUID = 1;
 
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "渠道", example = "game", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String channel;
 
     @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

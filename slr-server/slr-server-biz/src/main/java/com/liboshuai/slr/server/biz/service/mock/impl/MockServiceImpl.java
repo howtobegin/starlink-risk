@@ -91,7 +91,7 @@ public class MockServiceImpl implements MockService {
                 generatedCount++;
 
                 // 生成事件
-                String channel = random.nextBoolean() ? "GAME" : "HJF";
+                String channel = random.nextBoolean() ? "game" : "hjf";
                 MockEventDTO mockEventDTO = generateEvent(channel);
                 String urlParams = convertToParams(mockEventDTO);
 
@@ -128,13 +128,13 @@ public class MockServiceImpl implements MockService {
         Map<String, String> eventAttrMap = new HashMap<>();
 
         String eventField;
-        if ("GAME".equals(channel)) {
+        if ("game".equals(channel)) {
             eventField = "lottery";
             builder.eventField(eventField);
             // Populate eventAttrMap with campaign and bank info
             eventAttrMap.put("campaignId", generateCampaignId());
             eventAttrMap.put("campaignName", generateCampaignName());
-        } else if ("HJF".equals(channel)) {
+        } else if ("hjf".equals(channel)) {
             // Randomly choose between orderAmount and orderCount
             eventField = random.nextBoolean() ? "orderAmount" : "orderCount";
             builder.eventField(eventField);

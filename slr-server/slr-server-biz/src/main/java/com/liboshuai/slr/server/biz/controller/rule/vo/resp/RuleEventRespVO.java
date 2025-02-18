@@ -23,10 +23,10 @@ public class RuleEventRespVO extends BaseRespVO {
     /**
      * {@link RuleTargetRespVO#getTargetCode()}
      */
-    @Schema(description = "目标编号", example = "GAME_userId")
+    @Schema(description = "目标编号", example = "game_userId")
     private String targetCode;
 
-    @Schema(description = "事件编号", example = "GAME_userId_lottery")
+    @Schema(description = "事件编号", example = "game_userId_lottery")
     private String eventCode;
 
     @Schema(description = "事件字段", example = "lottery")

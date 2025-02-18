@@ -1,5 +1,5 @@
 {
-  "channel": "GAME",
+  "channel": "game",
   "kafkaEventReqVOList": [
     {
       "targetField": "userId",

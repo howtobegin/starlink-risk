@@ -24,7 +24,7 @@ public class AlertRespVO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    @Schema(description = "渠道", example = "GAME")
+    @Schema(description = "渠道", example = "game")
     private String channel;
 
     @Schema(description = "规则编号", example = "R175928847299117063")

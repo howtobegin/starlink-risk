@@ -25,7 +25,7 @@ public class RuleEventChangeStatusReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "事件编号[eventCode]，不能为空")
-    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "事件编号", example = "game_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
     /**

@@ -24,7 +24,7 @@ public class RuleInfoPageReqVO extends PageParam {
      * {@link ChannelEnum}
      */
     @InStringEnum(value = ChannelEnum.class, message = "渠道[channel]，必须在指定范围 {value}")
-    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "渠道", example = "game", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String channel;
 
     @Schema(description = "规则编号", example = "1553673459123456000", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

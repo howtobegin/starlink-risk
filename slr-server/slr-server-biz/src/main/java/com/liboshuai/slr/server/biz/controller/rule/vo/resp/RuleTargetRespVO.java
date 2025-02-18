@@ -23,10 +23,10 @@ public class RuleTargetRespVO extends BaseRespVO {
     /**
      * {@link ChannelEnum}
      */
-    @Schema(description = "渠道", example = "GAME")
+    @Schema(description = "渠道", example = "game")
     private String channel;
 
-    @Schema(description = "目标编号", example = "GAME_userId")
+    @Schema(description = "目标编号", example = "game_userId")
     private String targetCode;
 
     @Schema(description = "目标字段", example = "userId")

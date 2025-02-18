@@ -21,7 +21,7 @@ import java.util.List;
 public class KafkaEventGroupReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "渠道", example = "GAME", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "渠道", example = "game", requiredMode = Schema.RequiredMode.REQUIRED)
     private String channel;
 
     @Schema(description = "事件组", requiredMode = Schema.RequiredMode.REQUIRED)

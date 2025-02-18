@@ -24,7 +24,7 @@ public class RuleEventSaveReqVO implements Serializable {
 
     @NotBlank(message = "事件编号[eventCode]，不能为空")
     @Size(max = 256, message = "事件编号[eventCode]，长度不能超过 256 个字符")
-    @Schema(description = "事件编号", example = "GAME_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "事件编号", example = "game_userId_lottery", requiredMode = Schema.RequiredMode.REQUIRED)
     private String eventCode;
 
     @NotBlank(message = "事件字段[eventField]，不能为空")
@@ -48,7 +48,7 @@ public class RuleEventSaveReqVO implements Serializable {
 
     @NotBlank(message = "目标编号[targetCode]，不能为空")
     @Size(max = 256, message = "目标编号[targetCode]，长度不能超过 256 个字符")
-    @Schema(description = "目标编号", example = "GAME_userId", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "目标编号", example = "game_userId", requiredMode = Schema.RequiredMode.REQUIRED)
     private String targetCode;
 
     @Valid
