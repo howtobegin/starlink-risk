@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # 定义 Flume 配置相关的变量
-FLUME_AGENT_NAME="slr_local"
+FLUME_AGENT_NAME="flume-slr-local"
 FLUME_HOME="/home/lbs/software/flume"
 FLUME_CONF_DIR="${FLUME_HOME}/conf"
-FLUME_PROPERTIES_FILE="${FLUME_HOME}/data/properties/fileToKafka-local.properties"
+FLUME_PROPERTIES_FILE="${FLUME_HOME}/data/properties/fileToKafka.properties"
 FLUME_BIN="${FLUME_HOME}/bin/flume-ng"
-PROCESS_NAME="fileToKafka-local.properties"
+PROCESS_NAME="${FLUME_AGENT_NAME}"
 
 start() {
     # 检查是否有相同的进程在运行
