@@ -60,9 +60,7 @@ public class EngineApplication {
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-map")
                 // 过滤掉非法的事件
                 .filter(new FlinkEventFilterFunction())
-                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter")
-                // 补充事件时间
-                .process(new FlinkEventProcessFunction()).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-process");
+                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
         // 实时动态规则引擎
         SingleOutputStreamOperator<FlinkResultDTO> resultDtoStreamOperator = flinkEventDtoDS
                 // 使用处理时间
