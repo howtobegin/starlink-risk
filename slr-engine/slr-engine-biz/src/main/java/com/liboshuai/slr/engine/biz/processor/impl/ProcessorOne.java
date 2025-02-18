@@ -408,7 +408,7 @@ public class ProcessorOne implements Processor {
     /**
      * 构建预警信息的方法，提取重复逻辑
      */
-    private AlertDTO buildAlert(long timestamp, RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO, Tuple2<Boolean, ProcessorDTO> processBigMapResult) {
+    private AlertDTO buildAlert(long currentEventTimestamp, RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO, Tuple2<Boolean, ProcessorDTO> processBigMapResult) {
         String finalWarnMessage = TemplateUtil.replacePlaceholders(
                 ruleInfoDTO.getAlertTemplate(),
                 ruleInfoDTO,
@@ -419,7 +419,7 @@ public class ProcessorOne implements Processor {
                 .channel(ruleInfoDTO.getChannel())
                 .ruleCode(ruleInfoDTO.getRuleCode())
                 .message(finalWarnMessage)
-                .time(LocalDateTimeUtils.convertTimestamp2String(timestamp))
+                .time(LocalDateTimeUtils.convertTimestamp2String(currentEventTimestamp))
                 .targetField(ruleInfoDTO.getTargetField())
                 .targetValue(latestFlinkEventDTO.getTargetValue())
                 .eventValueGroup(processBigMapResult.f1.getEventValueGroup())
@@ -517,15 +517,15 @@ public class ProcessorOne implements Processor {
     /**
      * 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并更新最新（时间戳最大）的事件数据。
      */
-    private void aggregateSmallMapToBigMap(long timestamp) throws Exception {
+    private void aggregateSmallMapToBigMap(long currentEventTimestamp) throws Exception {
         // 遍历 smallMapState 的所有条目
         Long timestampMax = 0L;
         for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
             Tuple2<String, Long> eventFieldAndTimeTuple2 = smallMapEntry.getKey();
             Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = smallMapEntry.getValue();
             // 创建新的 Tuple2 作为 bigMapState 的键
-            Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, timestamp);
-            // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
+            Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, currentEventTimestamp);
+            // 将 (eventField, currentEventTimestamp) 作为键，eventValue 作为值，存入 bigMapState
             bigMapState.put(tupleKey, eventValueAndEventDataTuple2.f0);
             // 更新最新的事件数据
             Long eventTime = eventFieldAndTimeTuple2.f1;
@@ -541,7 +541,7 @@ public class ProcessorOne implements Processor {
     /**
      * 清理窗口大小之外的数据
      */
-    private void cleanupWindowData(long timestamp, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
+    private void cleanupWindowData(long currentEventTimestamp, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
         // 提前计算每个 eventField 的 windowSize 和 windowThresholdTime
         Map<String, Long> eventFieldToThresholdTime = new HashMap<>();
 
@@ -550,7 +550,7 @@ public class ProcessorOne implements Processor {
             RuleCondDTO ruleCondDTO = entry.getValue();
             long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(),
                     TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
-            long windowThresholdTime = timestamp - windowSize;
+            long windowThresholdTime = currentEventTimestamp - windowSize;
             eventFieldToThresholdTime.put(eventField, windowThresholdTime);
         }
 
