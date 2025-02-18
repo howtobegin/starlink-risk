@@ -131,8 +131,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     /**
      * 将事件添加到缓存列表中并移除超过5分钟的过期数据。
      *
-     * @param currentKey            当前的键值
-     * @param flinkEventDTO         要添加的事件对象
+     * @param currentKey       当前的键值
+     * @param flinkEventDTO    要添加的事件对象
      * @param processTimestamp 当前处理时间
      */
     private void addEventToCacheAndRemoveExpired(String currentKey, FlinkEventDTO flinkEventDTO, long processTimestamp) {
@@ -301,8 +301,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 构建规则运算机
-//        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
-        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
+        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
         if (Objects.nonNull(processor)) {
             ruleProcessorPool.put(ruleCode, processor);
             ruleInfoPool.put(ruleCode, ruleInfoDTO);
