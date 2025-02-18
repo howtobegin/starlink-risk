@@ -57,7 +57,7 @@ public class EngineApplication {
         SingleOutputStreamOperator<FlinkEventDTO> flinkEventDtoDS = FlinkKafkaConnector.read(env, parameterTool)
                 // 转换string为FlinkEventDto对象
                 .map(new Json2FlinkEventDtoMapFunction())
-                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-process")
+                .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-map")
                 // 过滤掉非法的事件
                 .filter(new FlinkEventFilterFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter")
