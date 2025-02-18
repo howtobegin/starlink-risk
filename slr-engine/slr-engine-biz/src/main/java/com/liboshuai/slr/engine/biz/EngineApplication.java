@@ -103,7 +103,6 @@ public class EngineApplication {
      */
     private static void writeStateToDoris(SingleOutputStreamOperator<FlinkResultDTO> resultDtoStreamOperator, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> streamOperator = resultDtoStreamOperator
-                // 非法数据过滤
                 .filter(resultDTO -> Objects.nonNull(resultDTO.getStateDTO()))
                 .returns(Types.POJO(FlinkResultDTO.class)).uid("state-filter")
                 // 实体类转json
@@ -119,16 +118,14 @@ public class EngineApplication {
      */
     private static void writeEventToDoris(SingleOutputStreamOperator<FlinkResultDTO> flinkEventDtoDS, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> streamOperator = flinkEventDtoDS
-                .filter(flinkResultDTO -> {
-                    FlinkEventDTO flinkEventDTO = flinkResultDTO.getFlinkEventDTO();
-                    return Objects.nonNull(flinkEventDTO);
-                })
+                .filter(flinkResultDTO -> Objects.nonNull(flinkResultDTO.getFlinkEventDTO()))
+                .returns(Types.POJO(FlinkResultDTO.class)).uid("doris-event-filter")
                 // 实体类转json
                 .map(flinkEventDTO -> {
                     DorisEventDTO dorisEventDTO = EventConvert.INSTANCE.flinkDto2DorisDto(flinkEventDTO.getFlinkEventDTO());
                     // 转为大写下划线，适配doris表结构字段
                     return JsonUtils.toJsonStringWithUpperSnakeCaseKeys(dorisEventDTO);
-                }).returns(Types.STRING).uid("toDoris-process");
+                }).returns(Types.STRING).uid("doris-event-process");
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         String tableName = parameterTool.get(ParameterConstants.DORIS_TABLE_EVENT);
         FlinkDorisConnector.writer(database + DefaultConstants.POINT + tableName, streamOperator, parameterTool);

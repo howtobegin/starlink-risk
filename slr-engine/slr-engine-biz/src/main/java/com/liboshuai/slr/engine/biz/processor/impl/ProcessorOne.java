@@ -526,7 +526,11 @@ public class ProcessorOne implements Processor {
             // 创建新的 Tuple2 作为 bigMapState 的键
             Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, processTimestamp);
             // 将 (eventField, processTimestamp) 作为键，eventValue 作为值，存入 bigMapState
-            bigMapState.put(tupleKey, eventValueAndEventDataTuple2.f0);
+            Long oldValue = bigMapState.get(tupleKey);
+            if (Objects.isNull(oldValue)) {
+                oldValue = 0L;
+            }
+            bigMapState.put(tupleKey, oldValue + eventValueAndEventDataTuple2.f0);
             // 更新最新的事件数据
             Long eventTime = eventFieldAndTimeTuple2.f1;
             if (eventTime > timestampMax) {
