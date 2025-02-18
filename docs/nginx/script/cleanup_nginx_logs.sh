@@ -9,12 +9,12 @@
 # 日志目录路径
 LOG_DIR="/home/lbs/docker/nginx/logs"
 
-# 日志文件前缀
-LOG_PREFIX="slr_event_local_"
+# 日志文件前缀（适配所有 `slr_event_*` 日志）
+LOG_PREFIX="slr_event_"
 
 # 获取今天和昨天的日期（格式：YYYY-MM-DD）
 TODAY=$(date +%Y-%m-%d)
-YESTERDAY=$(date -d "1 day ago" +%Y-%m-%d)
+YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
 
 # 启用 nullglob，避免无匹配文件时报错
 shopt -s nullglob
@@ -26,15 +26,20 @@ echo "保留日志日期：$TODAY 和 $YESTERDAY"
 for file in "$LOG_DIR"/"$LOG_PREFIX"*.json; do
     # 提取文件名中的日期部分
     filename=$(basename "$file")
-    date_part=${filename#"$LOG_PREFIX"}
-    date_part=${date_part%.json}
 
-    # 判断是否需要删除
-    if [[ "$date_part" != "$TODAY" && "$date_part" != "$YESTERDAY" ]]; then
-        echo "删除旧日志文件：$file"
-        rm -- "$file"
+    # 使用模式匹配提取日期部分（支持不同的 event 类型，如 `slr_event_local_`、`slr_event_test_`）
+    if [[ "$filename" =~ ^slr_event_.*_([0-9]{4}-[0-9]{2}-[0-9]{2})\.json$ ]]; then
+        date_part="${BASH_REMATCH[1]}"
+
+        # 判断是否需要删除
+        if [[ "$date_part" != "$TODAY" && "$date_part" != "$YESTERDAY" ]]; then
+            echo "删除旧日志文件：$file"
+            rm -f -- "$file"
+        else
+            echo "保留日志文件：$file"
+        fi
     else
-        echo "保留日志文件：$file"
+        echo "文件 $filename 不符合日志文件命名格式，跳过处理"
     fi
 done
 
