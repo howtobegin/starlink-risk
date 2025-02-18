@@ -26,10 +26,6 @@ public class MockEventDTO implements Serializable {
     private static final long serialVersionUID = -3125924174631531244L;
 
     /**
-     * 事件时间（例如：1736732339769）
-     */
-    private String eventTime;
-    /**
      * 渠道
      * {@link ChannelEnum}
      */

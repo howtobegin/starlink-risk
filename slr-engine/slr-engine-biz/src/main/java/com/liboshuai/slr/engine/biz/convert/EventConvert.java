@@ -41,7 +41,7 @@ public interface EventConvert {
         if (StringUtils.isNullOrWhitespaceOnly(eventTime)) {
             return null;
         }
-        return Long.parseLong(eventTime);
+        return Long.parseLong(eventTime.replace(".", ""));
     }
 
     @Named("deCodeString")

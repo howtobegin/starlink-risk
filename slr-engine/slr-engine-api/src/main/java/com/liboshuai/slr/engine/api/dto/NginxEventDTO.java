@@ -25,7 +25,7 @@ public class NginxEventDTO implements Serializable {
     private static final long serialVersionUID = -3125924174631531244L;
 
     /**
-     * 事件时间（例如：1736732339769）
+     * 事件时间（例如：1736732339.769）
      */
     private String eventTime;
     /**

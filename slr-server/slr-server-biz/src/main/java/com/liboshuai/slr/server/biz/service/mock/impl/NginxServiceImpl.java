@@ -47,7 +47,6 @@ public class NginxServiceImpl implements NginxService {
         eventAttributes.put("bankNo", "6100");
 
         return MockEventDTO.builder()
-                .eventTime("1739773482232")
                 .channel("game")
                 .targetField("userId")
                 .targetValue("U000000002")
@@ -68,7 +67,6 @@ public class NginxServiceImpl implements NginxService {
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(slrGifApiAddress)
-                .queryParam("eventTime", mockEventDTO.getEventTime())
                 .queryParam("channel", mockEventDTO.getChannel())
                 .queryParam("targetField", mockEventDTO.getTargetField())
                 .queryParam("targetValue", mockEventDTO.getTargetValue())

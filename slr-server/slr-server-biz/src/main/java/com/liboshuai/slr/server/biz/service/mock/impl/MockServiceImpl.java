@@ -157,8 +157,7 @@ public class MockServiceImpl implements MockService {
 
         builder.eventAttrMap(eventAttrMap);
 
-        builder.eventTime(String.valueOf(System.currentTimeMillis()))
-                .channel(channel)
+        builder.channel(channel)
                 .targetField("userId")
                 .targetValue(generateUserId())
                 .eventValue(String.valueOf(random.nextInt(11)));
@@ -203,7 +202,6 @@ public class MockServiceImpl implements MockService {
 
         // 使用 UriComponentsBuilder 构建 URI，并添加查询参数
         UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(baseUri)
-                .queryParam("eventTime", mockEventDTO.getEventTime())
                 .queryParam("channel", mockEventDTO.getChannel())
                 .queryParam("targetField", mockEventDTO.getTargetField())
                 .queryParam("targetValue", mockEventDTO.getTargetValue())
