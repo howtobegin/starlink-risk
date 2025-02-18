@@ -328,7 +328,7 @@ public class ProcessorOne implements Processor {
         if (ruleCode != 1890222324268011520L) {
             debug = false;
         }
-        if (!Objects.equals(currentKey, "game::userId::U000000001") || !Objects.equals(currentKey, "game::userId::U000000002")) {
+        if (!Objects.equals(currentKey, "game::userId::U000000001") && !Objects.equals(currentKey, "game::userId::U000000002")) {
             debug = false;
         }
         if (debug) {
