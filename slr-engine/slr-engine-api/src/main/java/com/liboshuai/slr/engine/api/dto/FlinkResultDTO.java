@@ -22,6 +22,11 @@ public class FlinkResultDTO implements Serializable {
     private static final long serialVersionUID = 1;
 
     /**
+     * Flink事件数据
+     */
+    private FlinkEventDTO flinkEventDTO;
+
+    /**
      * 规则状态记录，用于运算机下线清理状态
      */
     private StateDTO stateDTO;

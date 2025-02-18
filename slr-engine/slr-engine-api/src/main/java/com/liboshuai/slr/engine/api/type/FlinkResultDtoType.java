@@ -1,6 +1,7 @@
 package com.liboshuai.slr.engine.api.type;
 
 import com.liboshuai.slr.engine.api.dto.AlertDTO;
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
 import com.liboshuai.slr.engine.api.dto.FlinkResultDTO;
 import com.liboshuai.slr.engine.api.dto.StateDTO;
 import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
@@ -15,6 +16,7 @@ public class FlinkResultDtoType extends TypeInfoFactory<FlinkResultDTO> {
     @Override
     public TypeInformation<FlinkResultDTO> createTypeInfo(Type type, Map<String, TypeInformation<?>> map) {
         Map<String, TypeInformation<?>> typeInformationMap = new HashMap<>();
+        typeInformationMap.put("flinkEventDTO", Types.POJO(FlinkEventDTO.class));
         typeInformationMap.put("stateDTO", Types.POJO(StateDTO.class));
         typeInformationMap.put("alertDTO", Types.POJO(AlertDTO.class));
         return Types.POJO(FlinkResultDTO.class, typeInformationMap);

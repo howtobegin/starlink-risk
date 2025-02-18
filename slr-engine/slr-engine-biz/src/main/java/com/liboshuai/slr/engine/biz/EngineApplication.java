@@ -62,7 +62,7 @@ public class EngineApplication {
                 .filter(new FlinkEventFilterFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
         // 实时动态规则引擎
-        SingleOutputStreamOperator<FlinkResultDTO> resultDtoStreamOperator = flinkEventDtoDS
+        SingleOutputStreamOperator<FlinkResultDTO> flinkResultDtoDs = flinkEventDtoDS
                 // 使用处理时间
                 .assignTimestampsAndWatermarks(WatermarkStrategy.noWatermarks())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("register-watermark")
@@ -76,11 +76,11 @@ public class EngineApplication {
                 .process(new CoreFunction())
                 .returns(Types.POJO(FlinkResultDTO.class)).uid("core-function");
         // 将事件数据写入 doris
-        writeEventToDoris(flinkEventDtoDS, parameterTool);
+        writeEventToDoris(flinkResultDtoDs, parameterTool);
         // 将规则状态写入doris，以便规则下线清除状态使用
-        writeStateToDoris(resultDtoStreamOperator, parameterTool);
+        writeStateToDoris(flinkResultDtoDs, parameterTool);
         // 将告警信息写入 kafka
-        writeAlertToKafka(resultDtoStreamOperator, parameterTool);
+        writeAlertToKafka(flinkResultDtoDs, parameterTool);
         env.execute();
     }
 
@@ -117,11 +117,15 @@ public class EngineApplication {
     /**
      * 将事件数据写入 doris
      */
-    private static void writeEventToDoris(SingleOutputStreamOperator<FlinkEventDTO> flinkEventDtoDS, ParameterTool parameterTool) {
+    private static void writeEventToDoris(SingleOutputStreamOperator<FlinkResultDTO> flinkEventDtoDS, ParameterTool parameterTool) {
         SingleOutputStreamOperator<String> streamOperator = flinkEventDtoDS
+                .filter(flinkResultDTO -> {
+                    FlinkEventDTO flinkEventDTO = flinkResultDTO.getFlinkEventDTO();
+                    return Objects.nonNull(flinkEventDTO);
+                })
                 // 实体类转json
                 .map(flinkEventDTO -> {
-                    DorisEventDTO dorisEventDTO = EventConvert.INSTANCE.flinkDto2DorisDto(flinkEventDTO);
+                    DorisEventDTO dorisEventDTO = EventConvert.INSTANCE.flinkDto2DorisDto(flinkEventDTO.getFlinkEventDTO());
                     // 转为大写下划线，适配doris表结构字段
                     return JsonUtils.toJsonStringWithUpperSnakeCaseKeys(dorisEventDTO);
                 }).returns(Types.STRING).uid("toDoris-process");
