@@ -322,19 +322,6 @@ public class ProcessorOne implements Processor {
      */
     @Override
     public boolean onTimer(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out) throws Exception {
-        // TODO: 临时用于debug条件判断，待删除
-        boolean debug = true;
-        Long ruleCode = ruleInfoDTO.getRuleCode();
-        if (ruleCode != 1890222324268011520L) {
-            debug = false;
-        }
-        if (!Objects.equals(currentKey, "game::userId::U000000001") && !Objects.equals(currentKey, "game::userId::U000000002")) {
-            debug = false;
-        }
-        if (debug) {
-            logSmallMapState(ruleCode, currentKey);
-        }
-
         if (Objects.isNull(ruleInfoDTO)) {
             log.warn("因规则信息为空，故跳过此次计算！");
             return true;
@@ -373,10 +360,6 @@ public class ProcessorOne implements Processor {
             log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
             FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
             out.collect(flinkResultDTO);
-        }
-        // TODO: 临时用于debug条件判断，待删除
-        if (debug) {
-            logBigMapState(ruleCode, currentKey);
         }
         return hasActiveEvents();
     }
