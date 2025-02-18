@@ -24,6 +24,7 @@ public interface EventConvert {
 
     EventConvert INSTANCE = Mappers.getMapper(EventConvert.class);
 
+    @Mapping(target = "eventTime", ignore = true)
     @Mapping(source = "channel", target = "channel", qualifiedByName = "deCodeString")
     @Mapping(source = "targetField", target = "targetField", qualifiedByName = "deCodeString")
     @Mapping(source = "targetValue", target = "targetValue", qualifiedByName = "deCodeString")
