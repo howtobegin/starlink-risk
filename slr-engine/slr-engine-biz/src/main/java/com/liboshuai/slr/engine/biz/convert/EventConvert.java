@@ -24,7 +24,6 @@ public interface EventConvert {
 
     EventConvert INSTANCE = Mappers.getMapper(EventConvert.class);
 
-    @Mapping(source = "eventTime", target = "eventTime", qualifiedByName = "stringToLong")
     @Mapping(source = "channel", target = "channel", qualifiedByName = "deCodeString")
     @Mapping(source = "targetField", target = "targetField", qualifiedByName = "deCodeString")
     @Mapping(source = "targetValue", target = "targetValue", qualifiedByName = "deCodeString")
@@ -35,14 +34,6 @@ public interface EventConvert {
 
     @Mapping(source = "eventTime", target = "eventTime", qualifiedByName = "dateTimeLongToString")
     DorisEventDTO flinkDto2DorisDto(FlinkEventDTO flinkEventDTO);
-
-    @Named("stringToLong")
-    default Long stringToLong(String eventTime) {
-        if (StringUtils.isNullOrWhitespaceOnly(eventTime)) {
-            return null;
-        }
-        return Long.parseLong(eventTime.replace(".", ""));
-    }
 
     @Named("deCodeString")
     default String deCodeString(String encoderString) {
