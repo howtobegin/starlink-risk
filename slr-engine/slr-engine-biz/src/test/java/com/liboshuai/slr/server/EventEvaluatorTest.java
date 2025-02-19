@@ -22,7 +22,7 @@
 //    @Test
 //    @DisplayName("测试输入为 null 时返回 false")
 //    void testEvaluateEventResults_NullInput() {
-//        boolean result = processorOne.evaluateEventResults(null, "AND");
+//        boolean result = processorOne.evaluateEventResults(null, "and");
 //        assertFalse(result, "当输入为 null 时，结果应为 false");
 //    }
 //
@@ -30,7 +30,7 @@
 //    @DisplayName("测试输入为空 Map 时返回 false")
 //    void testEvaluateEventResults_EmptyMap() {
 //        Map<String, Boolean> input = new HashMap<>();
-//        boolean result = processorOne.evaluateEventResults(input, "OR");
+//        boolean result = processorOne.evaluateEventResults(input, "or");
 //        assertFalse(result, "当输入为空 Map 时，结果应为 false");
 //    }
 //
@@ -39,7 +39,7 @@
 //    void testEvaluateEventResults_SingleTrue() {
 //        Map<String, Boolean> input = new HashMap<>();
 //        input.put("event1", true);
-//        boolean result = processorOne.evaluateEventResults(input, "AND");
+//        boolean result = processorOne.evaluateEventResults(input, "and");
 //        assertTrue(result, "单一 true 元素应返回 true");
 //    }
 //
@@ -48,7 +48,7 @@
 //    void testEvaluateEventResults_SingleFalse() {
 //        Map<String, Boolean> input = new HashMap<>();
 //        input.put("event1", false);
-//        boolean result = processorOne.evaluateEventResults(input, "OR");
+//        boolean result = processorOne.evaluateEventResults(input, "or");
 //        assertFalse(result, "单一 false 元素应返回 false");
 //    }
 //
@@ -59,7 +59,7 @@
 //        input.put("event1", true);
 //        input.put("event2", true);
 //        input.put("event3", true);
-//        boolean result = processorOne.evaluateEventResults(input, "AND");
+//        boolean result = processorOne.evaluateEventResults(input, "and");
 //        assertTrue(result, "所有元素为 true，且操作符为 AND 时，结果应为 true");
 //    }
 //
@@ -70,7 +70,7 @@
 //        input.put("event1", true);
 //        input.put("event2", false);
 //        input.put("event3", true);
-//        boolean result = processorOne.evaluateEventResults(input, "AND");
+//        boolean result = processorOne.evaluateEventResults(input, "and");
 //        assertFalse(result, "存在 false 元素，且操作符为 AND 时，结果应为 false");
 //    }
 //
@@ -81,7 +81,7 @@
 //        input.put("event1", false);
 //        input.put("event2", true);
 //        input.put("event3", false);
-//        boolean result = processorOne.evaluateEventResults(input, "OR");
+//        boolean result = processorOne.evaluateEventResults(input, "or");
 //        assertTrue(result, "至少一个 true 元素，且操作符为 OR 时，结果应为 true");
 //    }
 //
@@ -92,7 +92,7 @@
 //        input.put("event1", false);
 //        input.put("event2", false);
 //        input.put("event3", false);
-//        boolean result = processorOne.evaluateEventResults(input, "OR");
+//        boolean result = processorOne.evaluateEventResults(input, "or");
 //        assertFalse(result, "所有元素为 false，且操作符为 OR 时，结果应为 false");
 //    }
 //
@@ -124,7 +124,7 @@
 //        boolean resultOr = processorOne.evaluateEventResults(new HashMap<String, Boolean>() {{
 //            put("event1", false);
 //            put("event2", true);
-//        }}, "Or");
+//        }}, "or");
 //
 //        assertTrue(resultAnd, "操作符为 'and'（小写）时，应正确处理为 AND");
 //        assertTrue(resultOr, "操作符为 'Or'（混合大小写）时，应正确处理为 OR");
@@ -140,7 +140,7 @@
 //        // 根据原方法的逻辑，null 会在自动拆箱时抛出 NullPointerException
 //        // 因此，可以根据实际需求调整方法，或测试抛出异常
 //        Exception exception = assertThrows(NullPointerException.class, () -> {
-//            processorOne.evaluateEventResults(input, "AND");
+//            processorOne.evaluateEventResults(input, "and");
 //        });
 //
 //        assertNotNull(exception.getMessage(), "应抛出 NullPointerException");

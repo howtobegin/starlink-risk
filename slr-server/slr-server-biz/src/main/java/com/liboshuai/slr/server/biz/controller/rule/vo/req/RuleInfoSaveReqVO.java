@@ -105,7 +105,7 @@ public class RuleInfoSaveReqVO implements Serializable {
      * {@link RuleCondCombOpEnum}
      */
     @InStringEnum(value = RuleCondCombOpEnum.class, message = "条件组合符[ruleCondCombOp]，必须在指定范围 {value}")
-    @Schema(description = "条件组合符", example = "AND", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "条件组合符", example = "and", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ruleCondCombOp;
 
     @Valid

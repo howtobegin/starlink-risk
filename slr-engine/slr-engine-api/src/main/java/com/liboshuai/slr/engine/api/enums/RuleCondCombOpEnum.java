@@ -11,8 +11,8 @@ import java.util.Objects;
  */
 @Getter
 public enum RuleCondCombOpEnum implements StringArrayValuable {
-    AND("AND", "与"),
-    OR("OR", "或");
+    AND("and", "与"),
+    OR("or", "或");
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(RuleCondCombOpEnum::getCode).toArray(String[]::new);
 

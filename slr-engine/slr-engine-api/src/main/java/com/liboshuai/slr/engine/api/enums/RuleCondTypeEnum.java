@@ -11,8 +11,8 @@ import java.util.Objects;
  */
 @Getter
 public enum RuleCondTypeEnum implements StringArrayValuable {
-    RANGE("RANGE", "范围"),
-    PERIODIC("CYCLE", "周期")
+    CRON("cron", "cron表达式类型"),
+    RECENT("recent", "最近时间类型")
     ;
 
     public static final String[] ARRAYS = Arrays.stream(values()).map(RuleCondTypeEnum::getCode).toArray(String[]::new);

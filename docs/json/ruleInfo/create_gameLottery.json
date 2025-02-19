@@ -11,7 +11,7 @@
   "modelCode": 1889596060557512704,
   "ruleCondGroup": [
     {
-      "condType": "CYCLE",
+      "condType": "recent",
       "windowValue": 20,
       "windowUnit": "分钟",
       "threshold": 10,

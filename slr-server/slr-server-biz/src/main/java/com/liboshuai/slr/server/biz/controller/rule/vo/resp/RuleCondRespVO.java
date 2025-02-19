@@ -30,7 +30,7 @@ public class RuleCondRespVO extends BaseRespVO {
     /**
      * {@link RuleCondTypeEnum}
      */
-    @Schema(description = "条件类型", example = "CYCLE")
+    @Schema(description = "条件类型", example = "recent")
     private String condType;
 
     @Schema(description = "窗口值,仅在条件类型为周期时使用", example = "10")

@@ -144,7 +144,7 @@ public class ProcessorOne implements Processor {
         // 此模型仅支持条件为周期类型的规则
         for (RuleCondDTO condGroupDTO : condGroupList) {
             String type = condGroupDTO.getCondType();
-            if (!Objects.equals(type, RuleCondTypeEnum.PERIODIC.getCode())) {
+            if (!Objects.equals(type, RuleCondTypeEnum.RECENT.getCode())) {
                 log.warn("因规则[{}]的条件类型不为周期类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
                 return;
             }

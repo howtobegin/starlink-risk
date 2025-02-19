@@ -94,7 +94,7 @@ public class RuleInfoRespVO extends BaseRespVO {
     /**
      * {@link RuleCondCombOpEnum}
      */
-    @Schema(description = "条件组合符", example = "AND")
+    @Schema(description = "条件组合符", example = "and")
     private String ruleCondCombOp;
 
     @Schema(description = "条件组")
