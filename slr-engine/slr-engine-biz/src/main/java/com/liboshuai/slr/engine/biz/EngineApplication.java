@@ -61,6 +61,7 @@ public class EngineApplication {
                 // 过滤掉非法的事件
                 .filter(new FlinkEventFilterFunction())
                 .setParallelism(kafkaPartition).returns(Types.POJO(FlinkEventDTO.class)).uid("flinkEventDTO-filter");
+        // TODO: 根据规则中事件上线情况提前过滤无效事件数据
         // 实时动态规则引擎
         SingleOutputStreamOperator<FlinkResultDTO> flinkResultDtoDs = flinkEventDtoDS
                 // 使用处理时间
