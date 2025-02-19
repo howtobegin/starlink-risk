@@ -23,6 +23,6 @@ public class RuleModelPageReqVO extends PageParam {
     @Schema(description = "模型名称", example = "模型运算机一")
     private String modelName;
 
-    @Schema(description = "模型描述", example = "支持周期条件的规则模型")
+    @Schema(description = "模型描述", example = "支持最近时间条件的规则模型")
     private String modelDesc;
 }

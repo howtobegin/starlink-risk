@@ -33,13 +33,13 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "条件类型", example = "recent")
     private String condType;
 
-    @Schema(description = "窗口值,仅在条件类型为周期时使用", example = "10")
+    @Schema(description = "窗口值,仅在条件类型为最近时间时使用", example = "10")
     private Long windowValue;
 
     /**
      * {@link TimeUnitEnum}
      */
-    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "分钟")
+    @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟")
     private String windowUnit;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

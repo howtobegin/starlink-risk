@@ -41,14 +41,14 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "条件类型", example = "recent", requiredMode = Schema.RequiredMode.REQUIRED)
     private String condType;
 
-    @Schema(description = "窗口值,仅在条件类型为周期时使用", example = "10", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "窗口值,仅在条件类型为最近时间时使用", example = "10", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long windowValue;
 
     /**
      * {@link TimeUnitEnum}
      */
     @InStringEnum(value = TimeUnitEnum.class, message = "窗口单位[windowUnit]，必须在指定范围 {value}")
-    @Schema(description = "窗口单位,仅在条件类型为周期时使用", example = "分钟", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String windowUnit;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

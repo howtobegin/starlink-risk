@@ -26,7 +26,7 @@ public class RuleModelCreateReqVO implements Serializable {
     private String modelName;
 
     @NotBlank(message = "模型描述[modelDesc]，不能为空")
-    @Schema(description = "模型描述", example = "支持周期条件的规则模型", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "模型描述", example = "支持最近时间条件的规则模型", requiredMode = Schema.RequiredMode.REQUIRED)
     private String modelDesc;
 
     @NotBlank(message = "运算机groovy代码[groovy]，不能为空")

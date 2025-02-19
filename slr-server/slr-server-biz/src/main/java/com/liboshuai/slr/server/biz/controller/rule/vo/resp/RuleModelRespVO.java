@@ -23,7 +23,7 @@ public class RuleModelRespVO extends BaseRespVO {
     @Schema(description = "模型名称", example = "模型运算机一")
     private String modelName;
 
-    @Schema(description = "模型描述", example = "支持周期条件的规则模型")
+    @Schema(description = "模型描述", example = "支持最近时间条件的规则模型")
     private String modelDesc;
 
     @Schema(description = "运算机groovy代码")

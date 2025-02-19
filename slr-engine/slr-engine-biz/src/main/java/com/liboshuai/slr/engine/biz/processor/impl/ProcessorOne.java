@@ -141,11 +141,11 @@ public class ProcessorOne implements Processor {
             log.warn("因规则[{}]的条件组为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
             return;
         }
-        // 此模型仅支持条件为周期类型的规则
+        // 此模型仅支持条件为最近时间类型的规则
         for (RuleCondDTO condGroupDTO : condGroupList) {
             String type = condGroupDTO.getCondType();
             if (!Objects.equals(type, RuleCondTypeEnum.RECENT.getCode())) {
-                log.warn("因规则[{}]的条件类型不为周期类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
+                log.warn("因规则[{}]的条件类型不为最近时间类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
                 return;
             }
         }

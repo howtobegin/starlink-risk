@@ -34,12 +34,12 @@ public class RuleCondDO extends BaseDO {
     private String condType;
     /**
      * 窗口值
-     * （仅在条件类型为周期时使用）
+     * （仅在条件类型为最近时间时使用）
      */
     private Long windowValue;
     /**
      * 窗口单位
-     * （仅在条件类型为周期时使用）
+     * （仅在条件类型为最近时间时使用）
      * {@link TimeUnitEnum}
      */
     private String windowUnit;
