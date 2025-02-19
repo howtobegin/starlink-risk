@@ -18,6 +18,7 @@ import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
@@ -116,8 +117,8 @@ public class ProcessorOne implements Processor {
      * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
      */
     @Override
-    public void processElement(String currentKey, long processTimestamp, FlinkEventDTO flinkEventDTO,
-                               Collector<FlinkResultDTO> out) throws Exception {
+    public void processElement(String currentKey, long processTimestamp, TimerService timerService,
+                               FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             log.warn("因规则信息为空，故跳过此次计算！当前事件数据：{}", flinkEventDTO);
             return;
@@ -149,8 +150,9 @@ public class ProcessorOne implements Processor {
                 return;
             }
         }
-        // 计算规则条件值
+        // 计算规则条件
         processRuleCondValue(processTimestamp, ruleInfoDTO, flinkEventDTO, out);
+        // TODO: 判断是否注册定时器
     }
 
     /**
@@ -324,7 +326,7 @@ public class ProcessorOne implements Processor {
     public boolean onTimer(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out) throws Exception {
         if (Objects.isNull(ruleInfoDTO)) {
             log.warn("因规则信息为空，故跳过此次计算！");
-            return true;
+            return false;
         }
         // 获取规则条件
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
@@ -337,6 +339,24 @@ public class ProcessorOne implements Processor {
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
+        // 获取并效验条件类型
+        String condType = getCondType(ruleConditionMapByEventField);
+        if (condType == null) return false;
+        // 数据计算
+        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
+            return handleRecentType(currentKey, processTimestamp, out, ruleConditionMapByEventField);
+        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
+            return false;
+        } else {
+            log.warn("规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！", ruleInfoDTO.getRuleCode(), condType);
+            return false;
+        }
+    }
+
+    /**
+     * 处理最近时间类型规则计算
+     */
+    private boolean handleRecentType(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
         // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
         aggregateSmallMapToBigMap(processTimestamp);
         // 清理窗口大小之外的数据
@@ -362,6 +382,20 @@ public class ProcessorOne implements Processor {
             out.collect(flinkResultDTO);
         }
         return hasActiveEvents();
+    }
+
+    private String getCondType(Map<String, RuleCondDTO> ruleConditionMapByEventField) {
+        String condType = null;
+        for (Map.Entry<String, RuleCondDTO> entry : ruleConditionMapByEventField.entrySet()) {
+            RuleCondDTO ruleCondDto = entry.getValue();
+            if (Objects.isNull(condType)) {
+                condType = ruleCondDto.getCondType();
+            } else if (!condType.equals(ruleCondDto.getCondType())) {
+                log.warn("规则[{}]中多个事件条件类型不一致，故跳过此次计算！", ruleInfoDTO.getRuleCode());
+                return null;
+            }
+        }
+        return condType;
     }
 
     private void logSmallMapState(Long ruleCode, String currentKey) throws Exception {

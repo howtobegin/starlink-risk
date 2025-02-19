@@ -5,6 +5,7 @@ import com.liboshuai.slr.engine.api.dto.FlinkResultDTO;
 import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.KeyedStateStore;
+import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.util.Collector;
 
 /**
@@ -20,7 +21,7 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(String currentKey, long processTimestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
+    void processElement(String currentKey, long processTimestamp, TimerService timerService, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
 
     /**
      * 定时器

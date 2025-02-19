@@ -19,6 +19,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
+import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.CollectionUtil;
@@ -38,7 +39,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     private static final long serialVersionUID = -5913085790319815064L;
 
     /**
-     * 规则信息池：key-规则编号，value-规则信息对象（用于广播流）
+     * 规则信息池：key-规则编号，value-规则信息对象
      */
     private final Map<Long, RuleInfoDTO> ruleInfoPool = new ConcurrentHashMap<>();
     /**
@@ -85,6 +86,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void processElement(FlinkEventDTO flinkEventDTO,
                                KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.ReadOnlyContext ctx,
                                Collector<FlinkResultDTO> out) throws Exception {
+        // 获取当前定时器
+        TimerService timerService = ctx.timerService();
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
         // 获取下线规则状态记录信息
@@ -114,18 +117,18 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                     continue;
                 }
                 for (FlinkEventDTO historyFlinkEventDto : historyFlinkEventDTOList) {
-                    processor.processElement(currentKey, processTimestamp, historyFlinkEventDto, out);
+                    processor.processElement(currentKey, processTimestamp, timerService, historyFlinkEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, processTimestamp, flinkEventDTO, out);
+                processor.processElement(currentKey, processTimestamp, timerService, flinkEventDTO, out);
             }
         }
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(processTimestamp, 0, TimeUnit.MINUTES.toMillis(1))
                 + TimeUnit.MINUTES.toMillis(1);
-        ctx.timerService().registerProcessingTimeTimer(fireTime);
+        timerService.registerProcessingTimeTimer(fireTime);
     }
 
     /**
