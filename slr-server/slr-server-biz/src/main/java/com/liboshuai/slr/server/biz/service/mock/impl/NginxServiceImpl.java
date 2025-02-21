@@ -6,6 +6,8 @@ import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.NginxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -76,8 +78,24 @@ public class NginxServiceImpl implements NginxService {
                 .build()
                 .encode(StandardCharsets.UTF_8); // 让 UriComponentsBuilder 进行 UTF-8 编码
 
-        // 向打点服务器发送数据（无需关注响应）
+        // 向打点服务器发送数据（无需关注响应内容，只需要关注http响应码即可）
         // 请求url示例：http://localhost:48881/backend.gif?channel=game&targetField=userId&targetValue=U000000002&eventField=lottery&eventValue=1&eventAttrMap=%7B%22campaignId%22:%22C000000004%22,%22bankNo%22:%226100%22,%22bankName%22:%22%E9%82%AE%E5%82%A8%E9%93%B6%E8%A1%8C%22,%22campaignName%22:%22%E6%B4%BB%E5%8A%A84%22%7D
-        restTemplate.getForObject(uriComponents.toUri(), String.class);
+        try {
+            // 发送 GET 请求并接收响应
+            ResponseEntity<String> response = restTemplate.exchange(
+                    uriComponents.toUri(),
+                    HttpMethod.GET,
+                    null,
+                    String.class
+            );
+
+            // 检查 HTTP 响应状态码
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                log.error("请求打点服务器失败，HTTP 状态码: {}, 响应体: {}",
+                        response.getStatusCodeValue(), response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("请求打点服务器时发生异常: {}", e.getMessage(), e);
+        }
     }
 }
