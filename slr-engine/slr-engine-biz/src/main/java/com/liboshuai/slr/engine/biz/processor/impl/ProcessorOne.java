@@ -144,16 +144,8 @@ public class ProcessorOne implements Processor {
             log.warn("因规则[{}]的条件组为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
             return;
         }
-        // 此模型仅支持条件为最近时间类型的规则
-        for (RuleCondDTO condGroupDTO : condGroupList) {
-            String type = condGroupDTO.getCondType();
-            if (!Objects.equals(type, RuleCondTypeEnum.RECENT.getCode())) {
-                log.warn("因规则[{}]的条件类型不为最近时间类型，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
-                return;
-            }
-        }
         // 计算规则条件
-        processRuleCondValue(processTimestamp, ruleInfoDTO, flinkEventDTO, out);
+        processRuleCondValue(processTimestamp, flinkEventDTO, out);
         // 注册定时器
         registerTimeTimer(processTimestamp, timerService);
     }
@@ -162,15 +154,10 @@ public class ProcessorOne implements Processor {
      * 注册定时器
      */
     private void registerTimeTimer(long processTimestamp, TimerService timerService) {
-        // 获取规则条件
-        List<RuleCondDTO> ruleCondDTOList = ruleInfoDTO.getRuleCondGroup();
-        if (ruleCondDTOList == null || ruleCondDTOList.isEmpty()) {
-            log.warn("规则[{}]的条件组为空，跳过此次计算！", ruleInfoDTO.getRuleCode());
-            return;
-        }
+        List<RuleCondDTO> condGroupList = ruleInfoDTO.getRuleCondGroup();
         // 将规则条件根据事件编号存储到map中，方便后续操作
         Map<String, RuleCondDTO> ruleConditionMapByEventField = new HashMap<>();
-        for (RuleCondDTO ruleCondDTO : ruleCondDTOList) {
+        for (RuleCondDTO ruleCondDTO : condGroupList) {
             ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
         }
         // 获取并效验条件类型
@@ -192,8 +179,7 @@ public class ProcessorOne implements Processor {
      * @param processTimestamp 时间戳，用于非跨历史时间段的事件匹配
      * @param flinkEventDTO         Kafka事件DTO
      */
-    private void processRuleCondValue(long processTimestamp, RuleInfoDTO ruleInfoDTO,
-                                      FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+    private void processRuleCondValue(long processTimestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
             // 事件与规则中的事件编号匹配不上，则直接跳过
@@ -208,6 +194,9 @@ public class ProcessorOne implements Processor {
                 // 事件属性匹配不上，则直接跳过
                 continue;
             }
+
+            // ******************************* 规则匹配成功，进行后续处理 *******************************
+
             // 规则状态历史的记录数据
             Boolean hasState = hasValueState.value();
             if (Objects.isNull(hasState) || !hasState) {

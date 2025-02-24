@@ -44,15 +44,9 @@ public class RuleCondDO extends BaseDO {
      */
     private String windowUnit;
     /**
-     * 开始时间
-     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
+     * 时间范围ID（仅在条件类型为时间范围时使用）
      */
-    private LocalDateTime beginTime;
-    /**
-     * 结束时间
-     * （格式：yyyy-MM-dd HH:mm:ss，仅在条件类型为范围时使用）
-     */
-    private LocalDateTime endTime;
+    private Long timeRangeId;
     /**
      * 阈值
      */

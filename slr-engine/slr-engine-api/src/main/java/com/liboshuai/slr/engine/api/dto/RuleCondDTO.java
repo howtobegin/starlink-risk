@@ -50,16 +50,9 @@ public class RuleCondDTO implements Serializable {
     private String windowUnit;
 
     /**
-     * 开始时间,仅在条件类型为范围时使用
-     * （格式：yyyy-MM-dd HH:mm:ss）
+     * 时间范围，仅在条件类型为时间范围时使用
      */
-    private String beginTime;
-
-    /**
-     * 结束时间,仅在条件类型为范围时使用
-     * （格式：yyyy-MM-dd HH:mm:ss）
-     */
-    private String endTime;
+    private TimeRangeDTO timeRangeDTO;
 
     /**
      * 阈值
