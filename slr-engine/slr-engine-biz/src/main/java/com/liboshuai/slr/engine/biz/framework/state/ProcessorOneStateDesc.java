@@ -22,8 +22,13 @@ public class ProcessorOneStateDesc {
     }
 
     public static ValueStateDescriptor<Boolean> getHasValueState(Long ruleCode, Long ruleVersion) {
-        String hahValueStateName = "hahValueState_" + ruleCode + "_" + ruleVersion;
-        return new ValueStateDescriptor<>(hahValueStateName, Types.BOOLEAN);
+        String hasValueStateName = "hasValueState_" + ruleCode + "_" + ruleVersion;
+        return new ValueStateDescriptor<>(hasValueStateName, Types.BOOLEAN);
+    }
+
+    public static MapStateDescriptor<String, Boolean> getInTimeRangeState(Long ruleCode, Long ruleVersion) {
+        String isTimeRangeStateName = "inTimeRangeState_" + ruleCode + "_" + ruleVersion;
+        return new MapStateDescriptor<>(isTimeRangeStateName, Types.STRING, Types.BOOLEAN);
     }
 
     public static ValueStateDescriptor<FlinkEventDTO> getLastEventStateDesc(Long ruleCode, Long ruleVersion) {
