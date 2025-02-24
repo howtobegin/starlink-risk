@@ -4,6 +4,7 @@
 //import com.liboshuai.slr.engine.api.enums.RuleCondCombOpEnum
 //import com.liboshuai.slr.engine.api.enums.RuleCondTypeEnum
 //import com.liboshuai.slr.engine.api.enums.TimeUnitEnum
+//import com.liboshuai.slr.engine.api.utils.TemplateUtil
 //import com.liboshuai.slr.engine.api.utils.TimeRangeUtil
 //import com.liboshuai.slr.engine.api.utils.TimeUtil
 //import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc
@@ -16,7 +17,6 @@
 //import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils
 //import com.liboshuai.slr.framework.common.util.json.JsonUtils
 //import com.liboshuai.slr.framework.common.util.number.WindowUtil
-//import com.liboshuai.slr.engine.api.utils.TemplateUtil
 //import org.apache.flink.api.common.functions.RuntimeContext
 //import org.apache.flink.api.common.state.*
 //import org.apache.flink.api.java.tuple.Tuple2
