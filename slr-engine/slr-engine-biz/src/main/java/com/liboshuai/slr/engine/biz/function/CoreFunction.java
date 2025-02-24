@@ -6,7 +6,6 @@ import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.engine.biz.processor.Processor;
 import com.liboshuai.slr.engine.biz.processor.impl.ProcessorOne;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
-import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -125,10 +124,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 processor.processElement(currentKey, processTimestamp, timerService, flinkEventDTO, out);
             }
         }
-        // 注册定时器（窗口大小1分钟）
-        long fireTime = WindowUtil.getWindowStartWithOffset(processTimestamp, 0, TimeUnit.MINUTES.toMillis(1))
-                + TimeUnit.MINUTES.toMillis(1);
-        timerService.registerProcessingTimeTimer(fireTime);
     }
 
     /**
@@ -348,7 +343,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Processor processor = stringProcessorEntry.getValue();
-            // 调用定时器
+            // 调用自定义onTimer方法
             boolean hasActiveEvents = processor.onTimer(currentKey, timestamp, out);
             if (hasActiveEvents) {
                 hasPendingTimers = true;

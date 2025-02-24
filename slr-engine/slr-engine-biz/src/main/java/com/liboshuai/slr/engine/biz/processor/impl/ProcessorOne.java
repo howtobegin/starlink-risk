@@ -14,6 +14,7 @@ import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
 import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
 import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import com.liboshuai.slr.framework.common.util.string.TemplateUtil;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.*;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 public class ProcessorOne implements Processor {
@@ -152,7 +154,34 @@ public class ProcessorOne implements Processor {
         }
         // 计算规则条件
         processRuleCondValue(processTimestamp, ruleInfoDTO, flinkEventDTO, out);
-        // TODO: 判断是否注册定时器
+        // 注册定时器
+        registerTimeTimer(processTimestamp, timerService);
+    }
+
+    /**
+     * 注册定时器
+     */
+    private void registerTimeTimer(long processTimestamp, TimerService timerService) {
+        // 获取规则条件
+        List<RuleCondDTO> ruleCondDTOList = ruleInfoDTO.getRuleCondGroup();
+        if (ruleCondDTOList == null || ruleCondDTOList.isEmpty()) {
+            log.warn("规则[{}]的条件组为空，跳过此次计算！", ruleInfoDTO.getRuleCode());
+            return;
+        }
+        // 将规则条件根据事件编号存储到map中，方便后续操作
+        Map<String, RuleCondDTO> ruleConditionMapByEventField = new HashMap<>();
+        for (RuleCondDTO ruleCondDTO : ruleCondDTOList) {
+            ruleConditionMapByEventField.put(ruleCondDTO.getEventField(), ruleCondDTO);
+        }
+        // 获取并效验条件类型
+        String condType = getCondType(ruleConditionMapByEventField);
+        // 仅在条件类型为最近时间类型时，注册定时器
+        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) {
+            // 注册定时器（窗口大小1分钟）
+            long fireTime = WindowUtil.getWindowStartWithOffset(processTimestamp, 0, TimeUnit.MINUTES.toMillis(1))
+                    + TimeUnit.MINUTES.toMillis(1);
+            timerService.registerProcessingTimeTimer(fireTime);
+        }
     }
 
     /**
@@ -341,8 +370,10 @@ public class ProcessorOne implements Processor {
         }
         // 获取并效验条件类型
         String condType = getCondType(ruleConditionMapByEventField);
-        if (condType == null) return false;
-        // 数据计算
+        if (condType == null) {
+            return false;
+        }
+        // 数据计算，返回定时器是否注册判断
         if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
             return handleRecentType(currentKey, processTimestamp, out, ruleConditionMapByEventField);
         } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
