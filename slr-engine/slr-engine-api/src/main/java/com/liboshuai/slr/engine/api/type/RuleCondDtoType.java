@@ -2,6 +2,7 @@ package com.liboshuai.slr.engine.api.type;
 
 import com.liboshuai.slr.engine.api.dto.RuleCondDTO;
 import com.liboshuai.slr.engine.api.dto.RuleEventAttrValueDTO;
+import com.liboshuai.slr.engine.api.dto.TimeRangeDTO;
 import org.apache.flink.api.common.typeinfo.TypeInfoFactory;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -18,8 +19,7 @@ public class RuleCondDtoType extends TypeInfoFactory<RuleCondDTO> {
         typeInformationMap.put("condType", Types.STRING);
         typeInformationMap.put("windowValue", Types.LONG);
         typeInformationMap.put("windowUnit", Types.STRING);
-        typeInformationMap.put("beginTime", Types.STRING);
-        typeInformationMap.put("endTime", Types.STRING);
+        typeInformationMap.put("timeRangeDTO", Types.POJO(TimeRangeDTO.class));
         typeInformationMap.put("threshold", Types.LONG);
         typeInformationMap.put("thresholdScaleFactor", Types.LONG);
         typeInformationMap.put("crossHistory", Types.BOOLEAN);

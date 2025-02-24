@@ -28,5 +28,17 @@
             <artifactId>flink-java</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <optional>true</optional><!-- 仅仅 TemplateUtil 工具类用到 -->
+        </dependency>
+
+        <dependency>
+            <groupId>com.liboshuai.starlink</groupId>
+            <artifactId>slr-spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

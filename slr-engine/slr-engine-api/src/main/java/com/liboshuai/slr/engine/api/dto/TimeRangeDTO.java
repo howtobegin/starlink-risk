@@ -1,6 +1,5 @@
 package com.liboshuai.slr.engine.api.dto;
 
-import com.liboshuai.slr.engine.api.enums.TimeRangeEnum;
 import com.liboshuai.slr.engine.api.type.TimeRangeType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,9 +9,7 @@ import lombok.experimental.Accessors;
 import org.apache.flink.api.common.typeinfo.TypeInfo;
 
 import java.io.Serializable;
-import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.time.MonthDay;
 import java.util.List;
 
 @Data
@@ -25,8 +22,11 @@ public class TimeRangeDTO implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    // 规则类型
-    private TimeRangeEnum type;
+    /**
+     * 规则类型
+     * {@link com.liboshuai.slr.engine.api.enums.TimeRangeEnum}
+     */
+    private String type;
 
     // ============ 通用的时间段（时-分-秒） ============
     private LocalTime startTime; // 例如 08:00
@@ -34,7 +34,7 @@ public class TimeRangeDTO implements Serializable {
 
     // ============ WEEKLY 时使用 ============
     // 每周哪些天，例：周一、周三、周五
-    private List<DayOfWeek> daysOfWeek;
+    private List<String> daysOfWeek;
 
     // ============ MONTHLY 时使用 ============
     // 每月的第几号到第几号
@@ -50,8 +50,8 @@ public class TimeRangeDTO implements Serializable {
     // 每年的固定日期区间，可能跨年
     // 例如：12月25日 到 次年1月5日
     // 这里用 MonthDay 表示只关注“月-日”而忽略具体年份
-    private MonthDay startYearlyDate; // 例如 12-25
-    private MonthDay endYearlyDate;   // 例如 01-05
+    private String startYearlyDate; // 例如 12-25
+    private String endYearlyDate;   // 例如 01-05
 
     // 条件编号
     private String condCode;
