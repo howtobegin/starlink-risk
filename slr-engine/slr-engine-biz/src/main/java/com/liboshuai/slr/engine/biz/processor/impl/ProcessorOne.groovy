@@ -121,8 +121,8 @@
 //     * 处理元素事件，根据给定的规则信息和Kafka事件进行处理
 //     *
 //     * @param processTimestamp 时间戳，用于处理的时间参考
-//     * @param flinkEventDTO         Kafka事件数据传输对象，包含事件的详细信息
-//     * @param out                   用于输出处理结果的收集器
+//     * @param flinkEventDTO    Kafka事件数据传输对象，包含事件的详细信息
+//     * @param out              用于输出处理结果的收集器
 //     * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
 //     */
 //    @Override
@@ -248,7 +248,9 @@
 //            // 获取事件字段与其对应的事件累加值
 //            eventFiledAndValueSumMap.put(ruleCondDTO.getEventField(), eventValueSum);
 //            // 获取事件字段与其对应的预警结果
-//            eventFieldAndAlertResult.put(ruleCondDTO.getEventField(), eventValueSum > ruleCondDTO.getThreshold());
+//            boolean alertResult = calcAlertResult(ruleCondDTO.getEventField(), eventValueSum,
+//                    ruleCondDTO.getThreshold(), ruleCondDTO.getThresholdScaleFactor());
+//            eventFieldAndAlertResult.put(ruleCondDTO.getEventField(), alertResult);
 //            // 更新最新的事件数据
 //            Long eventTime = eventFieldAndTimeTuple2.f1;
 //            if (eventTime > timestampMax) {
@@ -447,7 +449,7 @@
 //     * 定时器触发时执行的方法
 //     *
 //     * @param processTimestamp 处理时间戳
-//     * @param out       输出收集器，用于收集和输出预警信息
+//     * @param out              输出收集器，用于收集和输出预警信息
 //     * @throws Exception 可能抛出的异常
 //     */
 //    @Override
@@ -622,9 +624,9 @@
 //        for (String eventField : eventFieldSet) {
 //            Long eventValueSum = eventFiledAndValueSumMap.get(eventField);
 //            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField);
-//            // 获取事件的阈值
-//            Long eventThreshold = getEventThreshold(eventField, ruleCondDTO);
-//            eventFieldAndAlertResult.put(eventField, eventValueSum > eventThreshold);
+//            // 获取事件字段与其对应的预警结果
+//            boolean alertResult = calcAlertResult(eventField, eventValueSum, ruleCondDTO.getThreshold(), ruleCondDTO.getThresholdScaleFactor());
+//            eventFieldAndAlertResult.put(eventField, alertResult);
 //        }
 //        boolean eventResult = evaluateEventResults(eventFieldAndAlertResult, ruleCondCombOp);
 //        // 构建运算机的DTO对象
@@ -635,27 +637,27 @@
 //    }
 //
 //    /**
-//     * 获取事件的阈值
-//     * 此方法用于计算和获取给定规则条件下的事件阈值如果设置了阈值缩放因子，则使用之；
-//     * 否则直接返回规则条件中的阈值
-//     *
-//     * @param eventField  事件字段，用于查找可能已经存在的阈值
-//     * @param ruleCondDTO 规则条件对象，包含阈值和阈值缩放因子
-//     * @return 计算后的事件阈值
-//     * @throws Exception 如果计算过程中发生错误，则抛出异常
+//     * 计算规则条件是否满足，并返回结果
+//     * 此方法用于判断当前事件值的总和是否超过了某个阈值，并根据条件更新该阈值
+//     * 主要用于动态调整事件的敏感度，以适应不同的业务需求
 //     */
-//    private Long getEventThreshold(String eventField, RuleCondDTO ruleCondDTO) throws Exception {
-//        Long eventThreshold = ruleCondDTO.getThreshold();
-//        Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
-//        if (Objects.nonNull(thresholdScaleFactor)) {
+//    private Boolean calcAlertResult(String eventField, Long eventValueSum,
+//                                    Long eventThreshold, Long thresholdScaleFactor) throws Exception {
+//        boolean result = false;
+//        if (Objects.isNull(thresholdScaleFactor)) {
+//            result = eventValueSum > eventThreshold;
+//        } else {
 //            Long latestThreshold = latestEventThresholdMapState.get(eventField);
-//            // FIXME: 逻辑错误，应该对应条件预警触发后，才更新
-//            if (Objects.nonNull(latestThreshold)) {
-//                eventThreshold = latestThreshold * thresholdScaleFactor;
+//            if (Objects.isNull(latestThreshold)) {
+//                latestThreshold = eventThreshold;
 //            }
-//            latestEventThresholdMapState.put(eventField, eventThreshold);
+//            if (eventValueSum > latestThreshold) {
+//                latestThreshold = latestThreshold * thresholdScaleFactor;
+//                result = true;
+//            }
+//            latestEventThresholdMapState.put(eventField, latestThreshold);
 //        }
-//        return eventThreshold;
+//        return result;
 //    }
 //
 //
