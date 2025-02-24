@@ -42,15 +42,8 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟")
     private String windowUnit;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00")
-    private LocalDateTime beginTime;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00")
-    private LocalDateTime endTime;
+    @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟")
+    private TimeRangeRespVO timeRange;
 
     @Schema(description = "阈值", example = "20")
     private Long threshold;
