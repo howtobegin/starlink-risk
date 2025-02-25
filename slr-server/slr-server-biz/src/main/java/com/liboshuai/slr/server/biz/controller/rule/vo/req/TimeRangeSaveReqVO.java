@@ -1,13 +1,13 @@
 package com.liboshuai.slr.server.biz.controller.rule.vo.req;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalTime;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
@@ -15,8 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-public class TimeRangeSaveReqVO extends BaseRespVO {
+public class TimeRangeSaveReqVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,15 +27,11 @@ public class TimeRangeSaveReqVO extends BaseRespVO {
     private String type;
 
     // ============ 通用的时间段（时-分） ============
-    @DateTimeFormat(pattern = "HH:mm")
-    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    @Schema(description = "开始时间（时-分）", example = "08:00")
-    private LocalTime startTime;
+    @Schema(description = "开始时间（时-分-秒）", example = "08:00:00")
+    private String startTime;
 
-    @DateTimeFormat(pattern = "HH:mm")
-    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    @Schema(description = "结束时间（时-分）", example = "18:00")
-    private LocalTime endTime;
+    @Schema(description = "结束时间（时-分-秒）", example = "18:00:00")
+    private String endTime;
 
     // ============ WEEKLY 时使用 ============
     @Schema(description = "每周哪些天", example = "MONDAY,WEDNESDAY,FRIDAY")

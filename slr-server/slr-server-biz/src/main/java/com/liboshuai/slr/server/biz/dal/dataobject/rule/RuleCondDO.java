@@ -44,10 +44,6 @@ public class RuleCondDO extends BaseDO {
      */
     private String windowUnit;
     /**
-     * 时间范围ID（仅在条件类型为时间范围时使用）
-     */
-    private Long timeRangeId;
-    /**
      * 阈值
      */
     private Long threshold;

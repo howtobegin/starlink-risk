@@ -383,4 +383,26 @@ public class LocalDateTimeUtils {
         return convertLocalDateTime2Timestamp(localDateTime);
     }
 
+    /**
+     * HH:mm:ss 格式的字符串转换为 LocalTime
+     *
+     * @param timeStr HH:mm:ss 格式的时间字符串
+     * @return LocalTime 对象
+     */
+    public static LocalTime convertString2LocalTime(String timeStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return LocalTime.parse(timeStr, formatter);
+    }
+
+    /**
+     * LocalTime 转换为 HH:mm:ss 格式的字符串
+     *
+     * @param time LocalTime 对象
+     * @return HH:mm:ss 格式的时间字符串
+     */
+    public static String convertLocalTime2String(LocalTime time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return time.format(formatter);
+    }
+
 }

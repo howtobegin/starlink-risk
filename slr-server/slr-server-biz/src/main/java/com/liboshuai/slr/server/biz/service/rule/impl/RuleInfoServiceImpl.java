@@ -23,6 +23,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrValueRe
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleInfoRespVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.TimeRangeRespVO;
 import com.liboshuai.slr.server.biz.convert.rule.DorisEventConvert;
+import com.liboshuai.slr.server.biz.convert.rule.TimeRangeConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.*;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.*;
 import com.liboshuai.slr.server.biz.service.alert.AlertService;
@@ -59,6 +60,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private final SnowflakeIdGenerator snowflakeIdGenerator;
     private final AlertService alertService;
     private final MultilevelCache multilevelCache;
+    private final TimeRangeConvert timeRangeConvert;
 
     @Override
     public PageResult<RuleInfoRespVO> page(RuleInfoPageReqVO ruleInfoPageReqVO) {
@@ -123,7 +125,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<TimeRangeSaveReqVO> timeRangeSaveReqVOList = ruleCondSaveReqVOList.stream()
                 .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
-            List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = BeanUtils.toBean(timeRangeSaveReqVOList, RuleCondTimeRangeDO.class);
+            List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = timeRangeConvert.batchConvertRepVo2Do(timeRangeSaveReqVOList);
             ruleCondTimeRangeMapper.insertBatch(ruleCondTimeRangeDOList);
         }
 
@@ -162,7 +164,8 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
         ruleCondTimeRangeMapper.deleteByCondCodes(ruleCondCodeList);
         if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
-            ruleCondTimeRangeMapper.insertBatch(BeanUtils.toBean(timeRangeSaveReqVOList, RuleCondTimeRangeDO.class));
+            List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = timeRangeConvert.batchConvertRepVo2Do(timeRangeSaveReqVOList);
+            ruleCondTimeRangeMapper.insertBatch(ruleCondTimeRangeDOList);
         }
         // 更新 事件属性值信息
         List<String> condCodeList = ruleCondSaveReqVOList.stream().map(RuleCondSaveReqVO::getCondCode).collect(Collectors.toList());
@@ -492,7 +495,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         }
         List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = ruleCondTimeRangeMapper.selectListByCondCodes(condCodeList);
         if (!CollectionUtils.isEmpty(ruleCondTimeRangeDOList)) {
-            List<TimeRangeRespVO> timeRangeRespVOList = BeanUtils.toBean(ruleCondTimeRangeDOList, TimeRangeRespVO.class);
+            List<TimeRangeRespVO> timeRangeRespVOList = timeRangeConvert.batchConvertDo2RespVo(ruleCondTimeRangeDOList);
             Map<String, List<TimeRangeRespVO>> condCodeAndTimeRangeRespVoMap = timeRangeRespVOList.stream()
                     .collect(Collectors.groupingBy(TimeRangeRespVO::getCondCode));
             ruleCondGroup.forEach(ruleCondRespVO -> {
