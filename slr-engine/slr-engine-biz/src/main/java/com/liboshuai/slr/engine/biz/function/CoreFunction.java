@@ -160,8 +160,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         // 状态变量注册使用 ruleCode + ruleVersion 作为后缀，以防止不同规则使用相同的模型导致状态变量数据冲突覆盖
         smallMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallMapStateDesc(ruleCode, ruleVersion));
         smallInitMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
-        hasValueState = runtimeContext.getState(ProcessorOneStateDesc.getHasValueState(ruleCode, ruleVersion));
-        inTimeRangeMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getInTimeRangeState(ruleCode, ruleVersion));
+        hasValueState = runtimeContext.getState(ProcessorOneStateDesc.getHasValueStateDesc(ruleCode, ruleVersion));
+        inTimeRangeMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getInTimeRangeStateDesc(ruleCode, ruleVersion));
         lastEventState = runtimeContext.getState(ProcessorOneStateDesc.getLastEventStateDesc(ruleCode, ruleVersion));
         lastWarningTimeState = runtimeContext.getState(ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
         latestEventThresholdMapState = runtimeContext.getMapState(ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));

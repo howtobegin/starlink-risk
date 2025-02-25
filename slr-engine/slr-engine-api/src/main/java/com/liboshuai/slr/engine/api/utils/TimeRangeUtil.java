@@ -2,6 +2,7 @@ package com.liboshuai.slr.engine.api.utils;
 
 import com.liboshuai.slr.engine.api.dto.TimeRangeDTO;
 import com.liboshuai.slr.engine.api.enums.TimeRangeEnum;
+import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
 
 import java.time.*;
 import java.util.List;
@@ -9,8 +10,9 @@ import java.util.stream.Collectors;
 
 public class TimeRangeUtil {
 
+
     /**
-     * 判断给定的 `dateTime` 是否满足某一条时间范围规则
+     * 判断给定的日期时间是否在指定的时间规则范围内。
      */
     public static boolean isWithinRule(LocalDateTime dateTime, TimeRangeDTO rule) {
         if (rule == null) {
@@ -139,5 +141,108 @@ public class TimeRangeUtil {
         } else {
             return !time.isBefore(start) || !time.isAfter(end);
         }
+    }
+
+    /**
+     * 根据给定的时间戳和时间范围规则，获取下一个时间范围的结束时间戳
+     *
+     * @param timestamp 当前时间戳
+     * @param rule      时间范围规则，包含时间范围的类型和其他相关参数
+     * @return 下一个时间范围的结束时间戳，如果规则为空或不支持该时间范围类型，则返回null
+     */
+    public static Long getNextEndTimestamp(long timestamp, TimeRangeDTO rule) {
+        if (rule == null) {
+            return null;
+        }
+
+        LocalDateTime dateTime = LocalDateTimeUtils.convertTimestamp2LocalDateTime(timestamp);
+
+        TimeRangeEnum type = TimeRangeEnum.fromCode(rule.getType());
+
+        switch (type) {
+            case DAILY:
+                return getNextDailyEnd(dateTime, rule);
+            case WEEKLY:
+                return getNextWeeklyEnd(dateTime, rule);
+            case MONTHLY:
+                return getNextMonthlyEnd(dateTime, rule);
+            case YEARLY_MONTH:
+                return getNextYearlyMonthEnd(dateTime, rule);
+            case YEARLY_DATE_RANGE:
+                return getNextYearlyDateRangeEnd(dateTime, rule);
+            default:
+                return null;
+        }
+    }
+
+    private static Long getNextDailyEnd(LocalDateTime dateTime, TimeRangeDTO rule) {
+        LocalDateTime endDateTime = dateTime.with(rule.getEndTime());
+
+        if (dateTime.isAfter(endDateTime)) {
+            endDateTime = endDateTime.plusDays(1);
+        }
+
+        return LocalDateTimeUtils.convertLocalDateTime2Timestamp(endDateTime);
+    }
+
+    private static Long getNextWeeklyEnd(LocalDateTime dateTime, TimeRangeDTO rule) {
+        List<DayOfWeek> daysOfWeek = rule.getDaysOfWeek().stream()
+                .map(day -> DayOfWeek.valueOf(day.toUpperCase()))
+                .collect(Collectors.toList());
+
+        LocalDateTime endDateTime = dateTime.with(rule.getEndTime());
+
+        if (daysOfWeek.contains(dateTime.getDayOfWeek()) && dateTime.isBefore(endDateTime)) {
+            return LocalDateTimeUtils.convertLocalDateTime2Timestamp(endDateTime);
+        }
+
+        LocalDate nextDate = dateTime.toLocalDate();
+        do {
+            nextDate = nextDate.plusDays(1);
+        } while (!daysOfWeek.contains(nextDate.getDayOfWeek()));
+        LocalDateTime localDateTime = nextDate.atTime(rule.getEndTime());
+        return LocalDateTimeUtils.convertLocalDateTime2Timestamp(localDateTime);
+    }
+
+    private static Long getNextMonthlyEnd(LocalDateTime dateTime, TimeRangeDTO rule) {
+        int dayOfMonth = dateTime.getDayOfMonth();
+        LocalDate nextEndDay = LocalDate.of(dateTime.getYear(), dateTime.getMonth(), rule.getEndDayOfMonth());
+
+        if (dayOfMonth > rule.getEndDayOfMonth()) {
+            nextEndDay = nextEndDay.plusMonths(1);
+        }
+
+        LocalDateTime localDateTime = nextEndDay.atTime(rule.getEndTime());
+        return LocalDateTimeUtils.convertLocalDateTime2Timestamp(localDateTime);
+    }
+
+    private static Long getNextYearlyMonthEnd(LocalDateTime dateTime, TimeRangeDTO rule) {
+        int currentMonth = dateTime.getMonthValue();
+        int year = dateTime.getYear();
+
+        LocalDate nextEndDate = LocalDate.of(year, rule.getEndMonth(), 1);
+        if (currentMonth > rule.getEndMonth()) {
+            nextEndDate = nextEndDate.plusYears(1);
+        }
+
+        LocalDateTime localDateTime = nextEndDate.atTime(rule.getEndTime());
+        return LocalDateTimeUtils.convertLocalDateTime2Timestamp(localDateTime);
+    }
+
+    private static Long getNextYearlyDateRangeEnd(LocalDateTime dateTime, TimeRangeDTO rule) {
+        MonthDay startMd = MonthDay.parse("--" + rule.getStartYearlyDate());
+        MonthDay endMd = MonthDay.parse("--" + rule.getEndYearlyDate());
+        MonthDay currentMd = MonthDay.from(dateTime.toLocalDate());
+
+        Year currentYear = Year.of(dateTime.getYear());
+        LocalDate endDate = endMd.atYear(currentYear.getValue());
+
+        // 当当前时间 `dateTime` 超过 `endYearlyDate`，说明要到下一年的范围内处理
+        if (currentMd.isAfter(endMd) || currentMd.isBefore(startMd)) {
+            endDate = endMd.atYear(currentYear.getValue() + 1);
+        }
+
+        LocalDateTime localDateTime = endDate.atTime(rule.getEndTime());
+        return LocalDateTimeUtils.convertLocalDateTime2Timestamp(localDateTime);
     }
 }

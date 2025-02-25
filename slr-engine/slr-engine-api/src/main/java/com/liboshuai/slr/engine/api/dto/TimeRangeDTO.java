@@ -33,7 +33,10 @@ public class TimeRangeDTO implements Serializable {
     private LocalTime endTime;   // 例如 18:00
 
     // ============ WEEKLY 时使用 ============
-    // 每周哪些天，例：周一、周三、周五
+    /**
+     * 每周哪些天，例：周一、周三、周五
+     * {@link com.liboshuai.slr.engine.api.enums.WeekEnum}
+     */
     private List<String> daysOfWeek;
 
     // ============ MONTHLY 时使用 ============

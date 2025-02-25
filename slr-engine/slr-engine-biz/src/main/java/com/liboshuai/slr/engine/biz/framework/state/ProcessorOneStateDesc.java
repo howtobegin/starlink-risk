@@ -21,14 +21,19 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(smallInitMapStateName, Types.STRING, Types.BOOLEAN);
     }
 
-    public static ValueStateDescriptor<Boolean> getHasValueState(Long ruleCode, Long ruleVersion) {
+    public static ValueStateDescriptor<Boolean> getHasValueStateDesc(Long ruleCode, Long ruleVersion) {
         String hasValueStateName = "hasValueState_" + ruleCode + "_" + ruleVersion;
         return new ValueStateDescriptor<>(hasValueStateName, Types.BOOLEAN);
     }
 
-    public static MapStateDescriptor<String, Boolean> getInTimeRangeState(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<String, Boolean> getInTimeRangeStateDesc(Long ruleCode, Long ruleVersion) {
         String isTimeRangeStateName = "inTimeRangeState_" + ruleCode + "_" + ruleVersion;
         return new MapStateDescriptor<>(isTimeRangeStateName, Types.STRING, Types.BOOLEAN);
+    }
+
+    public static ValueStateDescriptor<Long> getNextEndTimestampStateDesc(Long ruleCode, Long ruleVersion) {
+        String nextEndTimestampStateName = "nextEndTimestampState_" + ruleCode + "_" + ruleVersion;
+        return new ValueStateDescriptor<>(nextEndTimestampStateName, Types.LONG);
     }
 
     public static ValueStateDescriptor<FlinkEventDTO> getLastEventStateDesc(Long ruleCode, Long ruleVersion) {
