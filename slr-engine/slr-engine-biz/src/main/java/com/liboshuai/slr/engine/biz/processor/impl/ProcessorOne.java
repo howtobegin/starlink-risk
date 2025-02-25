@@ -223,16 +223,14 @@ public class ProcessorOne implements Processor {
                 inTimeRange = false;
                 inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
             }
-            if (!inTimeRange) {
-                if (isWithInTimeRange) {
-                    inTimeRange = true;
-                    inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
-                    // 注册定时器为时间范围结束时刻
-                    Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(processTimestamp, timeRangeDTO);
-                    timerService.registerProcessingTimeTimer(nextEndTimestamp);
-                    // 更新下次结束时刻
-                    nextEndTimestampState.update(nextEndTimestamp);
-                }
+            if (!inTimeRange && isWithInTimeRange) {
+                inTimeRange = true;
+                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
+                // 注册定时器为时间范围结束时刻
+                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(processTimestamp, timeRangeDTO);
+                timerService.registerProcessingTimeTimer(nextEndTimestamp);
+                // 更新下次结束时刻
+                nextEndTimestampState.update(nextEndTimestamp);
             }
             if (inTimeRange) {
                 // 处理单个规则条件的匹配和规则计算逻辑
