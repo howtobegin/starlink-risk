@@ -310,7 +310,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 构建规则运算机
-        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
+//        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
+        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
         if (Objects.nonNull(processor)) {
             ruleProcessorPool.put(ruleCode, processor);
             ruleInfoPool.put(ruleCode, ruleInfoDTO);

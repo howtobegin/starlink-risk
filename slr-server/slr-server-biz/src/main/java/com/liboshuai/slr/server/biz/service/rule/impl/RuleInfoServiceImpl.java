@@ -124,7 +124,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         });
         List<TimeRangeSaveReqVO> timeRangeSaveReqVOList = ruleCondSaveReqVOList.stream()
                 .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
+        if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList) && Objects.nonNull(timeRangeSaveReqVOList.get(0))) {
             List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = timeRangeConvert.batchConvertRepVo2Do(timeRangeSaveReqVOList);
             ruleCondTimeRangeMapper.insertBatch(ruleCondTimeRangeDOList);
         }

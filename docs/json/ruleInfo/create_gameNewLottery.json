@@ -4,17 +4,14 @@
   "ruleDesc": "游戏新高频抽奖规则",
   "alertProjectNo": "game",
   "alertLevel": "4",
-  "alertTemplate": "[新异常高频抽奖]${FlinkEventDTO.eventAttrMap.bankName}: ${FlinkEventDTO.eventAttrMap.campaignName}(${FlinkEventDTO.eventAttrMap.campaignId})中游戏用户(${FlinkEventDTO.targetValue})今日抽奖数量为${ProcessorDTO.eventValueGroup.raffle}，超过（设置的抽奖数量：${RuleInfoDTO.ruleCondGroup.0.threshold}）次，请您及时查看原因！",
+  "alertTemplate": "[新异常高频抽奖]${FlinkEventDTO.eventAttrMap.bankName}: ${FlinkEventDTO.eventAttrMap.campaignName}(${FlinkEventDTO.eventAttrMap.campaignId})中游戏用户(${FlinkEventDTO.targetValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}${RuleInfoDTO.ruleCondGroup.0.windowUnit}内抽奖数量为${ProcessorDTO.eventValueGroup.lottery}，超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！",
   "targetCode": "game_userId",
   "modelCode": 1889596060557512704,
   "ruleCondGroup": [
     {
-      "condType": "range",
-      "timeRange": {
-        "type": "daily",
-        "startTime": "00:00:00",
-        "endTime": "24:00:00"
-      },
+      "condType": "recent",
+      "windowValue": 10,
+      "windowUnit": "分钟",
       "threshold": 20,
       "thresholdScaleFactor": 2,
       "crossHistory": false,
