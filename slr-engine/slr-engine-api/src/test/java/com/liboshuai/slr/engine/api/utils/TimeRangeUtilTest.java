@@ -27,6 +27,21 @@ class TimeRangeUtilTest {
         assertThat(TimeRangeUtil.isWithinRule(testTime2, rule)).isFalse();
     }
 
+    @Test
+    void testDailyWithinTimeRange2() {
+        TimeRangeDTO rule = TimeRangeDTO.builder()
+                .type("daily")
+                .startTime(LocalTime.of(0, 0, 0))
+                .endTime(LocalTime.of(23, 59, 59, 999999999))
+                .build();
+
+        LocalDateTime testTime1 = LocalDateTime.of(2023, 6, 1, 9, 0); // 在范围内
+        LocalDateTime testTime2 = LocalDateTime.of(2023, 6, 2, 23, 0); // 在范围内
+
+        assertThat(TimeRangeUtil.isWithinRule(testTime1, rule)).isTrue();
+        assertThat(TimeRangeUtil.isWithinRule(testTime2, rule)).isTrue();
+    }
+
     // ========== WEEKLY（每周特定天的时间范围）测试 ==========
     @Test
     void testWeeklyWithinTimeRange() {
