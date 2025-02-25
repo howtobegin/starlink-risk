@@ -19,7 +19,7 @@ public class RuleCondDtoType extends TypeInfoFactory<RuleCondDTO> {
         typeInformationMap.put("condType", Types.STRING);
         typeInformationMap.put("windowValue", Types.LONG);
         typeInformationMap.put("windowUnit", Types.STRING);
-        typeInformationMap.put("timeRangeDTO", Types.POJO(TimeRangeDTO.class));
+        typeInformationMap.put("timeRange", Types.POJO(TimeRangeDTO.class));
         typeInformationMap.put("threshold", Types.LONG);
         typeInformationMap.put("thresholdScaleFactor", Types.LONG);
         typeInformationMap.put("crossHistory", Types.BOOLEAN);

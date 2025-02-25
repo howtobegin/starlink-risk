@@ -51,15 +51,8 @@ public class RuleCondSaveReqVO implements Serializable {
     @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String windowUnit;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Schema(description = "开始时间,仅在条件类型为范围时使用", example = "2025-01-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private LocalDateTime beginTime;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Schema(description = "结束时间,仅在条件类型为范围时使用", example = "2025-02-01 00:00:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private LocalDateTime endTime;
+    @Schema(description = "时间范围，仅在条件类型为范围时间时使用", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private TimeRangeSaveReqVO timeRange;
 
     @NotNull(message = "阈值[threshold]，不能为空")
     @Schema(description = "阈值", example = "20", requiredMode = Schema.RequiredMode.REQUIRED)

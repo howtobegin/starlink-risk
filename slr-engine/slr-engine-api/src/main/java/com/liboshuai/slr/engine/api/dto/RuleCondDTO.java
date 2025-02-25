@@ -52,7 +52,7 @@ public class RuleCondDTO implements Serializable {
     /**
      * 时间范围，仅在条件类型为时间范围时使用
      */
-    private TimeRangeDTO timeRangeDTO;
+    private TimeRangeDTO timeRange;
 
     /**
      * 阈值

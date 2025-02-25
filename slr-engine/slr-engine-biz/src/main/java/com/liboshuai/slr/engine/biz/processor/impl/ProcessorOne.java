@@ -206,7 +206,7 @@ public class ProcessorOne implements Processor {
     private void handleTimeRange(long processTimestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
-            TimeRangeDTO timeRangeDTO = ruleCondDTO.getTimeRangeDTO();
+            TimeRangeDTO timeRangeDTO = ruleCondDTO.getTimeRange();
             if (Objects.isNull(timeRangeDTO)) {
                 log.warn("因规则[{}]中事件条件类型为范围时间类型，而规则条件中时间范围信息为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
                 continue;

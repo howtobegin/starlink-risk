@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.controller.rule.vo.resp;
+package com.liboshuai.slr.server.biz.controller.rule.vo.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.liboshuai.slr.framework.common.pojo.BaseRespVO;
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
-public class TimeRangeRespVO extends BaseRespVO {
+public class TimeRangeSaveReqVO extends BaseRespVO {
 
     private static final long serialVersionUID = 1L;
 

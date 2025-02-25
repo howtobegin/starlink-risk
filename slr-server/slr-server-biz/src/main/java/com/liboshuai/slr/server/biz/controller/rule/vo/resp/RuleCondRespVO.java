@@ -42,7 +42,7 @@ public class RuleCondRespVO extends BaseRespVO {
     @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟")
     private String windowUnit;
 
-    @Schema(description = "窗口单位,仅在条件类型为最近时间时使用", example = "分钟")
+    @Schema(description = "时间范围，仅在条件类型为范围时间时使用")
     private TimeRangeRespVO timeRange;
 
     @Schema(description = "阈值", example = "20")

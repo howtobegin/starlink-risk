@@ -21,6 +21,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.req.*;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleCondRespVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleEventAttrValueRespVO;
 import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleInfoRespVO;
+import com.liboshuai.slr.server.biz.controller.rule.vo.resp.TimeRangeRespVO;
 import com.liboshuai.slr.server.biz.convert.rule.DorisEventConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.rule.*;
 import com.liboshuai.slr.server.biz.dal.mysql.rule.*;
@@ -47,6 +48,7 @@ public class RuleInfoServiceImpl implements RuleInfoService {
     private final RuleInfoMapper ruleInfoMapper;
     private final RuleModelMapper ruleModelMapper;
     private final RuleCondMapper ruleCondMapper;
+    private final RuleCondTimeRangeMapper ruleCondTimeRangeMapper;
     private final RuleEventMapper ruleEventMapper;
     private final RuleEventAttrMapper ruleEventAttrMapper;
     private final RuleEventAttrValueMapper ruleEventAttrValueMapper;
@@ -95,17 +97,35 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         // 保存 条件信息
         List<RuleCondSaveReqVO> ruleCondSaveReqVOList = ruleInfoSaveReqVO.getRuleCondGroup();
         ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> {
+            // 设置 规则编号
             ruleCondSaveReqVO.setRuleCode(ruleCode);
+            // 设置 条件编号
             ruleCondSaveReqVO.setCondCode(ruleCode + DefaultConstants.UNDERSCORE + ruleCondSaveReqVO.getEventCode());
             List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup = ruleCondSaveReqVO.getRuleEventAttrValueGroup();
             if (!CollectionUtils.isEmpty(ruleEventAttrValueGroup)) {
                 ruleEventAttrValueGroup.forEach(ruleEventAttrValueSaveReqVO -> {
+                    // 事件属性设置 条件编号
                     ruleEventAttrValueSaveReqVO.setCondCode(ruleCondSaveReqVO.getCondCode());
                 });
             }
-        }); // 条件信息设置 规则编号、条件编号
+        });
         List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
         ruleCondMapper.insertBatch(ruleCondDOList);
+
+        // 保存 条件时间范围 信息
+        ruleCondSaveReqVOList.forEach(ruleCondSaveReqVO -> {
+            TimeRangeSaveReqVO timeRangeSaveReqVO = ruleCondSaveReqVO.getTimeRange();
+            if (Objects.nonNull(timeRangeSaveReqVO)) {
+                // 时间范围 设置 条件编号
+                timeRangeSaveReqVO.setCondCode(ruleCondSaveReqVO.getCondCode());
+            }
+        });
+        List<TimeRangeSaveReqVO> timeRangeSaveReqVOList = ruleCondSaveReqVOList.stream()
+                .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
+            List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = BeanUtils.toBean(timeRangeSaveReqVOList, RuleCondTimeRangeDO.class);
+            ruleCondTimeRangeMapper.insertBatch(ruleCondTimeRangeDOList);
+        }
 
         // 保存 事件属性值信息
         List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueGroup = ruleCondSaveReqVOList.stream()
@@ -123,6 +143,12 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         Long ruleCode = ruleInfoSaveReqVO.getRuleCode();
         // 效验
         validate(ruleCode);
+        // 获取更新前规则对应的条件编号
+        List<RuleCondDO> ruleCondDOS = ruleCondMapper.selectListByRuleCode(ruleCode);
+        List<String> ruleCondCodeList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(ruleCondDOS)) {
+            ruleCondCodeList = ruleCondDOS.stream().map(RuleCondDO::getCondCode).collect(Collectors.toList());
+        }
         // 更新 规则信息
         RuleInfoDO ruleInfoDO = BeanUtils.toBean(ruleInfoSaveReqVO, RuleInfoDO.class);
         ruleInfoMapper.updateByRuleCode(ruleInfoDO, ruleCode);
@@ -131,6 +157,13 @@ public class RuleInfoServiceImpl implements RuleInfoService {
         List<RuleCondDO> ruleCondDOList = BeanUtils.toBean(ruleCondSaveReqVOList, RuleCondDO.class);
         ruleCondMapper.deleteByRuleCode(ruleCode);
         ruleCondMapper.insertBatch(ruleCondDOList);
+        // 更新 条件时间范围 信息
+        List<TimeRangeSaveReqVO> timeRangeSaveReqVOList = ruleCondSaveReqVOList.stream()
+                .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
+        ruleCondTimeRangeMapper.deleteByCondCodes(ruleCondCodeList);
+        if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
+            ruleCondTimeRangeMapper.insertBatch(BeanUtils.toBean(timeRangeSaveReqVOList, RuleCondTimeRangeDO.class));
+        }
         // 更新 事件属性值信息
         List<String> condCodeList = ruleCondSaveReqVOList.stream().map(RuleCondSaveReqVO::getCondCode).collect(Collectors.toList());
         List<RuleEventAttrValueSaveReqVO> ruleEventAttrValueSaveReqVOList = ruleCondSaveReqVOList.stream()
@@ -271,11 +304,26 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             ruleCondDTO.setEventField(ruleEventDO.getEventField());
             ruleCondDTO.setEventName(ruleEventDO.getEventName());
         });
-        // 给 条件组 设置 事件属性值
+        // 给 条件组 设置 时间范围
         List<String> condCodeList = ruleCondGroup.stream().map(RuleCondDTO::getCondCode).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(condCodeList)) {
             throw ServiceExceptionUtil.exception(ErrorCodeConstants.RULE_CONDITION_COND_CODE_IS_NULL);
         }
+        List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = ruleCondTimeRangeMapper.selectListByCondCodes(condCodeList);
+        if (!CollectionUtils.isEmpty(ruleCondTimeRangeDOList)) {
+            List<TimeRangeDTO> timeRangeDTOList = BeanUtils.toBean(ruleCondTimeRangeDOList, TimeRangeDTO.class);
+            Map<String, List<TimeRangeDTO>> condCodeAndTimeRangeDtoMap = timeRangeDTOList.stream()
+                    .collect(Collectors.groupingBy(TimeRangeDTO::getCondCode));
+            ruleCondGroup.forEach(ruleCondDTO -> {
+                List<TimeRangeDTO> timeRangeDTOS = condCodeAndTimeRangeDtoMap.get(ruleCondDTO.getCondCode());
+                TimeRangeDTO timeRangeDTO = null;
+                if (!CollectionUtils.isEmpty(timeRangeDTOS)) {
+                    timeRangeDTO = timeRangeDTOS.get(0);
+                }
+                ruleCondDTO.setTimeRange(timeRangeDTO);
+            });
+        }
+        // 给 条件组 设置 事件属性值
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = ruleEventAttrValueMapper.selectListByCondCodes(condCodeList);
         if (CollectionUtils.isEmpty(ruleEventAttrValueDOList)) {
             ruleInfoDTO.setRuleCondGroup(ruleCondGroup);
@@ -436,12 +484,27 @@ public class RuleInfoServiceImpl implements RuleInfoService {
             ruleCondRespVO.setEventField(ruleEventDO.getEventField());
             ruleCondRespVO.setEventName(ruleEventDO.getEventName());
         });
-        // 给 条件组 设置 事件属性值
+        // 给 条件组 设置 时间范围
         List<String> condCodeList = ruleCondGroup.stream().map(RuleCondRespVO::getCondCode).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(condCodeList)) {
             ruleInfoRespVO.setRuleCondGroup(ruleCondGroup);
             return;
         }
+        List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = ruleCondTimeRangeMapper.selectListByCondCodes(condCodeList);
+        if (!CollectionUtils.isEmpty(ruleCondTimeRangeDOList)) {
+            List<TimeRangeRespVO> timeRangeRespVOList = BeanUtils.toBean(ruleCondTimeRangeDOList, TimeRangeRespVO.class);
+            Map<String, List<TimeRangeRespVO>> condCodeAndTimeRangeRespVoMap = timeRangeRespVOList.stream()
+                    .collect(Collectors.groupingBy(TimeRangeRespVO::getCondCode));
+            ruleCondGroup.forEach(ruleCondRespVO -> {
+                List<TimeRangeRespVO> timeRangeRespVOS = condCodeAndTimeRangeRespVoMap.get(ruleCondRespVO.getCondCode());
+                TimeRangeRespVO timeRangeRespVO = null;
+                if (!CollectionUtils.isEmpty(timeRangeRespVOS)) {
+                    timeRangeRespVO = timeRangeRespVOS.get(0);
+                }
+                ruleCondRespVO.setTimeRange(timeRangeRespVO);
+            });
+        }
+        // 给 条件组 设置 事件属性值
         List<RuleEventAttrValueDO> ruleEventAttrValueDOList = ruleEventAttrValueMapper.selectListByCondCodes(condCodeList);
         if (CollectionUtils.isEmpty(ruleEventAttrValueDOList)) {
             ruleInfoRespVO.setRuleCondGroup(ruleCondGroup);
