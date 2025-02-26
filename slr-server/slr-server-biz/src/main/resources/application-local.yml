@@ -83,20 +83,6 @@ spring:
       database: starlink_risk_local
       authentication-database: admin
 
-############################## [xxl-job 配置项] ##############################
-xxl:
-  job:
-    admin:
-      addresses: http://windows:8181/xxl-job-admin
-    accessToken: Rongshu@2024
-    executor:
-      appname: starlink-risk-local
-      address:
-      ip:
-      port: 9999
-      logpath: C:/Me/Temp/xxl-job/jobhandler
-      logretentiondays: 30
-
 ############################## [日志 配置项] ##############################
 logging:
   file:

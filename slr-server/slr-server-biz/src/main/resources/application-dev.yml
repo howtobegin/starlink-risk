@@ -78,20 +78,6 @@ spring:
       database: imp_mongo
       authentication-database: imp_mongo
 
-############################## [xxl-job 配置项] ##############################
-xxl:
-  job:
-    admin:
-      addresses: http://10.152.143.164:54810/xxl-job-admin
-    accessToken: Rongshu@2024
-    executor:
-      appname: starlink-risk-dev
-      address:
-      ip:
-      port: 9888
-      logpath: /app/dmapp/slr/log/xxl-job/jobhandler
-      logretentiondays: 30
-
 ############################## [项目配置项] ##############################
 slr-server:
   active: dev

@@ -83,20 +83,6 @@ spring:
       database: starlink_risk_test
       authentication-database: admin
 
-############################## [xxl-job 配置项] ##############################
-xxl:
-  job:
-    admin:
-      addresses: http://docker:8181/xxl-job-admin
-    accessToken: Rongshu@2024
-    executor:
-      appname: starlink-risk-test
-      address:
-      ip:
-      port: 9999
-      logpath: /slr-server/logs/xxl-job/jobhandler
-      logretentiondays: 30
-
 ############################## [日志 配置项] ##############################
 logging:
   file:
