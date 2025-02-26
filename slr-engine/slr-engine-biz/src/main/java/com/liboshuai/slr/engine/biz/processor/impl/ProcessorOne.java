@@ -219,7 +219,10 @@ public class ProcessorOne implements Processor {
             // 更新最后预警时间
             lastAlertTimeState.update(processTimestamp);
             // 发送预警信息
-            sendAlertMessage(currentKey, processTimestamp, out, processSmallMapResult.f1);
+            AlertDTO alertDTO = buildAlert(processTimestamp, ruleInfoDTO, lastEventState.value(), processSmallMapResult.f1);
+            log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
+            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
+            out.collect(flinkResultDTO);
         }
     }
 
@@ -290,16 +293,6 @@ public class ProcessorOne implements Processor {
         ProcessorDTO processorDTO = ProcessorDTO.builder().eventValueGroup(eventFiledAndValueSumMap).build();
         // 构建 processSmallMapResult
         return Tuple2.of(eventResult, processorDTO);
-    }
-
-    /**
-     * 发送预警信息
-     */
-    private void sendAlertMessage(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, ProcessorDTO processorDTO) throws IOException {
-        AlertDTO alertDTO = buildAlert(processTimestamp, ruleInfoDTO, lastEventState.value(), processorDTO);
-        log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
-        FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
-        out.collect(flinkResultDTO);
     }
 
     /**
