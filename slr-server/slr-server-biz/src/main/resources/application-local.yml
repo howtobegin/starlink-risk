@@ -38,11 +38,11 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://docker:3308/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://windows:3308/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
           password: Rongshu@2024
         slave:
-          url: jdbc:mysql://one:9130/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://windows:9030/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
           password: Rongshu@2024
   ############################## [redis 配置项] ##############################
@@ -54,12 +54,12 @@ spring:
     cluster:
       max-redirects: 3
       nodes:
-        - one:6379
-        - one:6380
-        - two:6379
-        - two:6380
-        - three:6379
-        - three:6380
+        - windows:6381
+        - windows:6382
+        - windows:6383
+        - windows:6384
+        - windows:6385
+        - windows:6386
     lettuce:
       pool:
         min-idle: 0
@@ -69,14 +69,14 @@ spring:
   ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: windows:9096,windows:9097,windows:9098
     consumer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: windows:9096,windows:9097,windows:9098
       group-id: starlink_risk_server_local
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
-      host: docker
+      host: windows
       port: 27018
       username: root
       password: Rongshu@2024
@@ -87,7 +87,7 @@ spring:
 xxl:
   job:
     admin:
-      addresses: http://docker:8181/xxl-job-admin
+      addresses: http://windows:8181/xxl-job-admin
     accessToken: Rongshu@2024
     executor:
       appname: starlink-risk-local
@@ -120,4 +120,4 @@ slr-server:
     event-log: C:/Me/Temp/mock/event.log
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
-    slr-gif: http://docker:48881/slr_event_local.gif
+    slr-gif: http://windows:48881/slr_event_local.gif
