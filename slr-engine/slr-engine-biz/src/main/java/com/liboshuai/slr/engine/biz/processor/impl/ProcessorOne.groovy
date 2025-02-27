@@ -70,7 +70,7 @@
 //    /**
 //     * 规则最近一次触发预警时间
 //     */
-//    private ValueState<Long> lastWarningTimeState;
+//    private ValueState<Long> lastAlertTimeState;
 //    /**
 //     * 最新更新的事件阈值
 //     * - key: eventField
@@ -106,7 +106,7 @@
 //        inTimeRangeMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getInTimeRangeStateDesc(ruleCode, ruleVersion));
 //        nextEndTimestampState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getNextEndTimestampStateDesc(ruleCode, ruleVersion));
 //        lastEventState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastEventStateDesc(ruleCode, ruleVersion));
-//        lastWarningTimeState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastWarningTimeStateDesc(ruleCode, ruleVersion));
+//        lastAlertTimeState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastAlertTimeStateDesc(ruleCode, ruleVersion));
 //        latestEventThresholdMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
 //        bigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
 //
@@ -195,10 +195,31 @@
 //        handleTimeRange(processTimestamp, timerService, flinkEventDTO, out);
 //        // 处理smallMapState
 //        Tuple2<Boolean, ProcessorDTO> processSmallMapResult = processSmallMap(ruleConditionMapByEventField);
+//        // 处理预警结果
+//        handleAlertResult(currentKey, processTimestamp, out, processSmallMapResult);
+//    }
+//
+//    /**
+//     * 处理预警结果
+//     */
+//    private void handleAlertResult(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, Tuple2<Boolean, ProcessorDTO> processSmallMapResult) throws IOException {
+//        // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
+//        if (lastAlertTimeState.value() == null) {
+//            lastAlertTimeState.update(0L);
+//        }
+//        // 获取预警间隔时间，单位为毫秒
+//        Long alertInterval = getAlertInterval(ruleInfoDTO);
 //        // 检查是否需要发送预警
-//        if (processSmallMapResult.f0) {
+//        boolean shouldAlert = processSmallMapResult.f0 &&
+//                (alertInterval == null || (processTimestamp - lastAlertTimeState.value() >= alertInterval));
+//        if (shouldAlert) {
+//            // 更新最后预警时间
+//            lastAlertTimeState.update(processTimestamp);
 //            // 发送预警信息
-//            sendAlertMessage(currentKey, processTimestamp, out, processSmallMapResult.f1);
+//            AlertDTO alertDTO = buildAlert(processTimestamp, ruleInfoDTO, lastEventState.value(), processSmallMapResult.f1);
+//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
+//            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
+//            out.collect(flinkResultDTO);
 //        }
 //    }
 //
@@ -269,16 +290,6 @@
 //        ProcessorDTO processorDTO = ProcessorDTO.builder().eventValueGroup(eventFiledAndValueSumMap).build();
 //        // 构建 processSmallMapResult
 //        return Tuple2.of(eventResult, processorDTO);
-//    }
-//
-//    /**
-//     * 发送预警信息
-//     */
-//    private void sendAlertMessage(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, ProcessorDTO processorDTO) throws IOException {
-//        AlertDTO alertDTO = buildAlert(processTimestamp, ruleInfoDTO, lastEventState.value(), processorDTO);
-//        log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
-//        FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
-//        out.collect(flinkResultDTO);
 //    }
 //
 //    /**
@@ -517,21 +528,8 @@
 //        cleanupWindowData(processTimestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
 //        Tuple2<Boolean, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
-//        // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
-//        if (lastWarningTimeState.value() == null) {
-//            lastWarningTimeState.update(0L);
-//        }
-//        // 获取预警间隔时间，单位为毫秒
-//        Long alertInterval = getAlertInterval(ruleInfoDTO);
-//        // 检查是否需要发送预警
-//        boolean shouldAlert = processBigMapResult.f0 &&
-//                (alertInterval == null || (processTimestamp - lastWarningTimeState.value() >= alertInterval));
-//        if (shouldAlert) {
-//            // 更新最后预警时间
-//            lastWarningTimeState.update(processTimestamp);
-//            // 发送预警信息
-//            sendAlertMessage(currentKey, processTimestamp, out, processBigMapResult.f1);
-//        }
+//        // 处理预警结果
+//        handleAlertResult(currentKey, processTimestamp, out, processBigMapResult);
 //        return hasActiveEvents();
 //    }
 //
@@ -595,6 +593,9 @@
 //                .build();
 //    }
 //
+//    /**
+//     * 根据规则信息获取告警间隔时间（以毫秒为单位）。
+//     */
 //    private Long getAlertInterval(RuleInfoDTO ruleInfoDTO) {
 //        Long alertIntervalValue = ruleInfoDTO.getAlertIntervalValue();
 //        String alertIntervalUnit = ruleInfoDTO.getAlertIntervalUnit();
