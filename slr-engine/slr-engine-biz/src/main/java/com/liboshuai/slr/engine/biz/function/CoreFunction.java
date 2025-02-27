@@ -15,6 +15,7 @@ import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
@@ -63,7 +64,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     private MapState<Long, Void> oldRuleListState;
 
     // 上一个同规则的运算机残留状态
-    private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapState;
+    private MapState<String, Tuple3<Long, FlinkEventDTO, Long>> smallMapState;
     private MapState<String, Boolean> smallInitMapState;
     private ValueState<Boolean> hasValueState;
     private MapState<String, Boolean> inTimeRangeMapState;
@@ -183,10 +184,10 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      * 打印状态值
      */
     private void logState(String status) throws Exception {
-        Map<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
-        Iterator<Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>>> oldSmallMapIterator = smallMapState.iterator();
+        Map<String, Tuple3<Long, FlinkEventDTO, Long>> smallMap = new HashMap<>();
+        Iterator<Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>>> oldSmallMapIterator = smallMapState.iterator();
         while (oldSmallMapIterator.hasNext()) {
-            Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> next = oldSmallMapIterator.next();
+            Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> next = oldSmallMapIterator.next();
             smallMap.put(next.getKey(), next.getValue());
         }
 

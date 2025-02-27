@@ -20,6 +20,7 @@
 //import org.apache.flink.api.common.functions.RuntimeContext
 //import org.apache.flink.api.common.state.*
 //import org.apache.flink.api.java.tuple.Tuple2
+//import org.apache.flink.api.java.tuple.Tuple3
 //import org.apache.flink.streaming.api.TimerService
 //import org.apache.flink.util.Collector
 //import org.apache.flink.util.StringUtils
@@ -40,10 +41,10 @@
 //     */
 //    private RuleInfoDTO ruleInfoDTO;
 //    /**
-//     * - key: f0为事件字段，f1为时间戳
-//     * - value: f0为eventValue累加值，f1为最新的事件数据
+//     * - key: 事件字段
+//     * - value: f0为eventValue累加值，f1为最新的事件数据，f2为最新事件数据的时间戳
 //     */
-//    private MapState<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapState;
+//    private MapState<String, Tuple3<Long, FlinkEventDTO, Long>> smallMapState;
 //    /**
 //     * 记录对于事件条件是否初始化过
 //     * - key: eventField
@@ -264,14 +265,14 @@
 //        Long timestampMax = 0L;
 //        Map<String, Boolean> eventFieldAndAlertResult = new HashMap<>();
 //        Map<String, Long> eventFiledAndValueSumMap = new HashMap<>();
-//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : smallMapState.entries()) {
-//            Tuple2<String, Long> eventFieldAndTimeTuple2 = entry.getKey();
-//            Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = entry.getValue();
-//            Long eventValueSum = eventValueAndEventDataTuple2.f0;
+//        for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> entry : smallMapState.entries()) {
+//            String eventField = entry.getKey();
+//            Tuple3<Long, FlinkEventDTO, Long> tuple3 = entry.getValue();
+//            Long eventValueSum = tuple3.f0;
 //            if (Objects.isNull(eventValueSum)) {
 //                eventValueSum = 0L;
 //            }
-//            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventFieldAndTimeTuple2.f0);
+//            RuleCondDTO ruleCondDTO = ruleConditionMapByEventField.get(eventField);
 //            // 获取事件字段与其对应的事件累加值
 //            eventFiledAndValueSumMap.put(ruleCondDTO.getEventField(), eventValueSum);
 //            // 获取事件字段与其对应的预警结果
@@ -279,10 +280,10 @@
 //                    ruleCondDTO.getThreshold(), ruleCondDTO.getThresholdScaleFactor());
 //            eventFieldAndAlertResult.put(ruleCondDTO.getEventField(), alertResult);
 //            // 更新最新的事件数据
-//            Long eventTime = eventFieldAndTimeTuple2.f1;
+//            Long eventTime = tuple3.f2;
 //            if (eventTime > timestampMax) {
 //                timestampMax = eventTime;
-//                lastEventState.update(eventValueAndEventDataTuple2.f1);
+//                lastEventState.update(tuple3.f1);
 //            }
 //        }
 //        boolean eventResult = evaluateEventResults(eventFieldAndAlertResult, ruleInfoDTO.getRuleCondCombOp());
@@ -341,9 +342,9 @@
 //            hasValueState.update(true);
 //        }
 //        // 状态值防空
-//        Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(Tuple2.of(flinkEventDTO.getEventField(), processTimestamp));
-//        if (Objects.isNull(eventValueAndEventDateTuple2)) {
-//            smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), processTimestamp), Tuple2.of(0L, flinkEventDTO));
+//        Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
+//        if (Objects.isNull(tuple3)) {
+//            smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(0L, flinkEventDTO, processTimestamp));
 //        }
 //        // 规则事件值计算
 //        if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
@@ -368,7 +369,7 @@
 //                    log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
 //                    return;
 //                }
-//                smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), processTimestamp), Tuple2.of(Long.parseLong(initValue), flinkEventDTO));
+//                smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, processTimestamp));
 //                smallInitMapState.put(flinkEventDTO.getEventField(), true);
 //            }
 //            // 从redis初始化值后，正常处理数据
@@ -383,10 +384,10 @@
 //    }
 //
 //    private void addEventValue(long processTimestamp, FlinkEventDTO flinkEventDTO) throws Exception {
-//        Tuple2<Long, FlinkEventDTO> eventValueAndEventDateTuple2 = smallMapState.get(Tuple2.of(flinkEventDTO.getEventField(), processTimestamp));
-//        Long currentValue = eventValueAndEventDateTuple2.f0;
+//        Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
+//        Long currentValue = tuple3.f0;
 //        Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
-//        smallMapState.put(Tuple2.of(flinkEventDTO.getEventField(), processTimestamp), Tuple2.of(newValue, flinkEventDTO));
+//        smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(newValue, flinkEventDTO, processTimestamp));
 //    }
 //
 //
@@ -522,8 +523,18 @@
 //     * 处理最近时间类型规则计算
 //     */
 //    private boolean onTimerRecent(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
+////        boolean debug = false;
+////        if (Objects.equals(ruleInfoDTO.getRuleCode(), 1895031804847591424L)) {
+////            debug = true;
+////        }
+////        if (debug) {
+////            logSmallMapState(ruleInfoDTO.getRuleCode(), currentKey);
+////        }
 //        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
 //        aggregateSmallMapToBigMap(processTimestamp);
+////        if (debug) {
+////            logBigMapState(ruleInfoDTO.getRuleCode(), currentKey);
+////        }
 //        // 清理窗口大小之外的数据
 //        cleanupWindowData(processTimestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
@@ -548,8 +559,8 @@
 //    }
 //
 //    private void logSmallMapState(Long ruleCode, String currentKey) throws Exception {
-//        Map<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMap = new HashMap<>();
-//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> entry : smallMapState.entries()) {
+//        Map<String, Tuple3<Long, FlinkEventDTO, Long>> smallMap = new HashMap<>();
+//        for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> entry : smallMapState.entries()) {
 //            smallMap.put(entry.getKey(), entry.getValue());
 //        }
 //        log.debug("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
@@ -690,22 +701,22 @@
 //    private void aggregateSmallMapToBigMap(long processTimestamp) throws Exception {
 //        // 遍历 smallMapState 的所有条目
 //        Long timestampMax = 0L;
-//        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> smallMapEntry : smallMapState.entries()) {
-//            Tuple2<String, Long> eventFieldAndTimeTuple2 = smallMapEntry.getKey();
-//            Tuple2<Long, FlinkEventDTO> eventValueAndEventDataTuple2 = smallMapEntry.getValue();
+//        for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> smallMapEntry : smallMapState.entries()) {
+//            String eventField = smallMapEntry.getKey();
+//            Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapEntry.getValue();
 //            // 创建新的 Tuple2 作为 bigMapState 的键
-//            Tuple2<String, Long> tupleKey = Tuple2.of(eventFieldAndTimeTuple2.f0, processTimestamp);
+//            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, processTimestamp);
 //            // 将 (eventField, processTimestamp) 作为键，eventValue 作为值，存入 bigMapState
 //            Long oldValue = bigMapState.get(tupleKey);
 //            if (Objects.isNull(oldValue)) {
 //                oldValue = 0L;
 //            }
-//            bigMapState.put(tupleKey, oldValue + eventValueAndEventDataTuple2.f0);
+//            bigMapState.put(tupleKey, oldValue + tuple3.f0);
 //            // 更新最新的事件数据
-//            Long eventTime = eventFieldAndTimeTuple2.f1;
+//            Long eventTime = tuple3.f2;
 //            if (eventTime > timestampMax) {
 //                timestampMax = eventTime;
-//                lastEventState.update(eventValueAndEventDataTuple2.f1);
+//                lastEventState.update(tuple3.f1);
 //            }
 //        }
 //        // 当前窗口步长的数据已经添加到窗口中了，清空当前key状态

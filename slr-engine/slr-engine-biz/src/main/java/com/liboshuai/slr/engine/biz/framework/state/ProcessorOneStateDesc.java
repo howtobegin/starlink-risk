@@ -5,15 +5,16 @@ import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 
 /**
  * 运算机one的状态描述
  **/
 public class ProcessorOneStateDesc {
 
-    public static MapStateDescriptor<Tuple2<String, Long>, Tuple2<Long, FlinkEventDTO>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<String, Tuple3<Long, FlinkEventDTO, Long>> getSmallMapStateDesc(Long ruleCode, Long ruleVersion) {
         String stateDescName = "smallMapState_" + ruleCode + "_" + ruleVersion;
-        return new MapStateDescriptor<>(stateDescName, Types.TUPLE(Types.STRING, Types.LONG), Types.TUPLE(Types.LONG, Types.POJO(FlinkEventDTO.class)));
+        return new MapStateDescriptor<>(stateDescName, Types.STRING, Types.TUPLE(Types.LONG, Types.POJO(FlinkEventDTO.class), Types.LONG));
     }
 
     public static MapStateDescriptor<String, Boolean> getSmallInitMapStateDesc(Long ruleCode, Long ruleVersion) {
