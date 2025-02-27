@@ -153,7 +153,7 @@ public class ProcessorOne implements Processor {
         if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
             processElementRecent(processTimestamp, timerService, flinkEventDTO, out);
         } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
-            processElementRange(currentKey, processTimestamp, timerService, ruleConditionMapByEventField, flinkEventDTO, out);
+            processElementRange(currentKey, processTimestamp, timerService, condType, ruleConditionMapByEventField, flinkEventDTO, out);
         } else {
             log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), condType, flinkEventDTO);
         }
@@ -193,20 +193,20 @@ public class ProcessorOne implements Processor {
      * 计算处理最近范围时间类型的事件规则数据
      */
     private void processElementRange(String currentKey, long processTimestamp, TimerService timerService,
-                                     Map<String, RuleCondDTO> ruleConditionMapByEventField,
+                                     String condType, Map<String, RuleCondDTO> ruleConditionMapByEventField,
                                      FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
         // 处理时间范围
         handleTimeRange(processTimestamp, timerService, flinkEventDTO, out);
         // 处理smallMapState
         Tuple2<Boolean, ProcessorDTO> processSmallMapResult = processSmallMap(ruleConditionMapByEventField);
         // 处理预警结果
-        handleAlertResult(currentKey, processTimestamp, out, processSmallMapResult);
+        handleAlertResult(currentKey, processTimestamp, condType, out, processSmallMapResult);
     }
 
     /**
      * 处理预警结果
      */
-    private void handleAlertResult(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, Tuple2<Boolean, ProcessorDTO> processSmallMapResult) throws IOException {
+    private void handleAlertResult(String currentKey, long processTimestamp, String condType, Collector<FlinkResultDTO> out, Tuple2<Boolean, ProcessorDTO> processSmallMapResult) throws IOException {
         // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
         if (lastAlertTimeState.value() == null) {
             lastAlertTimeState.update(0L);
@@ -214,8 +214,16 @@ public class ProcessorOne implements Processor {
         // 获取预警间隔时间，单位为毫秒
         Long alertInterval = getAlertInterval(ruleInfoDTO);
         // 检查是否需要发送预警
-        boolean shouldAlert = processSmallMapResult.f0 &&
-                (alertInterval == null || (processTimestamp - lastAlertTimeState.value() >= alertInterval));
+        boolean shouldAlert;
+        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) {
+            shouldAlert = processSmallMapResult.f0 &&
+                    (alertInterval == null || (processTimestamp - lastAlertTimeState.value() >= alertInterval));
+        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) {
+            shouldAlert = processSmallMapResult.f0;
+        } else {
+            log.warn("因规则[{}]的条件类型为未知值[{}]，故跳过此次计算！", ruleInfoDTO.getRuleCode(), condType);
+            return;
+        }
         if (shouldAlert) {
             // 更新最后预警时间
             lastAlertTimeState.update(processTimestamp);
@@ -497,7 +505,7 @@ public class ProcessorOne implements Processor {
         }
         // 数据计算，返回定时器是否注册判断
         if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
-            return onTimerRecent(currentKey, processTimestamp, out, ruleConditionMapByEventField);
+            return onTimerRecent(currentKey, processTimestamp, condType, out, ruleConditionMapByEventField);
         } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
             onTimerRange(processTimestamp);
             return false;
@@ -525,7 +533,8 @@ public class ProcessorOne implements Processor {
     /**
      * 处理最近时间类型规则计算
      */
-    private boolean onTimerRecent(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
+    private boolean onTimerRecent(String currentKey, long processTimestamp, String condType, Collector<FlinkResultDTO> out,
+                                  Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
 //        boolean debug = false;
 //        if (Objects.equals(ruleInfoDTO.getRuleCode(), 1895031804847591424L)) {
 //            debug = true;
@@ -543,7 +552,7 @@ public class ProcessorOne implements Processor {
         // 处理bigMapState
         Tuple2<Boolean, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
         // 处理预警结果
-        handleAlertResult(currentKey, processTimestamp, out, processBigMapResult);
+        handleAlertResult(currentKey, processTimestamp, condType, out, processBigMapResult);
         return hasActiveEvents();
     }
 
@@ -682,7 +691,7 @@ public class ProcessorOne implements Processor {
                                     Long eventThreshold, Long thresholdScaleFactor) throws Exception {
         boolean result = false;
         if (Objects.isNull(thresholdScaleFactor)) {
-            result = eventValueSum > eventThreshold;
+            log.warn("因规则[{}]的缩放因子为空，故跳过此次计算！", ruleInfoDTO.getRuleCode());
         } else {
             Long latestThreshold = latestEventThresholdMapState.get(eventField);
             if (Objects.isNull(latestThreshold)) {
