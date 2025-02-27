@@ -28,8 +28,8 @@ public class AlertPageReqVO extends PageParam {
     @Schema(description = "渠道", example = "game", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String channel;
 
-    @Schema(description = "规则编号", example = "R175928847299117063", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String ruleCode;
+    @Schema(description = "规则编号", example = "1894995650228129792", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long ruleCode;
 
     @Schema(description = "预警消息", example = "触发了xxx预警", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String message;

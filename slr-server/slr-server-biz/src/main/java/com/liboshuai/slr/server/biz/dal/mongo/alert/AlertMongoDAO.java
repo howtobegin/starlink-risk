@@ -34,8 +34,8 @@ public class AlertMongoDAO {
         if (channel != null && !channel.isEmpty()) {
             criteriaList.add(Criteria.where("channel").is(channel));
         }
-        String ruleCode = alertPageReqVO.getRuleCode();
-        if (ruleCode != null && !ruleCode.isEmpty()) {
+        Long ruleCode = alertPageReqVO.getRuleCode();
+        if (ruleCode != null) {
             criteriaList.add(Criteria.where("ruleCode").is(ruleCode));
         }
         String message = alertPageReqVO.getMessage();
