@@ -1,138 +1,262 @@
 package com.liboshuai.slr.engine.api.utils;
 
+import com.liboshuai.slr.engine.api.dto.FlinkEventDTO;
+import com.liboshuai.slr.engine.api.dto.ProcessorDTO;
+import com.liboshuai.slr.engine.api.dto.RuleCondDTO;
+import com.liboshuai.slr.engine.api.dto.RuleInfoDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * TemplateUtil 单元测试
- */
-class TemplateUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-    /**
-     * 测试基本对象属性替换
-     */
-    @Test
-    void testReplacePlaceholders_withSimpleObject() {
-        User user = new User("Alice", 25);
-        String template = "Hello, ${User.name}. You are ${User.age} years old.";
+public class TemplateUtilTest {
 
-        String result = TemplateUtil.replacePlaceholders(template, user);
+    private RuleInfoDTO ruleInfoDTO;
+    private FlinkEventDTO flinkEventDTO;
+    private ProcessorDTO processorDTO;
 
-        assertThat(result).isEqualTo("Hello, Alice. You are 25 years old.");
+    @BeforeEach
+    public void setUp() {
+        // 设置RuleInfoDTO
+        List<RuleCondDTO> ruleCondGroup = new ArrayList<>();
+        RuleCondDTO ruleCondDTO = new RuleCondDTO();
+        ruleCondDTO.setWindowValue(10L);
+        ruleCondDTO.setWindowUnit("分钟");
+        ruleCondDTO.setThreshold(20L);
+        ruleCondDTO.setEventField("lottery");
+        ruleCondGroup.add(ruleCondDTO);
+
+        ruleInfoDTO = RuleInfoDTO.builder()
+                .channel("GAME")
+                .ruleCode(1553673459123456000L)
+                .ruleName("游戏高频抽奖")
+                .ruleDesc("游戏高频抽奖规则")
+                .ruleStatus("ENABLED")
+                .ruleVersion(1L)
+                .alertIntervalValue(30L)
+                .alertIntervalUnit("MINUTE")
+                .alertProjectNo("GAME_ALERT")
+                .alertLevel("HIGH")
+                .alertTemplate("[异常高频抽奖]${FlinkEventDTO.eventAttrMap.bankName}: " +
+                        "${FlinkEventDTO.eventAttrMap.campaignName}(${FlinkEventDTO.eventAttrMap.campaignId})中" +
+                        "游戏用户(${FlinkEventDTO.targetValue})最近${RuleInfoDTO.ruleCondGroup.0.windowValue}" +
+                        "${RuleInfoDTO.ruleCondGroup.0.windowUnit}内抽奖数量为${ProcessorDTO.eventValueGroup.lottery}，" +
+                        "超过${RuleInfoDTO.ruleCondGroup.0.threshold}次，请您及时查看原因！")
+                .targetCode("game_userId")
+                .targetField("userId")
+                .targetName("用户id")
+                .modelCode(1001L)
+                .ruleCondCombOp("AND")
+                .ruleCondGroup(ruleCondGroup)
+                .build();
+
+        // 设置FlinkEventDTO
+        Map<String, String> eventAttrMap = new HashMap<>();
+        eventAttrMap.put("bankName", "邮储银行");
+        eventAttrMap.put("campaignName", "抽奖活动");
+        eventAttrMap.put("campaignId", "C0000001");
+
+        flinkEventDTO = FlinkEventDTO.builder()
+                .eventTime(1736732339769L)
+                .channel("GAME")
+                .targetField("userId")
+                .targetValue("U000001")
+                .eventField("lottery")
+                .eventValue("1")
+                .eventAttrMap(eventAttrMap)
+                .build();
+
+        // 设置ProcessorDTO
+        Map<String, Long> eventValueGroup = new HashMap<>();
+        eventValueGroup.put("lottery", 21L);
+
+        processorDTO = ProcessorDTO.builder()
+                .eventValueGroup(eventValueGroup)
+                .build();
     }
 
-    /**
-     * 测试嵌套对象替换
-     */
     @Test
-    void testReplacePlaceholders_withNestedObject() {
-        Address address = new Address("New York", "USA");
-        User user = new User("Bob", 30, address);
-        String template = "User: ${User.name}, Age: ${User.age}, City: ${User.address.city}, Country: ${User.address.country}";
+    public void testReplacePlaceholdersCompleteTemplate() {
+        // 测试完整模板替换
+        String template = ruleInfoDTO.getAlertTemplate();
+        String expected = "[异常高频抽奖]邮储银行: 抽奖活动(C0000001)中游戏用户(U000001)最近10分钟内抽奖数量为21，超过20次，请您及时查看原因！";
 
-        String result = TemplateUtil.replacePlaceholders(template, user);
-
-        assertThat(result).isEqualTo("User: Bob, Age: 30, City: New York, Country: USA");
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO, flinkEventDTO, processorDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 测试多个对象替换
-     */
     @Test
-    void testReplacePlaceholders_withMultipleObjects() {
-        User user = new User("Dave", 40);
-        Address address = new Address("Los Angeles", "USA");
+    public void testReplacePlaceholdersSimpleFields() {
+        // 测试简单字段替换
+        String template = "规则名称: ${RuleInfoDTO.ruleName}, 目标用户: ${FlinkEventDTO.targetValue}";
+        String expected = "规则名称: 游戏高频抽奖, 目标用户: U000001";
 
-        String template = "Person: ${User.name}, Age: ${User.age}, Location: ${Address.city}, ${Address.country}";
-
-        String result = TemplateUtil.replacePlaceholders(template, user, address);
-
-        assertThat(result).isEqualTo("Person: Dave, Age: 40, Location: Los Angeles, USA");
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO, flinkEventDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 测试占位符不存在的情况
-     */
     @Test
-    void testReplacePlaceholders_withMissingPlaceholder() {
-        User user = new User("Eve", 28);
-        String template = "Hello, ${User.name}. Your job: ${User.job}.";
+    public void testReplacePlaceholdersMapAccess() {
+        // 测试Map访问
+        String template = "银行: ${FlinkEventDTO.eventAttrMap.bankName}, 活动ID: ${FlinkEventDTO.eventAttrMap.campaignId}";
+        String expected = "银行: 邮储银行, 活动ID: C0000001";
 
-        String result = TemplateUtil.replacePlaceholders(template, user);
-
-        // 未定义 job 字段，仍保持原占位符
-        assertThat(result).isEqualTo("Hello, Eve. Your job: ${User.job}.");
+        String result = TemplateUtil.replacePlaceholders(template, flinkEventDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 处理输入为空的情况
-     */
     @Test
-    void testReplacePlaceholders_withNullInputs() {
-        String template = "Test: ${User.name}";
-        String result = TemplateUtil.replacePlaceholders(template, (Object) null);
+    public void testReplacePlaceholdersListIndexAccess() {
+        // 测试列表索引访问
+        String template = "窗口值: ${RuleInfoDTO.ruleCondGroup.0.windowValue}, 窗口单位: ${RuleInfoDTO.ruleCondGroup.0.windowUnit}";
+        String expected = "窗口值: 10, 窗口单位: 分钟";
 
-        // 替换无效，保留占位符
-        assertThat(result).isEqualTo("Test: ${User.name}");
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 处理基本数据类型
-     */
     @Test
-    void testReplacePlaceholders_withPrimitiveFields() {
-        Stats stats = new Stats(99, true);
-        String template = "Score: ${Stats.points}, Passed: ${Stats.passed}";
+    public void testReplacePlaceholdersNestedMapValues() {
+        // 测试嵌套的Map值
+        String template = "抽奖次数: ${ProcessorDTO.eventValueGroup.lottery}";
+        String expected = "抽奖次数: 21";
 
-        String result = TemplateUtil.replacePlaceholders(template, stats);
-
-        assertThat(result).isEqualTo("Score: 99, Passed: true");
+        String result = TemplateUtil.replacePlaceholders(template, processorDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 用户实体类
-     */
-    static class User {
-        private final String name;
-        private final int age;
-        private Address address;
+    @Test
+    public void testReplacePlaceholdersNonExistingClass() {
+        // 测试不存在的类
+        String template = "${NonExistingClass.field}";
+        String expected = "${NonExistingClass.field}";
 
-        User(String name, int age) {
-            this.name = name;
-            this.age = age;
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO, flinkEventDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersNonExistingField() {
+        // 测试不存在的字段
+        String template = "${RuleInfoDTO.nonExistingField}";
+        String expected = "${RuleInfoDTO.nonExistingField}";
+
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersNonExistingMapKey() {
+        // 测试不存在的Map键
+        String template = "${FlinkEventDTO.eventAttrMap.nonExistingKey}";
+        String expected = "${FlinkEventDTO.eventAttrMap.nonExistingKey}";
+
+        String result = TemplateUtil.replacePlaceholders(template, flinkEventDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersOutOfBoundListIndex() {
+        // 修改规则条件组大小以测试越界索引
+        List<RuleCondDTO> singleItemList = new ArrayList<>();
+        singleItemList.add(new RuleCondDTO());
+        ruleInfoDTO.setRuleCondGroup(singleItemList);
+
+        // 测试越界的列表索引
+        String template = "${RuleInfoDTO.ruleCondGroup.5.windowValue}";
+        String expected = "${RuleInfoDTO.ruleCondGroup.5.windowValue}";
+
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersNullObject() {
+        // 测试空对象
+        String template = "测试: ${RuleInfoDTO.ruleName}";
+        String expected = "测试: ${RuleInfoDTO.ruleName}";
+
+        String result = TemplateUtil.replacePlaceholders(template, (Object[]) null);
+        assertEquals(template, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersEmptyTemplate() {
+        // 测试空模板
+        String result = TemplateUtil.replacePlaceholders("", ruleInfoDTO, flinkEventDTO);
+        assertEquals("", result);
+
+        result = TemplateUtil.replacePlaceholders(null, ruleInfoDTO, flinkEventDTO);
+        assertNull(result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersNullFieldValue() {
+        // 测试空字段值
+        ruleInfoDTO.setRuleName(null);
+        String template = "规则名称: ${RuleInfoDTO.ruleName}";
+        String expected = "规则名称: ${RuleInfoDTO.ruleName}";
+
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
+    }
+
+    // 这个方法模拟TemplateUtil中的一个扩展功能，用于处理命名对象
+    private String customReplacePlaceholders(String template, Map<String, Object> namedObjects) {
+        // 实际项目中可以添加这个方法到TemplateUtil类中
+        if (template == null || namedObjects == null || namedObjects.isEmpty()) {
+            return template;
         }
 
-        User(String name, int age, Address address) {
-            this.name = name;
-            this.age = age;
-            this.address = address;
-        }
+        // 转换为对象数组调用原方法
+        return TemplateUtil.replacePlaceholders(template, namedObjects.values().toArray());
     }
 
-    /**
-     * 地址实体类
-     */
-    static class Address {
-        private final String city;
-        private final String country;
+    @Test
+    public void testReplacePlaceholdersMixedContent() {
+        // 测试混合内容替换
+        String template = "这是${RuleInfoDTO.ruleName}的测试，用户${FlinkEventDTO.targetValue}在${FlinkEventDTO.eventAttrMap.bankName}";
+        String expected = "这是游戏高频抽奖的测试，用户U000001在邮储银行";
 
-        Address(String city, String country) {
-            this.city = city;
-            this.country = country;
-        }
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO, flinkEventDTO);
+        assertEquals(expected, result);
     }
 
-    /**
-     * 成绩统计
-     */
-    static class Stats {
-        private final int points;
-        private final boolean passed;
+    @Test
+    public void testReplacePlaceholdersEmptyMap() {
+        // 测试空Map
+        flinkEventDTO.setEventAttrMap(new HashMap<>());
+        String template = "${FlinkEventDTO.eventAttrMap.bankName}";
+        String expected = "${FlinkEventDTO.eventAttrMap.bankName}";
 
-        Stats(int points, boolean passed) {
-            this.points = points;
-            this.passed = passed;
-        }
+        String result = TemplateUtil.replacePlaceholders(template, flinkEventDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersEmptyList() {
+        // 测试空List
+        ruleInfoDTO.setRuleCondGroup(new ArrayList<>());
+        String template = "${RuleInfoDTO.ruleCondGroup.0.windowValue}";
+        String expected = "${RuleInfoDTO.ruleCondGroup.0.windowValue}";
+
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplacePlaceholdersInvalidPlaceholder() {
+        // 测试无效的占位符
+        String template = "${.invalid}";
+        String expected = "${.invalid}";
+
+        String result = TemplateUtil.replacePlaceholders(template, ruleInfoDTO);
+        assertEquals(expected, result);
     }
 }

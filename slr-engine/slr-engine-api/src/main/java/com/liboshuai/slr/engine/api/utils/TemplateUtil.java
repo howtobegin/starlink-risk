@@ -1,99 +1,150 @@
 package com.liboshuai.slr.engine.api.utils;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 字符串消息模板替换 工具类
  */
+@Slf4j
 public class TemplateUtil {
 
-    private static final String SEPARATOR = ".";
+
+    /**
+     * 占位符正则表达式，匹配${ClassName.fieldName}或${ClassName.fieldName.nestedField}形式
+     */
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{([^{}]+)\\}");
 
     /**
      * 替换模板中的占位符
      *
-     * @param template 消息模板，支持占位符如 ${KafkaPojo.channel}
-     * @param objects  需要绑定的对象，可以是多个对象
-     * @return 替换占位符后的字符串
+     * @param template 包含占位符的模板字符串
+     * @param objects 用于提取值的对象列表
+     * @return 替换后的字符串
      */
     public static String replacePlaceholders(String template, Object... objects) {
-        Map<String, String> placeholderMap = new HashMap<>();
+        if (StringUtils.isBlank(template) || objects == null || objects.length == 0) {
+            return template;
+        }
 
+        // 创建对象名称到对象的映射
+        Map<String, Object> objectMap = new HashMap<>();
         for (Object obj : objects) {
             if (obj != null) {
-                String objectPrefix = obj.getClass().getSimpleName(); // 类名作为前缀
-                populatePlaceholderMap(objectPrefix, obj, placeholderMap);
+                String className = obj.getClass().getSimpleName();
+                objectMap.put(className, obj);
             }
         }
 
-        // 使用 StringSubstitutor 进行占位符替换
-        StringSubstitutor substitutor = new StringSubstitutor(placeholderMap);
+        // 用于存储最终的替换值
+        Map<String, String> valueMap = new HashMap<>();
+
+        // 查找所有占位符
+        Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
+        while (matcher.find()) {
+            String placeholder = matcher.group(1);
+            String[] parts = placeholder.split("\\.");
+
+            if (parts.length < 2) {
+                continue;
+            }
+
+            String className = parts[0];
+            Object obj = objectMap.get(className);
+
+            if (obj == null) {
+                continue;
+            }
+
+            try {
+                // 提取对象的值
+                Object value = extractValue(obj, parts, 1);
+                if (value != null) {
+                    valueMap.put(placeholder, value.toString());
+                }
+            } catch (Exception e) {
+                log.warn("Error extracting value for placeholder: {}", placeholder, e);
+            }
+        }
+
+        // 使用 StringSubstitutor 替换占位符
+        StringSubstitutor substitutor = new StringSubstitutor(valueMap, "${", "}");
         return substitutor.replace(template);
     }
 
     /**
-     * 展开对象的所有字段，构造占位符对应的值
+     * 递归提取对象的值
      *
-     * @param parentPrefix   当前字段的路径前缀
-     * @param obj            当前对象
-     * @param placeholderMap 用于存储占位符和实际值的映射表
+     * @param obj 当前对象
+     * @param parts 占位符拆分的各部分
+     * @param index 当前处理的部分索引
+     * @return 提取的值
      */
-    private static void populatePlaceholderMap(String parentPrefix, Object obj, Map<String, String> placeholderMap) {
-        if (obj == null) {
-            return;
+    @SuppressWarnings("unchecked")
+    private static Object extractValue(Object obj, String[] parts, int index) throws Exception {
+        if (obj == null || index >= parts.length) {
+            return obj;
         }
 
-        // 如果是 Map 类型，递归处理其键值对
-        if (obj instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> map = (Map<String, Object>) obj;
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                String mapKey = parentPrefix + SEPARATOR + entry.getKey();
-                populatePlaceholderMap(mapKey, entry.getValue(), placeholderMap);
-            }
-        }
-        // 如果是 List 类型，递归处理每个元素
-        else if (obj instanceof List) {
+        String fieldName = parts[index];
+
+        // 处理集合索引访问 例如: ruleCondGroup.0.windowValue
+        if (obj instanceof List && fieldName.matches("\\d+")) {
+            int listIndex = Integer.parseInt(fieldName);
             List<?> list = (List<?>) obj;
-            for (int i = 0; i < list.size(); i++) {
-                String listKey = parentPrefix + SEPARATOR + i;
-                populatePlaceholderMap(listKey, list.get(i), placeholderMap);
+            if (listIndex >= 0 && listIndex < list.size()) {
+                return extractValue(list.get(listIndex), parts, index + 1);
             }
+            return null;
         }
-        // 如果是基本类型、字符串或其他简单值，直接放入占位符映射
-        else if (isPrimitiveOrWrapper(obj.getClass()) || obj instanceof String) {
-            placeholderMap.put(parentPrefix, obj.toString());
+
+        // 处理Map访问 例如: eventAttrMap.bankName
+        if (obj instanceof Map) {
+            Map<String, ?> map = (Map<String, ?>) obj;
+            Object value = map.get(fieldName);
+            return index + 1 < parts.length ? extractValue(value, parts, index + 1) : value;
         }
-        // 如果是复杂对象，递归展开其字段
-        else {
-            Field[] fields = obj.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true); // 允许访问私有字段
-                try {
-                    Object value = field.get(obj); // 获取字段值
-                    String fieldKey = parentPrefix + SEPARATOR + field.getName();
-                    populatePlaceholderMap(fieldKey, value, placeholderMap);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Error accessing field: " + field.getName(), e);
-                }
+
+        // 通过反射访问字段
+        try {
+            Field field = findField(obj.getClass(), fieldName);
+            if (field != null) {
+                field.setAccessible(true);
+                Object value = field.get(obj);
+                return index + 1 < parts.length ? extractValue(value, parts, index + 1) : value;
             }
+        } catch (NoSuchFieldException e) {
+            log.debug("Field {} not found in {}", fieldName, obj.getClass().getName());
         }
+
+        return null;
     }
 
     /**
-     * 判断一个类型是否为基本类型或其包装类型
+     * 在类及其父类中查找字段
      *
-     * @param clazz 类型
-     * @return 是否为基本类型或包装类型
+     * @param clazz 类对象
+     * @param fieldName 字段名
+     * @return 字段对象
+     * @throws NoSuchFieldException 如果字段不存在
      */
-    private static boolean isPrimitiveOrWrapper(Class<?> clazz) {
-        return clazz.isPrimitive() || clazz == Boolean.class || clazz == Byte.class ||
-                clazz == Character.class || clazz == Short.class || clazz == Integer.class ||
-                clazz == Long.class || clazz == Float.class || clazz == Double.class;
+    private static Field findField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null && superClass != Object.class) {
+                return findField(superClass, fieldName);
+            }
+            throw e;
+        }
     }
 }
