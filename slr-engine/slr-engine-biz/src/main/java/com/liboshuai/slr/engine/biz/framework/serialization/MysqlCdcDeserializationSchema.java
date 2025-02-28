@@ -78,7 +78,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
         MysqlCdcDTO mysqlCdcDTO = new MysqlCdcDTO();
         // 获取 库名、表名信息
         mysqlCdcDTO.setSource(getSource(sourceRecord));
-        // 获取 mysql binlog 发生时间
+        // 获取 MySql binlog 事件发生时间
         mysqlCdcDTO.setTsSec(Integer.parseInt(sourceRecord.sourceOffset().get("ts_sec").toString()));
         // 获取 before、after 数据的 JSON 字符串
         mysqlCdcDTO.setBefore(getDataJsonAsString(sourceRecord, "before"));
