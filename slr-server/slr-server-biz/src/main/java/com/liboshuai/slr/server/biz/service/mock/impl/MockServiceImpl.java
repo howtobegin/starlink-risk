@@ -148,6 +148,8 @@ public class MockServiceImpl implements MockService {
         if (Objects.equals(eventField, "orderAmount")) {
             // 订单金额
             builder.eventValue(String.valueOf(random.nextInt(100)));
+        } else {
+            builder.eventValue(String.valueOf(random.nextInt(11)));
         }
 
         // Common bank info
@@ -159,8 +161,7 @@ public class MockServiceImpl implements MockService {
 
         builder.channel(channel)
                 .targetField("userId")
-                .targetValue(generateUserId())
-                .eventValue(String.valueOf(random.nextInt(11)));
+                .targetValue(generateUserId());
         return builder.build();
     }
 
