@@ -16,6 +16,7 @@
       "windowValue": 5,
       "windowUnit": "分钟",
       "threshold": 100,
+      "thresholdScaleFactor": 1,
       "crossHistory": false,
       "eventCode": "hjf_userId_orderAmount"
     },
@@ -24,6 +25,7 @@
       "windowValue": 5,
       "windowUnit": "分钟",
       "threshold": 10,
+      "thresholdScaleFactor": 1,
       "crossHistory": false,
       "eventCode": "hjf_userId_orderCount"
     }

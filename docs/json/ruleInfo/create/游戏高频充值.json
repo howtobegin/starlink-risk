@@ -1,0 +1,24 @@
+{
+  "channel": "game",
+  "ruleName": "游戏高频充值",
+  "ruleDesc": "游戏高频充值规则",
+  "alertProjectNo": "game",
+  "alertLevel": "3",
+  "alertTemplate": "[异常高频充值]${FlinkEventDTO.eventAttrMap.bankName}: ${FlinkEventDTO.eventAttrMap.campaignName}(${FlinkEventDTO.eventAttrMap.campaignId})中游戏用户(${FlinkEventDTO.targetValue})今日充值金额为${ProcessorDTO.eventValueGroup.recharge}元，超过（设置的充值金额上限：${RuleInfoDTO.ruleCondGroup.0.threshold}）元，请您及时查看原因！",
+  "targetCode": "game_userId",
+  "modelCode": 1889596060557512704,
+  "ruleCondGroup": [
+    {
+      "condType": "range",
+      "timeRange": {
+        "type": "daily",
+        "startTime": "00:00:00",
+        "endTime": "23:59:59"
+      },
+      "threshold": 10,
+      "thresholdScaleFactor": 3,
+      "crossHistory": false,
+      "eventCode": "game_userId_recharge"
+    }
+  ]
+}

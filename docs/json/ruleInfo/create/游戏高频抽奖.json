@@ -15,6 +15,7 @@
       "windowValue": 20,
       "windowUnit": "分钟",
       "threshold": 10,
+      "thresholdScaleFactor": 1,
       "crossHistory": false,
       "eventCode": "game_userId_lottery"
     }
