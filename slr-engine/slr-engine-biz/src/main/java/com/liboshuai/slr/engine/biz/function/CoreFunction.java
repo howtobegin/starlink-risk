@@ -47,7 +47,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
      */
     private final Map<Long, Processor> ruleProcessorPool = new ConcurrentHashMap<>();
     /**
-     * 最近15分钟时间事件数据缓存
+     * 最近10分钟时间事件数据缓存
      */
     private final Map<String, List<FlinkEventDTO>> recentEventMap = new HashMap<>();
     /**
@@ -105,7 +105,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(flinkResultDTO);
-        // 将事件添加到缓存列表中并移除超过15分钟的过期数据
+        // 将事件添加到缓存列表中并移除超过10分钟的过期数据
         addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, processTimestamp);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
@@ -129,7 +129,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     }
 
     /**
-     * 将事件添加到缓存列表中并移除超过15分钟的过期数据。
+     * 将事件添加到缓存列表中并移除超过10分钟的过期数据。
      *
      * @param currentKey       当前的键值
      * @param flinkEventDTO    要添加的事件对象
@@ -146,7 +146,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         while (iterator.hasNext()) {
             FlinkEventDTO eventDTO = iterator.next();
             Long eventTime = eventDTO.getEventTime();
-            if (eventTime < processTimestamp - TimeUnit.MINUTES.toMillis(15)) {
+            if (eventTime < processTimestamp - TimeUnit.MINUTES.toMillis(10)) {
                 // 移除过期数据
                 iterator.remove();
             }
