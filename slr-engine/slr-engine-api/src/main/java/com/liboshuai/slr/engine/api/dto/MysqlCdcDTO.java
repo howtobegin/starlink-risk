@@ -24,6 +24,10 @@ public class MysqlCdcDTO implements Serializable {
      */
     private CdcSourceDTO source;
     /**
+     * MySql binlog 时间发生时间
+     */
+    private Integer tsSec;
+    /**
      * 之前的数据
      */
     private String before;
