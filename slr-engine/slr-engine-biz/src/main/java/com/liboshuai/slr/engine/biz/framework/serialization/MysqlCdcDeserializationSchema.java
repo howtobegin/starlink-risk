@@ -47,7 +47,7 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
     /**
      * 使用 JsonConverter 获取 before、after 数据的 JSON 字符串
      */
-    private String getDataJsonAsString(SourceRecord sourceRecord, String fieldName) {
+    private String getStructFieldAsJson(SourceRecord sourceRecord, String fieldName) {
         Struct value = (Struct) sourceRecord.value();
         Struct struct = value.getStruct(fieldName);
         Map<String, String> structMap = new HashMap<>();
@@ -81,8 +81,8 @@ public class MysqlCdcDeserializationSchema implements DebeziumDeserializationSch
         // 获取 MySql binlog 事件发生时间
         mysqlCdcDTO.setTsSec(Integer.parseInt(sourceRecord.sourceOffset().get("ts_sec").toString()));
         // 获取 before、after 数据的 JSON 字符串
-        mysqlCdcDTO.setBefore(getDataJsonAsString(sourceRecord, "before"));
-        mysqlCdcDTO.setAfter(getDataJsonAsString(sourceRecord, "after"));
+        mysqlCdcDTO.setBefore(getStructFieldAsJson(sourceRecord, "before"));
+        mysqlCdcDTO.setAfter(getStructFieldAsJson(sourceRecord, "after"));
         // 设置操作类型
         mysqlCdcDTO.setOp(getOP(sourceRecord));
         // 输出数据
