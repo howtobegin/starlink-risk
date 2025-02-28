@@ -129,7 +129,7 @@ public class MockServiceImpl implements MockService {
 
         String eventField;
         if ("game".equals(channel)) {
-            eventField = "lottery";
+            eventField = random.nextBoolean() ? "lottery" : "raffle";
             builder.eventField(eventField);
             // Populate eventAttrMap with campaign and bank info
             eventAttrMap.put("campaignId", generateCampaignId());
