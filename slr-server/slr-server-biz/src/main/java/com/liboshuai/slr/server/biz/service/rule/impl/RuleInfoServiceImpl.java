@@ -718,17 +718,22 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                         .mapToLong(eventDO -> Long.parseLong(eventDO.getEventValue()))
                         .sum();
                 // 计算阈值
-                // FIXME: 逻辑错误，应该对应条件预警触发后，才更新
-                Long eventThreshold = ruleCondDTO.getThreshold();
+                boolean result = false;
+                Long threshold = ruleCondDTO.getThreshold();
                 Long thresholdScaleFactor = ruleCondDTO.getThresholdScaleFactor();
-                if (Objects.nonNull(thresholdScaleFactor)) {
-                    if (Objects.nonNull(latestThreshold)) {
-                        eventThreshold = latestThreshold * thresholdScaleFactor;
+                if (Objects.isNull(thresholdScaleFactor)) {
+                    log.warn("因规则[{}]的缩放因子为空，故跳过此次计算！", ruleCondDTO.getRuleCode());
+                } else {
+                    if (Objects.isNull(latestThreshold)) {
+                        latestThreshold = threshold;
                     }
-                    latestThreshold = eventThreshold;
+                    if (eventValueSum > latestThreshold) {
+                        latestThreshold = latestThreshold * thresholdScaleFactor;
+                        result = true;
+                    }
                 }
                 // 判断是否需要预警
-                boolean shouldAlert = (eventValueSum > eventThreshold) &&
+                boolean shouldAlert = (result) &&
                         (alertInterval == null || (windowEndTimeStamp - lastAlertTimestamp >= alertInterval));
                 if (shouldAlert) {
                     AlertDTO alertDTO = AlertDTO.builder()
