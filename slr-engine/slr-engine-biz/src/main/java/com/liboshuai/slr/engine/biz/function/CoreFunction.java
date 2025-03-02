@@ -105,7 +105,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(flinkResultDTO);
-        log.info("flinkResultDTO: {}", JsonUtils.toJsonString(flinkResultDTO));
         // 将事件添加到缓存列表中并移除超过10分钟的过期数据
         addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, processTimestamp);
         // 数据遍历经过每个规则运算机
@@ -312,8 +311,8 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 构建规则运算机
-//        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
-        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
+        Processor processor = buildProcessor(runtimeContext, null, ruleInfoDTO);
+//        Processor processor = mockProcessor(runtimeContext, null, ruleInfoDTO);
         if (Objects.nonNull(processor)) {
             ruleProcessorPool.put(ruleCode, processor);
             ruleInfoPool.put(ruleCode, ruleInfoDTO);
@@ -350,7 +349,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void onTimer(long timestamp,
                         KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.OnTimerContext ctx,
                         Collector<FlinkResultDTO> out) throws Exception {
-        log.info("timestamp: {}", timestamp);
         // 获取当前Key
         String currentKey = ctx.getCurrentKey();
         // 判断当前key所有运算机中是否有待处理的定时器
