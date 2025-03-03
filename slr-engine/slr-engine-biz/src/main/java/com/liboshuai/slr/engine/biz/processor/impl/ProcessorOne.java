@@ -115,7 +115,7 @@
 //        bigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion));
 //
 //        // 上一个同规则的运算机残留状态（仅用于测试打印日志使用）
-/// /         oldBigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
+/// /        oldBigMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getGigMapStateDesc(ruleCode, ruleVersion - 1));
 //    }
 //
 //    private <K, V> MapState<K, V> getMapState(boolean isRuntimeContextPresent, RuntimeContext runtimeContext, KeyedStateStore keyedStateStore, MapStateDescriptor<K, V> descriptor) {
@@ -539,18 +539,18 @@
 //    private boolean onTimerRecent(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
 //                                  Collector<FlinkResultDTO> out, String condType,
 //                                  Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
-/// /        boolean debug = false;
-/// /        if (Objects.equals(ruleInfoDTO.getRuleCode(), 1895031804847591424L)) {
-/// /            debug = true;
-/// /        }
-/// /        if (debug) {
-/// /            logSmallMapState(ruleInfoDTO.getRuleCode(), currentKey);
-/// /        }
+//        boolean debug = false;
+//        if (Objects.equals(ruleInfoDTO.getRuleCode(), 1895313318898438144L)) {
+//            debug = true;
+//        }
+//        if (debug) {
+//            logSmallMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
+//        }
 //        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
 //        aggregateSmallMapToBigMap(timestamp);
-////        if (debug) {
-////            logBigMapState(ruleInfoDTO.getRuleCode(), currentKey);
-////        }
+//        if (debug) {
+//            logBigMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
+//        }
 //        // 清理窗口大小之外的数据
 //        cleanupWindowData(timestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
@@ -590,13 +590,13 @@
 //        log.debug("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
 //    }
 //
-/// /    private void logOldState(Long ruleCode, String currentKey) throws Exception {
-/// /        Map<Tuple2<String, Long>, Tuple2<Long, Long>> bigMap = new HashMap<>();
-/// /        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : oldBigMapState.entries()) {
-/// /            bigMap.put(entry.getKey(), entry.getValue());
-/// /        }
-/// /        log.debug("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
-/// /    }
+////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
+////        Map<Tuple2<String, Long>, Tuple2<Long, Long>> bigMap = new HashMap<>();
+////        for (Map.Entry<Tuple2<String, Long>, Tuple2<Long, Long>> entry : oldBigMapState.entries()) {
+////            bigMap.put(entry.getKey(), entry.getValue());
+////        }
+////        log.debug("残留旧状态，ruleCode:{}, currentKey：{}, bigMap：{}", ruleCode, currentKey, bigMap);
+////    }
 //
 //    /**
 //     * 构建预警信息的方法，提取重复逻辑
