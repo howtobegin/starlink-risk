@@ -2,8 +2,7 @@ spring:
   ############################## [数据源 配置项] ##############################
   autoconfigure:
     exclude:
-      # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
   datasource:
     druid: # Druid 【监控】相关的全局配置
       web-stat-filter:
@@ -39,22 +38,28 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://10.150.13.225:3306/dmsql?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          username: njstar
-          password: njstarYX1349
+          url: jdbc:mysql://docker:3308/starlink_risk_prod?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          username: lbs
+          password: Rongshu@2024
         slave:
-          url: jdbc:mysql://10.98.25.23:9030/mall?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-          username: rsmall
-          password: Rsmall@123bdas
+          url: jdbc:mysql://one:9130/starlink_risk_prod?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: root
+          password: Rongshu@2024
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Dawn@Imp0513
+    password: Rongshu@2024
     namespace: starlink_risk_prod
     timeout: 5000
     cluster:
       max-redirects: 3
-      nodes: 10.150.9.124:51917,10.150.9.146:51917,10.150.9.147:51917,10.150.9.124:51918,10.150.9.146:51918,10.150.9.147:51918
+      nodes:
+        - one:6379
+        - one:6380
+        - two:6379
+        - two:6380
+        - three:6379
+        - three:6380
     lettuce:
       pool:
         min-idle: 0
@@ -64,24 +69,24 @@ spring:
   ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: 10.9.150.138:51923,10.9.150.151:51923,10.9.150.152:51923
+      bootstrap-servers: one:9092,two:9092,three:9092
     consumer:
-      bootstrap-servers: 10.9.150.138:51923,10.9.150.151:51923,10.9.150.152:51923
-      group-id: starlink_risk_server
+      bootstrap-servers: one:9092,two:9092,three:9092
+      group-id: starlink_risk_server_prod
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
-      host: 10.150.13.156
-      port: 54257
-      username: impReadWrite
-      password: DawnImp0513
-      database: imp_mongo
-      authentication-database: imp_mongo
+      host: docker
+      port: 27018
+      username: root
+      password: Rongshu@2024
+      database: starlink_risk_prod
+      authentication-database: admin
 
 ############################## [日志 配置项] ##############################
 logging:
   file:
-    name: /app/dmapp/slr/log/server.log # 日志文件名，全路径
+    name: /slr-server/logs/server.log # 日志文件名，全路径
 
 debug: false
 
@@ -90,15 +95,15 @@ slr-server:
   active: prod
   kafka:
     event:
-      topic: starlink_risk_event
+      topic: starlink_risk_event_prod
       partition: 6
       replica: 3
     alert:
-      topic: starlink_risk_alert
+      topic: starlink_risk_alert_prod
       partition: 6
       replica: 3
   file-path:
-    event-log: /app/dmapp/slr/data
+    event-log: /slr-server/data/event.log
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
-    slr-gif: http://10.188.6.154:48881/slr_event_prod.gif
+    slr-gif: http://docker:48881/slr_event_prod.gif
