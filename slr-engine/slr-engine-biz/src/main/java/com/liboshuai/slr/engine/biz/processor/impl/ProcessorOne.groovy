@@ -16,7 +16,6 @@
 //import com.liboshuai.slr.framework.common.enums.CommonStatusEnum
 //import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils
 //import com.liboshuai.slr.framework.common.util.json.JsonUtils
-//import com.liboshuai.slr.framework.common.util.number.WindowUtil
 //import org.apache.flink.api.common.functions.RuntimeContext
 //import org.apache.flink.api.common.state.*
 //import org.apache.flink.api.java.tuple.Tuple2
@@ -30,7 +29,6 @@
 //import java.time.Instant
 //import java.time.LocalDateTime
 //import java.time.ZoneId
-//import java.util.concurrent.TimeUnit
 //
 //public class ProcessorOne implements Processor {
 //
@@ -131,12 +129,12 @@
 //     * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
 //     */
 //    @Override
-//    public void processElement(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
-//                               FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+//    public boolean processElement(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
+//                                  FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        // 前置效验处理
 //        List<RuleCondDTO> condGroupList = afterCheckHandler(flinkEventDTO);
 //        if (condGroupList == null) {
-//            return;
+//            return false;
 //        }
 //        // 将规则条件根据事件编号存储到map中，方便后续操作
 //        Map<String, RuleCondDTO> ruleConditionMapByEventField = new HashMap<>();
@@ -147,11 +145,14 @@
 //        String condType = getCondType(ruleConditionMapByEventField);
 //        // 根据条件类型进行不同处理
 //        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
-//            processElementRecent(ctx, timestamp, flinkEventDTO, out);
+//            processElementRecent(timestamp, flinkEventDTO, out);
+//            return true;
 //        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
 //            processElementRange(ctx, timestamp, flinkEventDTO, out, condType, ruleConditionMapByEventField);
+//            return false;
 //        } else {
 //            log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), condType, flinkEventDTO);
+//            return false;
 //        }
 //    }
 //
@@ -256,7 +257,6 @@
 //                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
 //                // 注册定时器为时间范围结束时刻
 //                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
-//                log.info("processElementRecent-nextEndTimestamp: {}", nextEndTimestamp);
 //                ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
 //                // 更新下次结束时刻
 //                nextEndTimestampState.update(nextEndTimestamp);
@@ -306,18 +306,12 @@
 //    /**
 //     * 计算处理最近条件时间类型的事件规则数据
 //     */
-//    private void processElementRecent(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
-//                                      FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+//    private void processElementRecent(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
 //            // 处理单个规则条件的匹配和规则计算逻辑
 //            processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
 //        }
-//        // 注册定时器（窗口大小1分钟）
-//        long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
-//        + TimeUnit.MINUTES.toMillis(1);
-//        log.info("processElementRecent - currentProcessingTime: {}, fireTime: {}", ctx.currentProcessingTime(), fireTime);
-//        ctx.timerService().registerProcessingTimeTimer(fireTime);
 //    }
 //
 //    /**
@@ -536,15 +530,15 @@
 //    private boolean onTimerRecent(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
 //                                  Collector<FlinkResultDTO> out, String condType,
 //                                  Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
-//        boolean debug = Objects.equals(ruleInfoDTO.getRuleCode(), 1895313318898438144L);
-//        if (debug) {
-//            logSmallMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
-//        }
+////        boolean debug = Objects.equals(ruleInfoDTO.getRuleCode(), 1895313318898438144L);
+////        if (debug) {
+////            logSmallMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
+////        }
 //        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
 //        aggregateSmallMapToBigMap(timestamp);
-//        if (debug) {
-//            logBigMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
-//        }
+////        if (debug) {
+////            logBigMapState(ruleInfoDTO.getRuleCode(), (String) ctx.getCurrentKey());
+////        }
 //        // 清理窗口大小之外的数据
 //        cleanupWindowData(timestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
@@ -573,7 +567,7 @@
 //        for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> entry : smallMapState.entries()) {
 //            smallMap.put(entry.getKey(), entry.getValue());
 //        }
-//        log.debug("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
+//        log.info("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
 //    }
 //
 //    private void logBigMapState(Long ruleCode, String currentKey) throws Exception {
@@ -581,7 +575,7 @@
 //        for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
 //            bigMap.put(entry.getKey(), entry.getValue());
 //        }
-//        log.debug("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
+//        log.info("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
 //    }
 //
 ////    private void logOldState(Long ruleCode, String currentKey) throws Exception {
