@@ -8,11 +8,11 @@
 #******************************************************
 
 # 定义变量
-PROCESS_NAME="slr-server-1.0.jar" # 进程名称
-ROOT_PATH="/app/dmapp/slr" # 项目根路径
+PROCESS_NAME="slr-server-biz-1.0.jar" # 进程名称
+ROOT_PATH="/app/dmapp/project/slr" # 项目根路径
 GC_LOG_PATH="${ROOT_PATH}/log/gc/service-gc.log" # jvm gc日志路径
 HEAP_DUMP_PATH="${ROOT_PATH}/log/dump" # oom dump文件路径
-JAR_PATH="${ROOT_PATH}/jar/slr-server-1.0.jar" # jar包路径
+JAR_PATH="${ROOT_PATH}/jar/slr-server-biz-1.0.jar" # jar包路径
 WORKER_ID=1 # 雪花算法 workerId
 
 

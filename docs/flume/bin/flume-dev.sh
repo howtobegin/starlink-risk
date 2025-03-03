@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# 定义 Flume 配置相关的变量
+FLUME_AGENT_NAME="flume-slr-dev"
+FLUME_HOME="/app/dmapp/software/flume"
+FLUME_CONF_DIR="${FLUME_HOME}/conf"
+FLUME_PROPERTIES_FILE="${FLUME_HOME}/data/properties/fileToKafka.properties"
+FLUME_BIN="${FLUME_HOME}/bin/flume-ng"
+PROCESS_NAME="${FLUME_AGENT_NAME}"
+
+start() {
+    # 检查是否有相同的进程在运行
+    if pgrep -f "${PROCESS_NAME}" > /dev/null; then
+        echo "Flume agent '${FLUME_AGENT_NAME}' 已经在运行。"
+        exit 1
+    fi
+
+    nohup ${FLUME_BIN} agent -c "${FLUME_CONF_DIR}" -f "${FLUME_PROPERTIES_FILE}" \
+        -n "${FLUME_AGENT_NAME}" >/dev/null 2>&1 &
+
+    echo "Flume agent '${FLUME_AGENT_NAME}' 已启动。"
+}
+
+stop() {
+    PIDS=$(pgrep -f "${PROCESS_NAME}")
+
+    if [ -n "${PIDS}" ]; then
+        for pid in ${PIDS}; do
+            echo "正在停止 Flume 进程，PID: ${pid}"
+            kill ${pid}
+        done
+
+        # 等待进程停止
+        for pid in ${PIDS}; do
+            while kill -0 ${pid} 2>/dev/null; do
+                echo "正在停止 Flume agent，PID: ${pid}"
+                sleep 1
+            done
+        done
+
+        echo "Flume agent 已停止。"
+    else
+        echo "未找到正在运行的 Flume agent。"
+    fi
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    PIDS=$(pgrep -f "${PROCESS_NAME}")
+
+    if [ -n "${PIDS}" ]; then
+        for pid in ${PIDS}; do
+            START_TIME=$(ps -o lstart= -p ${pid})
+            RUNNING_TIME=$(ps -o etime= -p ${pid})
+            USER=$(ps -o user= -p ${pid})
+
+            echo "Flume agent 正在运行："
+            echo "PID: ${pid}"
+            echo "启动时间: ${START_TIME}"
+            echo "启动用户: ${USER}"
+            echo "运行时长: ${RUNNING_TIME}"
+        done
+    else
+        echo "Flume agent 未在运行。"
+    fi
+}
+
+help() {
+    echo "用法: $0 {start|stop|restart|status|--help}"
+    echo ""
+    echo "命令:"
+    echo "  start      启动 Flume agent"
+    echo "  stop       停止 Flume agent"
+    echo "  restart    重启 Flume agent"
+    echo "  status     查看 Flume agent 状态"
+    echo "  --help     显示帮助信息"
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    status)
+        status
+        ;;
+    --help)
+        help
+        ;;
+    *)
+        echo "用法: $0 {start|stop|restart|status|--help}"
+        exit 1
+        ;;
+esac

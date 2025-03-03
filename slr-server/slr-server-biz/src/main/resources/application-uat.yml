@@ -38,28 +38,22 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://docker:3308/starlink_risk_uat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          username: lbs
-          password: Rongshu@2024
+          url: jdbc:mysql://10.188.60.4:53376/dmuat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          username: dmuat
+          password: Dmuat_1234
         slave:
-          url: jdbc:mysql://one:9130/starlink_risk_uat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-          username: root
-          password: Rongshu@2024
+          url: jdbc:mysql://10.191.200.124:9030/rs_test_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: rsmall
+          password: Rsmall@123bdas
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Rongshu@2024
+    password: common@Iml8329
     namespace: starlink_risk_uat
     timeout: 5000
     cluster:
       max-redirects: 3
-      nodes:
-        - one:6379
-        - one:6380
-        - two:6379
-        - two:6380
-        - three:6379
-        - three:6380
+      nodes: 10.152.143.221:50022,10.152.143.222:50022,10.152.143.223:50022,10.152.143.221:50023,10.152.143.222:50023,10.152.143.223:50023
     lettuce:
       pool:
         min-idle: 0
@@ -69,24 +63,24 @@ spring:
   ############################## [kafka 配置项] ##############################
   kafka:
     producer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
     consumer:
-      bootstrap-servers: one:9092,two:9092,three:9092
+      bootstrap-servers: 10.152.143.105:9092,10.152.143.106:9092,10.152.143.107:9092
       group-id: starlink_risk_server_uat
   data:
     ############################## [mongo 配置项] ##############################
     mongodb:
-      host: docker
-      port: 27018
-      username: root
-      password: Rongshu@2024
-      database: starlink_risk_uat
-      authentication-database: admin
+      host: 10.152.143.163
+      port: 54257
+      username: impReadWrite
+      password: DawnImp0513
+      database: imp_mongo
+      authentication-database: imp_mongo
 
 ############################## [日志 配置项] ##############################
 logging:
   file:
-    name: /slr-server/logs/server.log # 日志文件名，全路径
+    name: /app/dmapp/project/slr/log/server.log # 日志文件名，全路径
 
 debug: false
 
@@ -103,7 +97,7 @@ slr-server:
       partition: 6
       replica: 3
   file-path:
-    event-log: /slr-server/data/event.log
+    event-log: /app/dmapp/project/slr/data/event.log
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
-    slr-gif: http://docker:48881/slr_event_uat.gif
+    slr-gif: http://10.188.6.154:48881/slr_event_uat.gif

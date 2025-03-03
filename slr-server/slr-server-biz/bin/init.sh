@@ -7,9 +7,11 @@
 # Desc:                 用于星链风控系统生产发布初始化
 #******************************************************
 
-mkdir -p /app/dmapp/slr/log/dump
-mkdir -p /app/dmapp/slr/log/gc
-mkdir -p /app/dmapp/slr/bin
-mkdir -p /app/dmapp/slr/jar
-mkdir -p /app/dmapp/slr/bin
-mkdir -p /app/dmapp/slr/data
+mkdir -p /app/dmapp/project/slr/log/dump
+mkdir -p /app/dmapp/project/slr/log/gc
+mkdir -p /app/dmapp/project/slr/bin
+mkdir -p /app/dmapp/project/slr/jar
+mkdir -p /app/dmapp/project/slr/bin
+mkdir -p /app/dmapp/project/slr/data
+mkdir -p /app/dmapp/project/slr/chg
+mkdir -p /app/dmapp/project/slr/bak

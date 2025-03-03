@@ -2,8 +2,7 @@ spring:
   ############################## [数据源 配置项] ##############################
   autoconfigure:
     exclude:
-      # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
   datasource:
     druid: # Druid 【监控】相关的全局配置
       web-stat-filter:
@@ -78,6 +77,13 @@ spring:
       database: imp_mongo
       authentication-database: imp_mongo
 
+############################## [日志 配置项] ##############################
+logging:
+  file:
+    name: /app/dmapp/project/slr/log/server.log # 日志文件名，全路径
+
+debug: false
+
 ############################## [项目配置项] ##############################
 slr-server:
   active: dev
@@ -91,7 +97,7 @@ slr-server:
       partition: 6
       replica: 3
   file-path:
-    event-log: /app/dmapp/slr/data
+    event-log: /app/dmapp/project/slr/data/event.log
   api-address:
     rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
     slr-gif: http://10.188.6.154:48881/slr_event_dev.gif
