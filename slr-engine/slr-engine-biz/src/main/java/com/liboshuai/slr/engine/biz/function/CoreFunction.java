@@ -6,6 +6,7 @@ import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc;
 import com.liboshuai.slr.engine.biz.processor.Processor;
 import com.liboshuai.slr.engine.biz.processor.impl.ProcessorOne;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+import com.liboshuai.slr.framework.common.util.number.WindowUtil;
 import groovy.lang.GroovyClassLoader;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -98,15 +99,15 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             return;
         }
         // 获取当前处理时间
-        long processTimestamp = ctx.currentProcessingTime();
-        flinkEventDTO.setEventTime(processTimestamp);
+        long timestamp = ctx.currentProcessingTime();
+        flinkEventDTO.setEventTime(timestamp);
         // 将设置了事件时间的数据放入结果中，以便后续写入doris
         FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder()
                 .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(flinkResultDTO);
         // 将事件添加到缓存列表中并移除超过10分钟的过期数据
-        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, processTimestamp);
+        addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, timestamp);
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Long ruleCode = stringProcessorEntry.getKey();
@@ -118,12 +119,12 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                     continue;
                 }
                 for (FlinkEventDTO historyFlinkEventDto : historyFlinkEventDTOList) {
-                    processor.processElement(currentKey, processTimestamp, timerService, historyFlinkEventDto, out);
+                    processor.processElement(ctx, timestamp, historyFlinkEventDto, out);
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
                 // 否则直接处理当前一条事件数据即可
-                processor.processElement(currentKey, processTimestamp, timerService, flinkEventDTO, out);
+                processor.processElement(ctx, timestamp, flinkEventDTO, out);
             }
         }
     }
@@ -349,15 +350,13 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void onTimer(long timestamp,
                         KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.OnTimerContext ctx,
                         Collector<FlinkResultDTO> out) throws Exception {
-        // 获取当前Key
-        String currentKey = ctx.getCurrentKey();
         // 判断当前key所有运算机中是否有待处理的定时器
         boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
         for (Map.Entry<Long, Processor> stringProcessorEntry : ruleProcessorPool.entrySet()) {
             Processor processor = stringProcessorEntry.getValue();
             // 调用自定义onTimer方法
-            boolean hasActiveEvents = processor.onTimer(currentKey, timestamp, out);
+            boolean hasActiveEvents = processor.onTimer(ctx, timestamp, out);
             if (hasActiveEvents) {
                 hasPendingTimers = true;
             }
@@ -365,8 +364,9 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         // 如果运算机中有待处理的定时器，则注册下一次flink定时器。
         if (hasPendingTimers) {
             // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
-            long nextTimerTime = timestamp + TimeUnit.MINUTES.toMillis(1);
-            ctx.timerService().registerProcessingTimeTimer(nextTimerTime);
+            long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
+                    + TimeUnit.MINUTES.toMillis(1);
+            ctx.timerService().registerProcessingTimeTimer(fireTime);
         }
     }
 

@@ -21,7 +21,7 @@
 //import org.apache.flink.api.common.state.*
 //import org.apache.flink.api.java.tuple.Tuple2
 //import org.apache.flink.api.java.tuple.Tuple3
-//import org.apache.flink.streaming.api.TimerService
+//import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction
 //import org.apache.flink.util.Collector
 //import org.apache.flink.util.StringUtils
 //import org.slf4j.Logger
@@ -126,13 +126,12 @@
 //    /**
 //     * 处理元素事件，根据给定的规则信息和Kafka事件进行处理
 //     *
-//     * @param processTimestamp 时间戳，用于处理的时间参考
 //     * @param flinkEventDTO    Kafka事件数据传输对象，包含事件的详细信息
 //     * @param out              用于输出处理结果的收集器
 //     * @throws Exception 如果处理过程中遇到任何错误，则抛出异常
 //     */
 //    @Override
-//    public void processElement(String currentKey, long processTimestamp, TimerService timerService,
+//    public void processElement(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
 //                               FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        // 前置效验处理
 //        List<RuleCondDTO> condGroupList = afterCheckHandler(flinkEventDTO);
@@ -148,9 +147,9 @@
 //        String condType = getCondType(ruleConditionMapByEventField);
 //        // 根据条件类型进行不同处理
 //        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
-//            processElementRecent(processTimestamp, timerService, flinkEventDTO, out);
+//            processElementRecent(ctx, timestamp, flinkEventDTO, out);
 //        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
-//            processElementRange(currentKey, processTimestamp, timerService, condType, ruleConditionMapByEventField, flinkEventDTO, out);
+//            processElementRange(ctx, timestamp, flinkEventDTO, out, condType, ruleConditionMapByEventField);
 //        } else {
 //            log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), condType, flinkEventDTO);
 //        }
@@ -189,21 +188,23 @@
 //    /**
 //     * 计算处理最近范围时间类型的事件规则数据
 //     */
-//    private void processElementRange(String currentKey, long processTimestamp, TimerService timerService,
-//                                     String condType, Map<String, RuleCondDTO> ruleConditionMapByEventField,
-//                                     FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+//    private void processElementRange(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
+//                                     FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out,
+//                                     String condType, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
 //        // 处理时间范围
-//        handleTimeRange(processTimestamp, timerService, flinkEventDTO, out);
+//        handleTimeRange(ctx, timestamp,flinkEventDTO, out);
 //        // 处理smallMapState
 //        Tuple2<Boolean, ProcessorDTO> processSmallMapResult = processSmallMap(ruleConditionMapByEventField);
 //        // 处理预警结果
-//        handleAlertResult(currentKey, processTimestamp, condType, out, processSmallMapResult);
+//        handleAlertResult(ctx, timestamp, out, condType, processSmallMapResult);
 //    }
 //
 //    /**
 //     * 处理预警结果
 //     */
-//    private void handleAlertResult(String currentKey, long processTimestamp, String condType, Collector<FlinkResultDTO> out, Tuple2<Boolean, ProcessorDTO> processSmallMapResult) throws IOException {
+//    private void handleAlertResult(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
+//                                   Collector<FlinkResultDTO> out, String condType,
+//                                   Tuple2<Boolean, ProcessorDTO> processSmallMapResult) throws IOException {
 //        // 根据规则中事件条件表达式组合判断事件结果 与预警频率 判断否是触发预警
 //        if (lastAlertTimeState.value() == null) {
 //            lastAlertTimeState.update(0L);
@@ -214,7 +215,7 @@
 //        boolean shouldAlert;
 //        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) {
 //            shouldAlert = processSmallMapResult.f0 &&
-//                    (alertInterval == null || (processTimestamp - lastAlertTimeState.value() >= alertInterval));
+//                    (alertInterval == null || (timestamp - lastAlertTimeState.value() >= alertInterval));
 //        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) {
 //            shouldAlert = processSmallMapResult.f0;
 //        } else {
@@ -223,10 +224,10 @@
 //        }
 //        if (shouldAlert) {
 //            // 更新最后预警时间
-//            lastAlertTimeState.update(processTimestamp);
+//            lastAlertTimeState.update(timestamp);
 //            // 发送预警信息
-//            AlertDTO alertDTO = buildAlert(processTimestamp, ruleInfoDTO, lastEventState.value(), processSmallMapResult.f1);
-//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), currentKey);
+//            AlertDTO alertDTO = buildAlert(timestamp, ruleInfoDTO, lastEventState.value(), processSmallMapResult.f1);
+//            log.info("最终推送的预警信息内容：{}, 当前Key: {}", JsonUtils.toJsonString(alertDTO), ctx.getCurrentKey());
 //            FlinkResultDTO flinkResultDTO = FlinkResultDTO.builder().alertDTO(alertDTO).build();
 //            out.collect(flinkResultDTO);
 //        }
@@ -235,7 +236,7 @@
 //    /**
 //     * 处理时间范围
 //     */
-//    private void handleTimeRange(long processTimestamp, TimerService timerService,
+//    private void handleTimeRange(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
 //                                 FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
@@ -244,7 +245,7 @@
 //                log.warn("因规则[{}]中事件条件类型为范围时间类型，而规则条件中时间范围信息为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
 //                continue;
 //            }
-//            boolean isWithInTimeRange = TimeRangeUtil.isWithinRule(LocalDateTime.ofInstant(Instant.ofEpochMilli(processTimestamp), ZoneId.systemDefault()), timeRangeDTO);
+//            boolean isWithInTimeRange = TimeRangeUtil.isWithinRule(LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault()), timeRangeDTO);
 //            Boolean inTimeRange = inTimeRangeMapState.get(flinkEventDTO.getTargetField());
 //            if (Objects.isNull(inTimeRange)) {
 //                inTimeRange = false;
@@ -254,14 +255,14 @@
 //                inTimeRange = true;
 //                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
 //                // 注册定时器为时间范围结束时刻
-//                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(processTimestamp, timeRangeDTO);
-//                timerService.registerProcessingTimeTimer(nextEndTimestamp);
+//                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
+//                ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
 //                // 更新下次结束时刻
 //                nextEndTimestampState.update(nextEndTimestamp);
 //            }
 //            if (inTimeRange) {
 //                // 处理单个规则条件的匹配和规则计算逻辑
-//                processRuleCondition(processTimestamp, flinkEventDTO, out, ruleCondDTO);
+//                processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
 //            }
 //        }
 //    }
@@ -304,23 +305,23 @@
 //    /**
 //     * 计算处理最近条件时间类型的事件规则数据
 //     */
-//    private void processElementRecent(long processTimestamp, TimerService timerService,
+//    private void processElementRecent(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
 //                                      FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
 //        List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
 //        for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
 //            // 处理单个规则条件的匹配和规则计算逻辑
-//            processRuleCondition(processTimestamp, flinkEventDTO, out, ruleCondDTO);
+//            processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
 //        }
 //        // 注册定时器（窗口大小1分钟）
-//        long fireTime = WindowUtil.getWindowStartWithOffset(processTimestamp, 0, TimeUnit.MINUTES.toMillis(1))
+//        long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
 //        + TimeUnit.MINUTES.toMillis(1);
-//        timerService.registerProcessingTimeTimer(fireTime);
+//        ctx.timerService().registerProcessingTimeTimer(fireTime);
 //    }
 //
 //    /**
 //     * 处理单个规则条件的匹配和规则计算逻辑
 //     */
-//    private void processRuleCondition(long processTimestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out, RuleCondDTO ruleCondDTO) throws Exception {
+//    private void processRuleCondition(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out, RuleCondDTO ruleCondDTO) throws Exception {
 //        // 事件与规则中的事件编号匹配不上，则直接跳过
 //        if (!Objects.equals(flinkEventDTO.getEventField(), ruleCondDTO.getEventField())) {
 //            // 事件编号匹配不上，则直接跳过
@@ -352,7 +353,7 @@
 //        // 状态值防空
 //        Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
 //        if (Objects.isNull(tuple3)) {
-//            smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(0L, flinkEventDTO, processTimestamp));
+//            smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(0L, flinkEventDTO, timestamp));
 //        }
 //        // 规则事件值计算
 //        if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
@@ -377,25 +378,25 @@
 //                    log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
 //                    return;
 //                }
-//                smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, processTimestamp));
+//                smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, timestamp));
 //                smallInitMapState.put(flinkEventDTO.getEventField(), true);
 //            }
 //            // 从redis初始化值后，正常处理数据
-//            addEventValue(processTimestamp, flinkEventDTO);
+//            addEventValue(timestamp, flinkEventDTO);
 //        } else { // 非跨历史时间段
 //            // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
-//            if (flinkEventDTO.getEventTime() != processTimestamp) {
+//            if (flinkEventDTO.getEventTime() != timestamp) {
 //                return;
 //            }
-//            addEventValue(processTimestamp, flinkEventDTO);
+//            addEventValue(timestamp, flinkEventDTO);
 //        }
 //    }
 //
-//    private void addEventValue(long processTimestamp, FlinkEventDTO flinkEventDTO) throws Exception {
+//    private void addEventValue(long timestamp, FlinkEventDTO flinkEventDTO) throws Exception {
 //        Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
 //        Long currentValue = tuple3.f0;
 //        Long newValue = currentValue + Long.parseLong(flinkEventDTO.getEventValue());
-//        smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(newValue, flinkEventDTO, processTimestamp));
+//        smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(newValue, flinkEventDTO, timestamp));
 //    }
 //
 //
@@ -474,12 +475,12 @@
 //    /**
 //     * 定时器触发时执行的方法
 //     *
-//     * @param processTimestamp 处理时间戳
+//     * @param timestamp 处理时间戳
 //     * @param out              输出收集器，用于收集和输出预警信息
 //     * @throws Exception 可能抛出的异常
 //     */
 //    @Override
-//    public boolean onTimer(String currentKey, long processTimestamp, Collector<FlinkResultDTO> out) throws Exception {
+//    public boolean onTimer(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp, Collector<FlinkResultDTO> out) throws Exception {
 //        if (Objects.isNull(ruleInfoDTO)) {
 //            log.warn("因规则信息为空，故跳过此次计算！");
 //            return false;
@@ -502,9 +503,9 @@
 //        }
 //        // 数据计算，返回定时器是否注册判断
 //        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
-//            return onTimerRecent(currentKey, processTimestamp, condType, out, ruleConditionMapByEventField);
+//            return onTimerRecent(ctx, timestamp, out, condType, ruleConditionMapByEventField);
 //        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
-//            onTimerRange(processTimestamp);
+//            onTimerRange(timestamp);
 //            return false;
 //        } else {
 //            log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！", ruleInfoDTO.getRuleCode(), condType);
@@ -515,12 +516,12 @@
 //    /**
 //     * 处理范围时间类型规则计算
 //     */
-//    private void onTimerRange(long processTimestamp) throws IOException {
+//    private void onTimerRange(long timestamp) throws IOException {
 //        Long nextEndTimestamp = nextEndTimestampState.value();
 //        if (nextEndTimestamp == null) {
 //            return;
 //        }
-//        if (nextEndTimestamp == processTimestamp) {
+//        if (nextEndTimestamp == timestamp) {
 //            smallMapState.clear();
 //            nextEndTimestampState.clear();
 //            inTimeRangeMapState.clear();
@@ -530,7 +531,8 @@
 //    /**
 //     * 处理最近时间类型规则计算
 //     */
-//    private boolean onTimerRecent(String currentKey, long processTimestamp, String condType, Collector<FlinkResultDTO> out,
+//    private boolean onTimerRecent(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp,
+//                                  Collector<FlinkResultDTO> out, String condType,
 //                                  Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
 ////        boolean debug = false;
 ////        if (Objects.equals(ruleInfoDTO.getRuleCode(), 1895031804847591424L)) {
@@ -540,16 +542,16 @@
 ////            logSmallMapState(ruleInfoDTO.getRuleCode(), currentKey);
 ////        }
 //        // 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并返回最新（时间戳最大）的事件数据。
-//        aggregateSmallMapToBigMap(processTimestamp);
+//        aggregateSmallMapToBigMap(timestamp);
 ////        if (debug) {
 ////            logBigMapState(ruleInfoDTO.getRuleCode(), currentKey);
 ////        }
 //        // 清理窗口大小之外的数据
-//        cleanupWindowData(processTimestamp, ruleConditionMapByEventField);
+//        cleanupWindowData(timestamp, ruleConditionMapByEventField);
 //        // 处理bigMapState
 //        Tuple2<Boolean, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
 //        // 处理预警结果
-//        handleAlertResult(currentKey, processTimestamp, condType, out, processBigMapResult);
+//        handleAlertResult(ctx, timestamp, out, condType, processBigMapResult);
 //        return hasActiveEvents();
 //    }
 //
@@ -594,7 +596,7 @@
 //    /**
 //     * 构建预警信息的方法，提取重复逻辑
 //     */
-//    private AlertDTO buildAlert(long processTimestamp, RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO,
+//    private AlertDTO buildAlert(long timestamp, RuleInfoDTO ruleInfoDTO, FlinkEventDTO latestFlinkEventDTO,
 //                                ProcessorDTO processorDTO) {
 //        String finalWarnMessage = TemplateUtil.replacePlaceholders(
 //                ruleInfoDTO.getAlertTemplate(),
@@ -606,7 +608,7 @@
 //                .channel(ruleInfoDTO.getChannel())
 //                .ruleCode(ruleInfoDTO.getRuleCode())
 //                .message(finalWarnMessage)
-//                .time(LocalDateTimeUtils.convertTimestamp2String(processTimestamp))
+//                .time(LocalDateTimeUtils.convertTimestamp2String(timestamp))
 //                .targetField(ruleInfoDTO.getTargetField())
 //                .targetValue(latestFlinkEventDTO.getTargetValue())
 //                .eventValueGroup(processorDTO.getEventValueGroup())
@@ -707,15 +709,15 @@
 //    /**
 //     * 将小时间窗口（步长窗口）中的数据累加到大时间窗口（整体窗口）中，并更新最新（时间戳最大）的事件数据。
 //     */
-//    private void aggregateSmallMapToBigMap(long processTimestamp) throws Exception {
+//    private void aggregateSmallMapToBigMap(long timestamp) throws Exception {
 //        // 遍历 smallMapState 的所有条目
 //        Long timestampMax = 0L;
 //        for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> smallMapEntry : smallMapState.entries()) {
 //            String eventField = smallMapEntry.getKey();
 //            Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapEntry.getValue();
 //            // 创建新的 Tuple2 作为 bigMapState 的键
-//            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, processTimestamp);
-//            // 将 (eventField, processTimestamp) 作为键，eventValue 作为值，存入 bigMapState
+//            Tuple2<String, Long> tupleKey = Tuple2.of(eventField, timestamp);
+//            // 将 (eventField, timestamp) 作为键，eventValue 作为值，存入 bigMapState
 //            Long oldValue = bigMapState.get(tupleKey);
 //            if (Objects.isNull(oldValue)) {
 //                oldValue = 0L;
@@ -735,7 +737,7 @@
 //    /**
 //     * 清理窗口大小之外的数据
 //     */
-//    private void cleanupWindowData(long processTimestamp, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
+//    private void cleanupWindowData(long timestamp, Map<String, RuleCondDTO> ruleConditionMapByEventField) throws Exception {
 //        // 提前计算每个 eventField 的 windowSize 和 windowThresholdTime
 //        Map<String, Long> eventFieldToThresholdTime = new HashMap<>();
 //
@@ -744,7 +746,7 @@
 //            RuleCondDTO ruleCondDTO = entry.getValue();
 //            long windowSize = TimeUtil.toMillis(ruleCondDTO.getWindowValue(),
 //                    TimeUnitEnum.fromEnUnit(ruleCondDTO.getWindowUnit()));
-//            long windowThresholdTime = processTimestamp - windowSize;
+//            long windowThresholdTime = timestamp - windowSize;
 //            eventFieldToThresholdTime.put(eventField, windowThresholdTime);
 //        }
 //
