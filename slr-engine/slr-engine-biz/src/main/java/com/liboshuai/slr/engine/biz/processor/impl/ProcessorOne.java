@@ -576,7 +576,7 @@ public class ProcessorOne implements Processor {
         for (Map.Entry<String, Tuple3<Long, FlinkEventDTO, Long>> entry : smallMapState.entries()) {
             smallMap.put(entry.getKey(), entry.getValue());
         }
-        log.debug("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
+        log.info("smallMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(smallMap), ruleCode, currentKey);
     }
 
     private void logBigMapState(Long ruleCode, String currentKey) throws Exception {
@@ -584,7 +584,7 @@ public class ProcessorOne implements Processor {
         for (Map.Entry<Tuple2<String, Long>, Long> entry : bigMapState.entries()) {
             bigMap.put(entry.getKey(), entry.getValue());
         }
-        log.debug("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
+        log.info("bigMap：{}, ruleCode:{}, currentKey：{}", JsonUtils.toJsonString(bigMap), ruleCode, currentKey);
     }
 
 //    private void logOldState(Long ruleCode, String currentKey) throws Exception {
