@@ -319,7 +319,7 @@ public class ProcessorOne implements Processor {
         // 注册定时器（窗口大小1分钟）
         long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
                 + TimeUnit.MINUTES.toMillis(1);
-        log.info("processElementRecent-fireTime: {}", fireTime);
+        log.info("processElementRecent - currentProcessingTime: {}, fireTime: {}", ctx.currentProcessingTime(), fireTime);
         ctx.timerService().registerProcessingTimeTimer(fireTime);
     }
 
