@@ -20,7 +20,6 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
-import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.CollectionUtil;
@@ -88,8 +87,6 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void processElement(FlinkEventDTO flinkEventDTO,
                                KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.ReadOnlyContext ctx,
                                Collector<FlinkResultDTO> out) throws Exception {
-        // 获取当前定时器
-        TimerService timerService = ctx.timerService();
         // 获取当前key
         String currentKey = ctx.getCurrentKey();
         // 获取下线规则状态记录信息
@@ -106,6 +103,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(flinkResultDTO);
+        log.info("processElement-flinkResultDTO: {}", JsonUtils.toJsonString(flinkResultDTO));
         // 将事件添加到缓存列表中并移除超过10分钟的过期数据
         addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, timestamp);
         // 数据遍历经过每个规则运算机
@@ -350,6 +348,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void onTimer(long timestamp,
                         KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.OnTimerContext ctx,
                         Collector<FlinkResultDTO> out) throws Exception {
+        log.info("onTime-timestamp: {}", timestamp);
         // 判断当前key所有运算机中是否有待处理的定时器
         boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
@@ -366,6 +365,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
             long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
                     + TimeUnit.MINUTES.toMillis(1);
+            log.info("onTime-fireTime: {}", fireTime);
             ctx.timerService().registerProcessingTimeTimer(fireTime);
         }
     }
