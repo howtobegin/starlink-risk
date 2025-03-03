@@ -21,7 +21,7 @@ public interface Processor {
     /**
      * 处理单条数据
      */
-    void processElement(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
+    boolean processElement(KeyedBroadcastProcessFunction.ReadOnlyContext ctx, long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception;
 
     /**
      * 定时器
