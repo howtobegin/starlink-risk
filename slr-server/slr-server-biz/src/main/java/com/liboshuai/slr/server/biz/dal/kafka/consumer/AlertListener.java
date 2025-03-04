@@ -6,8 +6,8 @@ import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import com.liboshuai.slr.server.biz.convert.alert.AlertConvert;
 import com.liboshuai.slr.server.biz.dal.dataobject.alert.MongoAlertDO;
 import com.liboshuai.slr.server.biz.dal.mongo.alert.AlertRepository;
+import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.rest.client.rsoAlarm.RsoAlarmClient;
-import com.liboshuai.slr.server.biz.service.event.EventService;
 import com.liboshuai.slr.server.biz.service.rule.RuleInfoService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class AlertListener {
     private final RsoAlarmClient rsoAlarmClient;
     private final AlertConvert alertConvert;
     private final AlertRepository alertRepository;
-    private final EventService eventService;
+    private final SlrServerProperties slrServerProperties;
 
     @KafkaListener(
             topics = "${slr-server.kafka.alert.topic}",
@@ -64,14 +64,15 @@ public class AlertListener {
             // 遍历预警信息，补充事件数据并推送到微信预警平台
             for (AlertDTO alertDTO : validAlertDTOList) {
                 // 将预警信息异步推送给微信预警平台
-                RuleInfoDTO ruleInfoDTO = ruleInfoService.getCacheRuleInfo(alertDTO.getRuleCode());
-                // FIXME: 测试时，临时注释
-//                rsoAlarmClient.sendMsgToRso(
-//                        ruleInfoDTO.getAlertProjectNo(),
-//                        ruleInfoDTO.getAlertLevel(),
-//                        LocalDateTimeUtils.convertLocalDateTime2Str(alertDTO.getTime()),
-//                        message
-//                );
+                if (slrServerProperties.isAlertWechat()) {
+                    RuleInfoDTO ruleInfoDTO = ruleInfoService.getCacheRuleInfo(alertDTO.getRuleCode());
+                    rsoAlarmClient.sendMsgToRso(
+                            ruleInfoDTO.getAlertProjectNo(),
+                            ruleInfoDTO.getAlertLevel(),
+                            alertDTO.getTime(),
+                            alertDTO.getMessage()
+                    );
+                }
                 finalAlertDtoList.add(alertDTO);
             }
             // 将预警消息批量保存到 MongoDB

@@ -35,4 +35,7 @@ public class SlrServerProperties {
     private String rsoAlertApiAddress;
     @Value("${slr-server.api-address.slr-gif}")
     private String slrGifApiAddress;
+
+    @Value("${slr-server.alert_wechat:false}")
+    private boolean alertWechat;
 }

@@ -3,6 +3,9 @@ package com.liboshuai.slr.framework.common.util.date;
 import cn.hutool.core.date.LocalDateTimeUtil;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -146,6 +149,26 @@ public class DateUtils {
      */
     public static boolean isYesterday(LocalDateTime date) {
         return LocalDateTimeUtil.isSameDay(date, LocalDateTime.now().minusDays(1));
+    }
+
+    public static String convert(String dateTimeStr, String sourcePattern, String targetPattern) {
+        if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("输入的时间字符串不能为空！");
+        }
+        if (sourcePattern == null || sourcePattern.trim().isEmpty()) {
+            throw new IllegalArgumentException("源格式模式不能为空！");
+        }
+        if (targetPattern == null || targetPattern.trim().isEmpty()) {
+            throw new IllegalArgumentException("目标格式模式不能为空！");
+        }
+        try {
+            DateTimeFormatter sourceFormatter = DateTimeFormatter.ofPattern(sourcePattern);
+            DateTimeFormatter targetFormatter = DateTimeFormatter.ofPattern(targetPattern);
+            TemporalAccessor temporal = sourceFormatter.parse(dateTimeStr);
+            return targetFormatter.format(temporal);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("解析输入的时间字符串失败，请检查时间字符串或模式是否正确！", e);
+        }
     }
 
 }

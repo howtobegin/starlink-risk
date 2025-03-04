@@ -20,6 +20,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import static com.liboshuai.slr.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+import static com.liboshuai.slr.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND_COMPACT;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -106,7 +109,7 @@ public class RsoAlarmClient {
         alarmMessageDTO.setProjectNo(projectNo);
         alarmMessageDTO.setWarningLevel(warningLevel);
         alarmMessageDTO.setAlertMessage(alertMessage);
-        alarmMessageDTO.setWarningTime(waningTime);
+        alarmMessageDTO.setWarningTime(DateUtils.convert(waningTime, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND_COMPACT));
         alarmMessageDTO.setPushSerialNo(dateTime + getRandomNum());
         alarmMessageDTO.setWarningIp(getLocalIp());
 
@@ -153,7 +156,7 @@ public class RsoAlarmClient {
             return "";
         }
 
-        SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND_COMPACT);
+        SimpleDateFormat formatter = new SimpleDateFormat(FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND_COMPACT);
         return formatter.format(dt);
     }
 }
