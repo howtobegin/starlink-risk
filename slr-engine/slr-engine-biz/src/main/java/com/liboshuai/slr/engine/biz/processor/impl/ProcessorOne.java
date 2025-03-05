@@ -64,7 +64,7 @@ public class ProcessorOne implements Processor {
     /**
      * 下一个时间范围的结束时间戳
      */
-    private ValueState<Long> nextEndTimestampState;
+    private MapState<String, Long> nextEndTimestampState;
     /**
      * 最新的事件数据
      */
@@ -106,7 +106,7 @@ public class ProcessorOne implements Processor {
         smallInitMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getSmallInitMapStateDesc(ruleCode, ruleVersion));
         hasValueState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getHasValueStateDesc(ruleCode, ruleVersion));
         inTimeRangeMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getInTimeRangeStateDesc(ruleCode, ruleVersion));
-        nextEndTimestampState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getNextEndTimestampStateDesc(ruleCode, ruleVersion));
+        nextEndTimestampState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getNextEndTimestampStateDesc(ruleCode, ruleVersion));
         lastEventState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastEventStateDesc(ruleCode, ruleVersion));
         lastAlertTimeState = getValueState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLastAlertTimeStateDesc(ruleCode, ruleVersion));
         latestEventThresholdMapState = getMapState(isRuntimeContextPresent, runtimeContext, keyedStateStore, ProcessorOneStateDesc.getLatestEventThresholdMapStateDesc(ruleCode, ruleVersion));
@@ -243,6 +243,21 @@ public class ProcessorOne implements Processor {
                                  FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
+            // 事件与规则中的事件编号匹配不上，则直接跳过
+            if (!Objects.equals(flinkEventDTO.getEventField(), ruleCondDTO.getEventField())) {
+                // 事件编号匹配不上，则直接跳过
+                continue;
+            }
+            // 进行事件属性匹配
+            List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup();
+            boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, flinkEventDTO);
+            if (!eventAttributeMatchResult) {
+                // 事件属性匹配不上，则直接跳过
+                continue;
+            }
+
+            // ******************************* 规则匹配成功，进行后续处理 *******************************
+
             TimeRangeDTO timeRangeDTO = ruleCondDTO.getTimeRange();
             if (Objects.isNull(timeRangeDTO)) {
                 log.warn("因规则[{}]中事件条件类型为范围时间类型，而规则条件中时间范围信息为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
@@ -261,11 +276,64 @@ public class ProcessorOne implements Processor {
                 Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
                 ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
                 // 更新下次结束时刻
-                nextEndTimestampState.update(nextEndTimestamp);
+                nextEndTimestampState.put(ruleCondDTO.getEventField(), nextEndTimestamp);
             }
-            if (inTimeRange) {
-                // 处理单个规则条件的匹配和规则计算逻辑
-                processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
+            if (!inTimeRange) {
+                continue;
+            }
+
+            // 规则状态历史的记录数据
+            Boolean hasState = hasValueState.value();
+            if (Objects.isNull(hasState) || !hasState) {
+                StateDTO stateDTO = StateDTO.builder()
+                        .ruleCode(ruleInfoDTO.getRuleCode())
+                        .ruleVersion(ruleInfoDTO.getRuleVersion())
+                        .channel(ruleInfoDTO.getChannel())
+                        .targetField(flinkEventDTO.getTargetField())
+                        .targetValue(flinkEventDTO.getTargetValue())
+                        .build();
+                out.collect(FlinkResultDTO.builder().stateDTO(stateDTO).build());
+                hasValueState.update(true);
+            }
+            // 状态值防空
+            Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
+            if (Objects.isNull(tuple3)) {
+                smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(0L, flinkEventDTO, timestamp));
+            }
+            // 规则事件值计算
+            if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
+                String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
+                // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
+                // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
+                if (flinkEventDTO.getEventTime()
+                        <= LocalDateTimeUtils.convertString2Timestamp(crossHistoryTimeline)) {
+                    continue;
+                }
+                // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
+                // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
+                if (!smallInitMapState.contains(flinkEventDTO.getEventField())) {
+                    // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
+                    // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
+                    String redisKey = buildRedisKey(ruleCondDTO);
+                    String redisHashKey = buildRedisHashKey(flinkEventDTO);
+                    // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
+                    String initValue = RedisUtil.hget(redisKey, redisHashKey);
+                    RedisUtil.hdel(redisKey, redisHashKey);
+                    if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
+                        log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
+                        continue;
+                    }
+                    smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, timestamp));
+                    smallInitMapState.put(flinkEventDTO.getEventField(), true);
+                }
+                // 从redis初始化值后，正常处理数据
+                addEventValue(timestamp, flinkEventDTO);
+            } else { // 非跨历史时间段
+                // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
+                if (flinkEventDTO.getEventTime() != timestamp) {
+                    continue;
+                }
+                addEventValue(timestamp, flinkEventDTO);
             }
         }
     }
@@ -319,6 +387,78 @@ public class ProcessorOne implements Processor {
             }
         }
         return result;
+    }
+
+    private boolean processRuleCondition2(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out, RuleCondDTO ruleCondDTO) throws Exception {
+        // 事件与规则中的事件编号匹配不上，则直接跳过
+        if (!Objects.equals(flinkEventDTO.getEventField(), ruleCondDTO.getEventField())) {
+            // 事件编号匹配不上，则直接跳过
+            return false;
+        }
+        // 进行事件属性匹配
+        List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup();
+        boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, flinkEventDTO);
+        if (!eventAttributeMatchResult) {
+            // 事件属性匹配不上，则直接跳过
+            return false;
+        }
+
+        // ******************************* 规则匹配成功，进行后续处理 *******************************
+
+        // 规则状态历史的记录数据
+        Boolean hasState = hasValueState.value();
+        if (Objects.isNull(hasState) || !hasState) {
+            StateDTO stateDTO = StateDTO.builder()
+                    .ruleCode(ruleInfoDTO.getRuleCode())
+                    .ruleVersion(ruleInfoDTO.getRuleVersion())
+                    .channel(ruleInfoDTO.getChannel())
+                    .targetField(flinkEventDTO.getTargetField())
+                    .targetValue(flinkEventDTO.getTargetValue())
+                    .build();
+            out.collect(FlinkResultDTO.builder().stateDTO(stateDTO).build());
+            hasValueState.update(true);
+        }
+        // 状态值防空
+        Tuple3<Long, FlinkEventDTO, Long> tuple3 = smallMapState.get(flinkEventDTO.getEventField());
+        if (Objects.isNull(tuple3)) {
+            smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(0L, flinkEventDTO, timestamp));
+        }
+        // 规则事件值计算
+        if (ruleCondDTO.getCrossHistory()) { //跨历史时间段
+            String crossHistoryTimeline = ruleCondDTO.getCrossHistoryTimeline();
+            // 因为跨历史时间段的规则条件需要处理历史缓存的数据，而历史缓存的数据可能过多，
+            // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
+            if (flinkEventDTO.getEventTime()
+                    <= LocalDateTimeUtils.convertString2Timestamp(crossHistoryTimeline)) {
+                return false;
+            }
+            // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
+            // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
+            if (!smallInitMapState.contains(flinkEventDTO.getEventField())) {
+                // 如果为跨历史时间段的，且还没有初始化，则需要从redis中获取初始值
+                // （注意：Groovy字符串拼接的方式很麻烦，故使用StringBuilder）
+                String redisKey = buildRedisKey(ruleCondDTO);
+                String redisHashKey = buildRedisHashKey(flinkEventDTO);
+                // 注意：因为上面获取历史缓存数据时，使用的是 <= 所以 redis 存储值时查询 doris 要包含历史截至时间点
+                String initValue = RedisUtil.hget(redisKey, redisHashKey);
+                RedisUtil.hdel(redisKey, redisHashKey);
+                if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
+                    log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
+                    return false;
+                }
+                smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, timestamp));
+                smallInitMapState.put(flinkEventDTO.getEventField(), true);
+            }
+            // 从redis初始化值后，正常处理数据
+            addEventValue(timestamp, flinkEventDTO);
+        } else { // 非跨历史时间段
+            // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
+            if (flinkEventDTO.getEventTime() != timestamp) {
+                return false;
+            }
+            addEventValue(timestamp, flinkEventDTO);
+        }
+        return true;
     }
 
     /**
@@ -520,18 +660,19 @@ public class ProcessorOne implements Processor {
     /**
      * 处理范围时间类型规则计算
      */
-    private void onTimerRange(long timestamp) throws IOException {
-        Long nextEndTimestamp = nextEndTimestampState.value();
-        if (nextEndTimestamp == null) {
-            return;
-        }
-        if (nextEndTimestamp == timestamp) {
-            smallMapState.clear();
-            nextEndTimestampState.clear();
-            inTimeRangeMapState.clear();
-            lastEventState.clear();
-            lastAlertTimeState.clear();
-            latestEventThresholdMapState.clear();
+    private void onTimerRange(long timestamp) throws Exception {
+        for (Map.Entry<String, Long> entry : nextEndTimestampState.entries()) {
+            String key = entry.getKey();
+            Long value = entry.getValue();
+            if (value == null) {
+                return;
+            }
+            if (value == timestamp) {
+                smallMapState.remove(key);
+                nextEndTimestampState.remove(key);
+                inTimeRangeMapState.remove(key);
+                latestEventThresholdMapState.remove(key);
+            }
         }
     }
 

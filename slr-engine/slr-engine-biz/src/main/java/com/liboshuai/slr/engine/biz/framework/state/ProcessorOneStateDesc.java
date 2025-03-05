@@ -32,9 +32,9 @@ public class ProcessorOneStateDesc {
         return new MapStateDescriptor<>(stateDescName, Types.STRING, Types.BOOLEAN);
     }
 
-    public static ValueStateDescriptor<Long> getNextEndTimestampStateDesc(Long ruleCode, Long ruleVersion) {
+    public static MapStateDescriptor<String, Long> getNextEndTimestampStateDesc(Long ruleCode, Long ruleVersion) {
         String stateDescName = "nextEndTimestampState_" + ruleCode + "_" + ruleVersion;
-        return new ValueStateDescriptor<>(stateDescName, Types.LONG);
+        return new MapStateDescriptor<>(stateDescName, Types.STRING, Types.LONG);
     }
 
     public static ValueStateDescriptor<FlinkEventDTO> getLastEventStateDesc(Long ruleCode, Long ruleVersion) {
