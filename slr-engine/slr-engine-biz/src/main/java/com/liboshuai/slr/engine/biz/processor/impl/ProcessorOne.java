@@ -524,6 +524,9 @@ public class ProcessorOne implements Processor {
             smallMapState.clear();
             nextEndTimestampState.clear();
             inTimeRangeMapState.clear();
+            lastEventState.clear();
+            lastAlertTimeState.clear();
+            latestEventThresholdMapState.clear();
         }
     }
 
