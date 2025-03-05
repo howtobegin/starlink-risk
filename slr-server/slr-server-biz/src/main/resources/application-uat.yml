@@ -99,6 +99,6 @@ slr-server:
   file-path:
     event-log: /app/dmapp/project/slr/data/event.log
   api-address:
-    rso-alert: http://10.152.130.129:8081/rso/messagePush/sendWarningMsg
+    rso-alert: http://10.189.18.32:8081/rso/messagePush/sendWarningMsg
     slr-gif: http://10.188.6.154:48881/slr_event_uat.gif
-#  alert_wechat: false
+  alert_wechat: true
