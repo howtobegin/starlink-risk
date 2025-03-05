@@ -148,8 +148,7 @@ public class ProcessorOne implements Processor {
         String condType = getCondType(ruleConditionMapByEventField);
         // 根据条件类型进行不同处理
         if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
-            processElementRecent(timestamp, flinkEventDTO, out);
-            return true;
+            return processElementRecent(timestamp, flinkEventDTO, out);
         } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
             processElementRange(ctx, timestamp, flinkEventDTO, out, condType, ruleConditionMapByEventField);
             return false;
@@ -309,29 +308,34 @@ public class ProcessorOne implements Processor {
     /**
      * 计算处理最近条件时间类型的事件规则数据
      */
-    private void processElementRecent(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+    private boolean processElementRecent(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out) throws Exception {
+        boolean result = false;
         List<RuleCondDTO> ruleCondGroup = ruleInfoDTO.getRuleCondGroup();
         for (RuleCondDTO ruleCondDTO : ruleCondGroup) {
             // 处理单个规则条件的匹配和规则计算逻辑
-            processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
+            boolean tempResult = processRuleCondition(timestamp, flinkEventDTO, out, ruleCondDTO);
+            if (tempResult) {
+                result = true;
+            }
         }
+        return result;
     }
 
     /**
      * 处理单个规则条件的匹配和规则计算逻辑
      */
-    private void processRuleCondition(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out, RuleCondDTO ruleCondDTO) throws Exception {
+    private boolean processRuleCondition(long timestamp, FlinkEventDTO flinkEventDTO, Collector<FlinkResultDTO> out, RuleCondDTO ruleCondDTO) throws Exception {
         // 事件与规则中的事件编号匹配不上，则直接跳过
         if (!Objects.equals(flinkEventDTO.getEventField(), ruleCondDTO.getEventField())) {
             // 事件编号匹配不上，则直接跳过
-            return;
+            return false;
         }
         // 进行事件属性匹配
         List<RuleEventAttrValueDTO> ruleEventAttrValueGroup = ruleCondDTO.getRuleEventAttrValueGroup();
         boolean eventAttributeMatchResult = matchEventAttribute(ruleEventAttrValueGroup, flinkEventDTO);
         if (!eventAttributeMatchResult) {
             // 事件属性匹配不上，则直接跳过
-            return;
+            return false;
         }
 
         // ******************************* 规则匹配成功，进行后续处理 *******************************
@@ -361,7 +365,7 @@ public class ProcessorOne implements Processor {
             // 所以需要根据历史截止点进行过滤，仅需要大于历史截止点的数据
             if (flinkEventDTO.getEventTime()
                     <= LocalDateTimeUtils.convertString2Timestamp(crossHistoryTimeline)) {
-                return;
+                return false;
             }
             // 因为跨历史时间段的规则条件需要从redis中获取doris中历史事件值，
             // 所以检查当前值是否已经通过redis初始化后，防止重复初始化
@@ -375,7 +379,7 @@ public class ProcessorOne implements Processor {
                 RedisUtil.hdel(redisKey, redisHashKey);
                 if (StringUtils.isNullOrWhitespaceOnly(initValue)) {
                     log.warn("因规则[{}]的redis初始值为空，故跳过此次计算！redisKey: {}, redisHashKey: {}, 当前事件数据：{}", ruleInfoDTO.getRuleCode(), redisKey, redisHashKey, flinkEventDTO);
-                    return;
+                    return false;
                 }
                 smallMapState.put(flinkEventDTO.getEventField(), Tuple3.of(Long.parseLong(initValue), flinkEventDTO, timestamp));
                 smallInitMapState.put(flinkEventDTO.getEventField(), true);
@@ -385,10 +389,11 @@ public class ProcessorOne implements Processor {
         } else { // 非跨历史时间段
             // 对于非跨历史时间段，只处理当前一条数据，不需要处理历史缓存数据
             if (flinkEventDTO.getEventTime() != timestamp) {
-                return;
+                return false;
             }
             addEventValue(timestamp, flinkEventDTO);
         }
+        return true;
     }
 
     private void addEventValue(long timestamp, FlinkEventDTO flinkEventDTO) throws Exception {
