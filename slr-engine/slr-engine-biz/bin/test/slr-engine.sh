@@ -4,7 +4,7 @@ flink_bin="/home/lbs/software/flink/bin/flink"
 flink_name="slr-engine"
 flink_main="com.liboshuai.slr.engine.biz.EngineApplication"
 flink_jar="/home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/target/slr-engine-biz-1.0.jar"
-flink_savepoint="hdfs:///flink/starlink-risk/slr-engine/savepoint"
+flink_savepoint="hdfs://one:8020/flink/starlink-risk/slr-engine/savepoint"
 savepoint_log="/home/lbs/project/starlink-risk/slr-engine/slr-engine-biz/savepoint.log"
 
 # 状态后端为内存
@@ -61,7 +61,7 @@ function cancal() {
     echo "-------------------------------- ${flink_name} cancal -------------------------"
     echo ---------------------------------------------------------------------------------
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     ${flink_bin} cancel -t yarn-application -Dyarn.application.id=$yarnId $JOB_ID
 }
@@ -93,7 +93,7 @@ function stop() {
     echo "-------------------------------- ${flink_name} stop -------------------------------------"
     echo "-----------------------------------------------------------------------------------------"
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     STOP_RESULT=$(${flink_bin} stop --savepoint ${flink_savepoint} $JOB_ID -yid $yarnId)
 

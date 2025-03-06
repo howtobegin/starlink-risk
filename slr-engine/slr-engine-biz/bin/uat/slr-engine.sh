@@ -59,7 +59,7 @@ function cancal() {
     echo "-------------------------------- ${flink_name} cancal -------------------------"
     echo ---------------------------------------------------------------------------------
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     ${flink_bin} cancel -t yarn-application -Dyarn.application.id=$yarnId $JOB_ID
 }
@@ -91,7 +91,7 @@ function stop() {
     echo "-------------------------------- ${flink_name} stop -------------------------------------"
     echo "-----------------------------------------------------------------------------------------"
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     STOP_RESULT=$(${flink_bin} stop --savepoint ${flink_savepoint} $JOB_ID -yid $yarnId)
 
