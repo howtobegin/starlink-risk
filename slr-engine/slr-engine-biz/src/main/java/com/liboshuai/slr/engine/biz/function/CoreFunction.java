@@ -103,6 +103,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 .flinkEventDTO(flinkEventDTO)
                 .build();
         out.collect(flinkResultDTO);
+        log.debug("processElement - FlinkEventDTO:{}, key:{}, timestamp:{}", flinkEventDTO, currentKey, timestamp);
         // 将事件添加到缓存列表中并移除超过10分钟的过期数据
         addEventToCacheAndRemoveExpired(currentKey, flinkEventDTO, timestamp);
         // 数据遍历经过每个规则运算机
@@ -111,6 +112,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             Long ruleCode = stringProcessorEntry.getKey();
             Processor processor = stringProcessorEntry.getValue();
             if (!oldRuleListState.contains(ruleCode)) {
+//                log.debug("processElement - !oldRuleListState.contains(ruleCode), key:{}, timestamp:{}", currentKey, timestamp);
                 // 新规则需要先将缓存的最近历史事件数据处理一遍
                 List<FlinkEventDTO> historyFlinkEventDTOList = recentEventMap.get(currentKey);
                 if (CollectionUtil.isNullOrEmpty(historyFlinkEventDTOList)) {
@@ -124,6 +126,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
                 }
                 oldRuleListState.put(ruleCode, null);
             } else {
+//                log.debug("processElement - else, key:{}, timestamp:{}", currentKey, timestamp);
                 // 否则直接处理当前一条事件数据即可
                 boolean hasOnTime = processor.processElement(ctx, timestamp, flinkEventDTO, out);
                 if (hasOnTime) {
@@ -136,6 +139,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
             long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
                     + TimeUnit.MINUTES.toMillis(1);
             ctx.timerService().registerProcessingTimeTimer(fireTime);
+            log.debug("processElement - 注册了定时器, fireTime:{}, key:{}, timestamp:{}", fireTime, currentKey, ctx.currentProcessingTime());
         }
     }
 
@@ -360,6 +364,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
     public void onTimer(long timestamp,
                         KeyedBroadcastProcessFunction<String, FlinkEventDTO, MysqlCdcDTO, FlinkResultDTO>.OnTimerContext ctx,
                         Collector<FlinkResultDTO> out) throws Exception {
+        log.debug("onTimer - 执行了定时器, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
         // 判断当前key所有运算机中是否有待处理的定时器
         boolean hasPendingTimers = false;
         // 数据遍历经过每个规则运算机
@@ -373,6 +378,7 @@ public class CoreFunction extends KeyedBroadcastProcessFunction<String, FlinkEve
         }
         // 如果运算机中有待处理的定时器，则注册下一次flink定时器。
         if (hasPendingTimers) {
+            log.debug("onTimer - 注册了定时器, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
             // 注册下一次输出累积值的Timer。该timestamp就是窗口结束时刻，下一个窗口可以直接加60s。
             long fireTime = WindowUtil.getWindowStartWithOffset(ctx.currentProcessingTime(), 0, TimeUnit.MINUTES.toMillis(1))
                     + TimeUnit.MINUTES.toMillis(1);

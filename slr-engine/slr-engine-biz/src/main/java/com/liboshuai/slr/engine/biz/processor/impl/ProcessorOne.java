@@ -268,6 +268,7 @@ public class ProcessorOne implements Processor {
             if (Objects.isNull(inTimeRange)) {
                 inTimeRange = false;
                 inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
+                log.debug("handleTimeRange - Objects.isNull(inTimeRange), key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
             }
             if (!inTimeRange && isWithInTimeRange) {
                 inTimeRange = true;
@@ -277,8 +278,10 @@ public class ProcessorOne implements Processor {
                 ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
                 // 更新下次结束时刻
                 nextEndTimestampState.put(ruleCondDTO.getEventField(), nextEndTimestamp);
+                log.debug("handleTimeRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
             }
             if (!inTimeRange) {
+                log.debug("handleTimeRange - !inTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
                 continue;
             }
 
@@ -649,7 +652,7 @@ public class ProcessorOne implements Processor {
         if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
             return onTimerRecent(ctx, timestamp, out, condType, ruleConditionMapByEventField);
         } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
-            onTimerRange(timestamp);
+            onTimerRange((String) ctx.getCurrentKey(), timestamp);
             return false;
         } else {
             log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！", ruleInfoDTO.getRuleCode(), condType);
@@ -660,14 +663,17 @@ public class ProcessorOne implements Processor {
     /**
      * 处理范围时间类型规则计算
      */
-    private void onTimerRange(long timestamp) throws Exception {
+    private void onTimerRange(String currentKey, long timestamp) throws Exception {
         for (Map.Entry<String, Long> entry : nextEndTimestampState.entries()) {
+            log.debug("onTimerRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}", currentKey, timestamp);
             String key = entry.getKey();
             Long value = entry.getValue();
             if (value == null) {
+                log.debug("onTimerRange - value == null, key:{}, timestamp:{}", currentKey, timestamp);
                 return;
             }
             if (value == timestamp) {
+                log.debug("onTimerRange - value == timestamp, key:{}, timestamp:{}", currentKey, timestamp);
                 smallMapState.remove(key);
                 nextEndTimestampState.remove(key);
                 inTimeRangeMapState.remove(key);
