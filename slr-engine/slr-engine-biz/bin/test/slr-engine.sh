@@ -20,6 +20,7 @@ function init() {
       -Dyarn.containers.vcores=10 \
       -Dtaskmanager.memory.managed.size=0m \
       -Drest.flamegraph.enabled=true \
+      -Denv.java.opts="-Xloggc:/home/lbs/temp/slrEngine-gc-%t.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=14 -XX:GCLogFileSize=100M -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -XX:+PrintReferenceGC -XX:+PrintGCApplicationStoppedTime -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1" \
       -c ${flink_main} ${flink_jar}
 }
 
@@ -53,6 +54,7 @@ function init() {
 #      -Dstate.backend.rocksdb.writebuffer.number-to-merge=3 \
 #      -Dstate.backend.rocksdb.writebuffer.size=256mb \
 #      -Dstate.backend.rocksdb.memory.partitioned-index-filters=true \
+#      -Dstate.backend.rocksdb.timer-service.factory=HEAP \
 #      -c ${flink_main} ${flink_jar}
 #}
 
@@ -85,7 +87,16 @@ function start() {
         savepointName=$1
         echo "用户手动指定传入的 savepoint 名称：$savepointName"
     fi
-    ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -s ${flink_savepoint}/$savepointName -c ${flink_main} ${flink_jar}
+    ${flink_bin} run-application \
+    -t yarn-application \
+    -Dyarn.application.name="${flink_name}" \
+    -Dtaskmanager.numberOfTaskSlots=5 \
+    -Dyarn.containers.vcores=10 \
+    -Dtaskmanager.memory.managed.size=0m \
+    -Drest.flamegraph.enabled=true \
+    -Denv.java.opts="-Xloggc:/home/lbs/temp/slrEngine-gc-%t.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=14 -XX:GCLogFileSize=100M -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -XX:+PrintReferenceGC -XX:+PrintGCApplicationStoppedTime -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1" \
+    -s ${flink_savepoint}/$savepointName \
+    -c ${flink_main} ${flink_jar}
 }
 
 function stop() {
