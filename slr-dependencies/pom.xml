@@ -95,7 +95,8 @@
         <bahire.redis.connector.version>1.1.0</bahire.redis.connector.version>
         <groovy.version>4.0.10</groovy.version>
         <commons-text.version>1.10.0</commons-text.version>
-        <jasypt.version>3.0.5</jasypt.version>
+        <jasypt-spring-boot.version>3.0.5</jasypt-spring-boot.version>
+        <jasypt.version>1.9.3</jasypt.version>
     </properties>
 
     <dependencyManagement>
@@ -640,6 +641,11 @@
             <dependency>
                 <groupId>com.github.ulisesbocchio</groupId>
                 <artifactId>jasypt-spring-boot-starter</artifactId>
+                <version>${jasypt-spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jasypt</groupId>
+                <artifactId>jasypt</artifactId>
                 <version>${jasypt.version}</version>
             </dependency>
         </dependencies>

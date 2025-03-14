@@ -5,6 +5,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.liboshuai.slr.engine.api.dto.*;
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.jasypt.JasyptUtil;
 import com.liboshuai.slr.framework.common.util.json.JsonUtils;
 import io.debezium.data.Envelope;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,8 @@ public class DorisAsyncFunction extends RichAsyncFunction<MysqlCdcDTO, FlinkEven
         String queryPort = parameterTool.get(ParameterConstants.DORIS_FE_PORT_QUERY);
         String feNodes = host + DefaultConstants.COLON + queryPort;
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
-        String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
+        String decryptedPassword = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
+        String password = JasyptUtil.decrypt(decryptedPassword);
         String database = parameterTool.get(ParameterConstants.DORIS_DATABASE);
         // 创建连接池、配置连接参数
         druidDataSource = new DruidDataSource();

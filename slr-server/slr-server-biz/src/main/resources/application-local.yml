@@ -83,18 +83,6 @@ spring:
       database: starlink_risk_local
       authentication-database: admin
 
-############################## [加密 配置项] ##############################
-jasypt:
-  encryptor:
-    # 配置加密算法
-    algorithm: PBEWithMD5AndDES
-    iv-generator-classname: org.jasypt.iv.NoIvGenerator
-    property:
-      # 算法识别前缀(当算法发现配置文件中的值以这前缀开始，后缀结尾时，会使用指定算法解密)
-      prefix: LBS(
-      # 算法识别后缀
-      suffix: )
-
 ############################## [日志 配置项] ##############################
 logging:
   file:

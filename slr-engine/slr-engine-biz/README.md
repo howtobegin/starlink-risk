@@ -4,15 +4,19 @@
 
 1. 项目根目录下执行命令，安装`flink-doris-connector`到本地maven仓库
     ```shell
-    mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/libs/flink-doris-connector-1.14_2.12-1.1.1.jar
+    mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/lib/flink-doris-connector-1.14_2.12-1.1.1.jar
     ```
 
 2. 创建本地目录
     - C:/Me/Temp/flink/checkpoint
     - C:/Me/Temp/flink/temp
 
-3. idea 添加vm参数：`-Djava.io.tmpdir=C:/Me/Temp/flink/temp`
-   > 目的是解决RockDB会报错无法创建临时目录文件，具体参考：https://juejin.cn/post/7450077044141654066
+3. idea 添加一下JVM参数
+   ```
+   -Djava.io.tmpdir=C:/Me/Temp/flink/temp
+   ```
+
+   > `-Djava.io.tmpdir`目的是解决RockDB会报错无法创建临时目录文件，具体参考：https://juejin.cn/post/7450077044141654066
 
 4. idea选择`Add dependencies with 'provided' scope to classpath`.
 

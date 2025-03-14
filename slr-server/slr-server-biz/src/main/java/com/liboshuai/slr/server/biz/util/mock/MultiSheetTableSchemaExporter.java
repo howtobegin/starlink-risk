@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.service.mock.impl;
+package com.liboshuai.slr.server.biz.util.mock;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.metadata.Head;

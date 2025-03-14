@@ -1,4 +1,4 @@
-package com.liboshuai.slr.server.biz.util.jasypt;
+package com.liboshuai.slr.framework.common.util.jasypt;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
@@ -8,8 +8,8 @@ import org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig;
 public class JasyptUtil {
 
     private static final String ALGORITHM = "PBEWithMD5AndDES";
-    // https://lv7lql7fxx8.feishu.cn/docx/CqEGdGIHkoN2rpxYp5dcyeu9nzf
-    private static final String PASSWORD = "xxxxx";
+    // https://juejin.cn/post/7481279088620568613
+    private static final String PASSWORD = "$ozNW6^3Bp@Z8Gxc";
 
     /**
      * 加密
@@ -47,7 +47,7 @@ public class JasyptUtil {
         //应用配置
         encryptor.setConfig(config);
         //解密
-        return encryptor.decrypt(ciphertext);
+        return encryptor.decrypt(ciphertext.replace("LBS(", "").replace(")", ""));
     }
 
 }

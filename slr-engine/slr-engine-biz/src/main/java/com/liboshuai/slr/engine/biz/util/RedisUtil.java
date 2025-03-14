@@ -3,6 +3,7 @@ package com.liboshuai.slr.engine.biz.util;
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
 import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
+import com.liboshuai.slr.framework.common.util.jasypt.JasyptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.HostAndPort;
@@ -37,7 +38,8 @@ public class RedisUtil {
             jedisClusterNodes.add(new HostAndPort(hostPort[0].trim(), Integer.parseInt(hostPort[1].trim())));
         }
         // 密码
-        String password = ParameterUtil.getParameters().get(ParameterConstants.REDIS_PASSWORD);
+        String decryptedPassword = ParameterUtil.getParameters().get(ParameterConstants.REDIS_PASSWORD);
+        String password = JasyptUtil.decrypt(decryptedPassword);
         // 命名空间
         NAMESPACE = ParameterUtil.getParameters().get(ParameterConstants.REDIS_NAMESPACE, "starlink_risk") + RedisKeyConstants.REDIS_KEY_SPLIT;
         // 超时配置

@@ -2,6 +2,7 @@ package com.liboshuai.slr.engine.biz.framework.connector;
 
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.jasypt.JasyptUtil;
 import org.apache.doris.flink.cfg.DorisExecutionOptions;
 import org.apache.doris.flink.cfg.DorisOptions;
 import org.apache.doris.flink.cfg.DorisReadOptions;
@@ -30,7 +31,8 @@ public class FlinkDorisConnector {
         String host = parameterTool.get(ParameterConstants.DORIS_FE_HOST);
         String httpPort = parameterTool.get(ParameterConstants.DORIS_FE_PORT_HTTP);
         String username = parameterTool.get(ParameterConstants.DORIS_USERNAME);
-        String password = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
+        String decryptedPassword = parameterTool.get(ParameterConstants.DORIS_PASSWORD);
+        String password = JasyptUtil.decrypt(decryptedPassword);
 
         DorisSink.Builder<String> builder = DorisSink.builder();
         DorisOptions.Builder dorisBuilder = DorisOptions.builder();
