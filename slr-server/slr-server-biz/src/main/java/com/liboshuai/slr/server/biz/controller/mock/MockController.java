@@ -72,4 +72,11 @@ public class MockController {
         log.info("book: {}", book);
         return CommonResult.success(true);
     }
+
+    @GetMapping("/testDom4j")
+    @Operation(summary = "测试dom4j")
+    public CommonResult<Boolean> testDom4j() {
+        mockService.testDom4j();
+        return CommonResult.success(true);
+    }
 }

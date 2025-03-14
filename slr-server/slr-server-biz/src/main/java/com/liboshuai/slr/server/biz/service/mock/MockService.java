@@ -12,4 +12,6 @@ public interface MockService {
     void createEventFile(Long totalCount, Long maxEntries);
 
     void pushEventToNginx(List<MockEventDTO> mockEventDTOList);
+
+    void testDom4j();
 }
