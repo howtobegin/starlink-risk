@@ -8,7 +8,7 @@ import org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig;
 public class JasyptUtil {
 
     private static final String ALGORITHM = "PBEWithMD5AndDES";
-    // https://juejin.cn/post/7481279088620568613
+    // 生产环境应该采用JVM参数的方式传入，避免密钥泄露，参考：https://juejin.cn/post/7481279088620568613
     private static final String PASSWORD = "$ozNW6^3Bp@Z8Gxc";
 
     /**
