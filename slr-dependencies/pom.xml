@@ -95,6 +95,7 @@
         <bahire.redis.connector.version>1.1.0</bahire.redis.connector.version>
         <groovy.version>4.0.10</groovy.version>
         <commons-text.version>1.10.0</commons-text.version>
+        <jasypt.version>3.0.5</jasypt.version>
     </properties>
 
     <dependencyManagement>
@@ -634,6 +635,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>${commons-text.version}</version>
+            </dependency>
+            <!-- 明文密码加密 -->
+            <dependency>
+                <groupId>com.github.ulisesbocchio</groupId>
+                <artifactId>jasypt-spring-boot-starter</artifactId>
+                <version>${jasypt.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

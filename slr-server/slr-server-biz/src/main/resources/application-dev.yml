@@ -15,7 +15,7 @@ spring:
         allow: # 设置白名单，不填则允许所有访问
         url-pattern: /druid/*
         login-username: lbs # 控制台管理用户名和密码
-        login-password: Rongshu@2024
+        login-password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
       filter:
         stat:
           enabled: true
@@ -43,15 +43,15 @@ spring:
         master:
           url: jdbc:mysql://10.188.60.4:53376/dmdev?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: dmdev
-          password: Dmdev_1234
+          password: LBS(J+TnhnE6LfVxMjblZ1B32J0Ok05N7YNm)
         slave:
           url: jdbc:mysql://10.191.200.124:9030/startlink_risk_dev?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: rsmall
-          password: Rsmall@123bdas
+          password: LBS(uMCNKBC04TK935U1KaFv5Y055Zl+b9oX)
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: common@Iml8329
+    password: LBS(gnRz3mybHzFDDhraQxjKJGtfnwqnzXAx)
     namespace: starlink_risk_dev
     timeout: 5000
     cluster:
@@ -76,7 +76,7 @@ spring:
       host: 10.152.143.163
       port: 54257
       username: starlink_risk_dev # root
-      password: DawnImp0513 # DawnImp@0513
+      password: LBS(84BO6F3tTQv9PVBiReGTWIHNI+D/bJFv) # LBS(MUACx+BOKITAs/yjwoscRitlbsI5wjih)
       database: starlink_risk_dev
       authentication-database: starlink_risk_dev
 

@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MySQL Table Schema Exporter into a Single Excel File with Multiple Sheets
+ * 将 MySQL 表结构导出为包含多个工作表的单个 Excel 文件
  */
 public class MultiSheetTableSchemaExporter {
 
     // MySQL 连接信息
-    private static final String URL = "jdbc:mysql://10.188.60.4:53376/dmuat?serverTimezone=UTC&useSSL=false&characterEncoding=utf8";
-    private static final String USER = "dmuat";
-    private static final String PASSWORD = "Dmuat_1234";
+    private static final String URL = "jdbc:mysql://xxxxx:xxxxx/xxxxx?serverTimezone=UTC&useSSL=false&characterEncoding=utf8";
+    private static final String USER = "xxxxx";
+    private static final String PASSWORD = "xxxxx";
 
     // Excel 输出文件路径
     private static final String OUTPUT_FILE = "./南极星系统字典表.xlsx";

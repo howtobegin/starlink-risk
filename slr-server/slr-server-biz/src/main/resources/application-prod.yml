@@ -12,7 +12,7 @@ spring:
         allow: # 设置白名单，不填则允许所有访问
         url-pattern: /druid/*
         login-username: lbs # 控制台管理用户名和密码
-        login-password: Rongshu@2024
+        login-password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
       filter:
         stat:
           enabled: true
@@ -40,17 +40,17 @@ spring:
         master:
           url: jdbc:mysql://10.150.13.225:3306/dmsql?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: njstar
-          password: njstarYX1349
+          password: LBS(VyUhpJ0lODQ+AGI22IANrIPXwcs/k3Et)
         slave:
           # 等待网络开通，再修改为doris
           lazy: true
           url: jdbc:mysql://10.150.13.225:3306/dmsql?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: njstar
-          password: njstarYX1349
+          password: LBS(VyUhpJ0lODQ+AGI22IANrIPXwcs/k3Et)
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Dawn@Imp0513
+    password: LBS(U98gQsNNAU7qjBBr1yfnmuRzqm016Sg2)
     namespace: starlink_risk_prod
     timeout: 5000
     cluster:
@@ -81,7 +81,7 @@ spring:
       host: 10.150.13.156
       port: 54257
       username: impReadWrite
-      password: DawnImp0513
+      password: LBS(84BO6F3tTQv9PVBiReGTWIHNI+D/bJFv)
       database: imp_mongo
       authentication-database: imp_mongo
 
