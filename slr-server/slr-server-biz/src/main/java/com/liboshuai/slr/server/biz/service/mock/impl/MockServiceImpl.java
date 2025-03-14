@@ -8,10 +8,6 @@ import com.liboshuai.slr.server.biz.framework.properties.SlrServerProperties;
 import com.liboshuai.slr.server.biz.service.mock.MockService;
 import com.liboshuai.slr.server.biz.service.mock.NginxService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xmlbeans.impl.jam.provider.ResourcePath;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -21,7 +17,6 @@ import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -125,19 +120,6 @@ public class MockServiceImpl implements MockService {
         for (MockEventDTO mockEventDTO : mockEventDTOList) {
             nginxService.sendEventRequest(mockEventDTO);
         }
-    }
-
-    @Override
-    public void testDom4j() {
-        SAXReader reader = new SAXReader();
-        URL resource = ResourcePath.class.getClassLoader().getResource("mock/test.xml");
-        Document document = null;
-        try {
-            document = reader.read(resource);
-        } catch (DocumentException e) {
-            throw new RuntimeException(e);
-        }
-        log.info("解析的xml文档内容: {}", document);
     }
 
     private MockEventDTO generateEvent(String channel) {
