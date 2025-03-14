@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 import static com.liboshuai.slr.framework.common.pojo.CommonResult.success;
 
@@ -63,5 +64,12 @@ public class RuleModelController {
     public CommonResult<Boolean> update(@RequestBody @Valid RuleModelUpdateReqVO ruleModelUpdateReqVO) {
         ruleModelService.update(ruleModelUpdateReqVO);
         return success(true);
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "列表")
+    public CommonResult<List<RuleModelUpdateReqVO>> list() {
+        List<RuleModelUpdateReqVO> ruleModelUpdateReqVOList = ruleModelService.list();
+        return success(ruleModelUpdateReqVOList);
     }
 }

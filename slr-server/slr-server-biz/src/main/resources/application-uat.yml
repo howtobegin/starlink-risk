@@ -42,7 +42,7 @@ spring:
           username: dmuat
           password: Dmuat_1234
         slave:
-          url: jdbc:mysql://10.191.200.124:9030/rs_test_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://10.191.200.124:9030/startlink_risk_uat?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: rsmall
           password: Rsmall@123bdas
   ############################## [redis 配置项] ##############################
@@ -72,10 +72,10 @@ spring:
     mongodb:
       host: 10.152.143.163
       port: 54257
-      username: impReadWrite
-      password: DawnImp0513
-      database: imp_mongo
-      authentication-database: imp_mongo
+      username: starlink_risk_uat # root
+      password: DawnImp0513 # DawnImp@0513
+      database: starlink_risk_uat
+      authentication-database: starlink_risk_uat
 
 ############################## [日志 配置项] ##############################
 logging:

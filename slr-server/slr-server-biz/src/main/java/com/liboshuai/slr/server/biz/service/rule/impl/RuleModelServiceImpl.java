@@ -15,6 +15,8 @@ import com.liboshuai.slr.server.biz.service.rule.RuleModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RuleModelServiceImpl implements RuleModelService {
@@ -52,5 +54,11 @@ public class RuleModelServiceImpl implements RuleModelService {
         }
         RuleModelDO ruleModelDO = BeanUtils.toBean(ruleModelUpdateReqVO, RuleModelDO.class);
         ruleModelMapper.updateByModelCode(ruleModelDO, modelCode);
+    }
+
+    @Override
+    public List<RuleModelUpdateReqVO> list() {
+        List<RuleModelDO> ruleModelDOList = ruleModelMapper.selectList();
+        return BeanUtils.toBean(ruleModelDOList, RuleModelUpdateReqVO.class);
     }
 }

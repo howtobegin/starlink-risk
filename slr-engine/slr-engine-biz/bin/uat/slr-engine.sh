@@ -83,7 +83,14 @@ function start() {
         savepointName=$1
         echo "用户手动指定传入的 savepoint 名称：$savepointName"
     fi
-    ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -s ${flink_savepoint}/$savepointName -c ${flink_main} ${flink_jar}
+    ${flink_bin} run-application \
+    -p 10 \
+    -t yarn-application \
+    -Dyarn.application.name="${flink_name}" \
+    -Dtaskmanager.memory.managed.size=0m \
+    -Drest.flamegraph.enabled=true \
+    -s ${flink_savepoint}/$savepointName \
+    -c ${flink_main} ${flink_jar}
 }
 
 function stop() {

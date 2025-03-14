@@ -45,7 +45,7 @@ spring:
           username: dmdev
           password: Dmdev_1234
         slave:
-          url: jdbc:mysql://10.191.200.124:9030/rs_test_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://10.191.200.124:9030/startlink_risk_dev?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: rsmall
           password: Rsmall@123bdas
   ############################## [redis 配置项] ##############################
@@ -75,15 +75,15 @@ spring:
     mongodb:
       host: 10.152.143.163
       port: 54257
-      username: impReadWrite
-      password: DawnImp0513
-      database: imp_mongo
-      authentication-database: imp_mongo
+      username: starlink_risk_dev # root
+      password: DawnImp0513 # DawnImp@0513
+      database: starlink_risk_dev
+      authentication-database: starlink_risk_dev
 
 ############################## [日志 配置项] ##############################
 logging:
   file:
-    name: /app/dmapp/project/slr/log/server.log # 日志文件名，全路径
+    name: /app/lbs/project/slr/log/server.log # 日志文件名，全路径
 
 debug: false
 
@@ -100,7 +100,7 @@ slr-server:
       partition: 6
       replica: 3
   file-path:
-    event-log: /app/dmapp/project/slr/data/event.log
+    event-log: /app/lbs/project/slr/data/event.log
   api-address:
     rso-alert: http://10.189.18.32:8081/rso/messagePush/sendWarningMsg
     slr-gif: http://10.188.6.154:48881/slr_event_dev.gif

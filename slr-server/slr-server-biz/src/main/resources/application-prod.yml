@@ -42,13 +42,15 @@ spring:
           username: njstar
           password: njstarYX1349
         slave:
-          url: jdbc:mysql://10.98.25.23:9030/mall?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-          username: rsmall
-          password: Rsmall@123bdas
+          # 等待网络开通，再修改为doris
+          lazy: true
+          url: jdbc:mysql://10.150.13.225:3306/dmsql?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: njstar
+          password: njstarYX1349
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Rongshu@2024
+    password: Dawn@Imp0513
     namespace: starlink_risk_prod
     timeout: 5000
     cluster:
@@ -86,7 +88,7 @@ spring:
 ############################## [日志 配置项] ##############################
 logging:
   file:
-    name: /app/dmapp/slr/log/server.log # 日志文件名，全路径
+    name: /app/dmapp/project/slr/log/server.log # 日志文件名，全路径
 
 debug: false
 
@@ -103,7 +105,7 @@ slr-server:
       partition: 6
       replica: 3
   file-path:
-    event-log: /app/dmapp/slr/data/event.log
+    event-log: /app/dmapp/project/slr/data/event.log
   api-address:
     rso-alert: http://10.150.10.2:50217/rso/messagePush/sendWarningMsg
     slr-gif: http://10.150.15.11:48881/slr_event_prod.gif

@@ -70,11 +70,17 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
         </dependency>
+        <!-- easy Excel 工具类 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+        </dependency>
         <!-- 假数据生成工具 -->
         <dependency>
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
         </dependency>
+
 
         <!-- spring boot 配置所需依赖 -->
         <dependency>

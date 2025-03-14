@@ -1,16 +1,16 @@
 #!/bin/bash
 
 flink_bin="/opt/flink/flink-1.14.2/bin/flink"
-flink_name="com.rongshu.flink.slrEngine"
+flink_name="com.rongshu.flink.devSlrEngine"
 flink_main="com.liboshuai.slr.engine.biz.EngineApplication"
-flink_jar="/app/rongshu/slr/jar/slr-engine-biz-1.0.jar"
+flink_jar="/app/rongshu/slr_dev/jar/slr-engine-biz-1.0.jar"
 flink_savepoint="hdfs:///user/rongshu/starlink_risk/savepoint"
-savepoint_log="/app/rongshu/slr/log/savepoint.log"
+savepoint_log="/app/rongshu/slr_dev/log/savepoint.log"
 
 # 状态后端为内存
 function init() {
       echo -----------------------------------------------------------------------------------
-      echo "------------------------------- ${flink_name} init -------------------------------"
+      echo "------------------------------- ${flink_name} starting ---------------------------"
       echo -----------------------------------------------------------------------------------
       ${flink_bin} run-application \
       -p 10 \
@@ -24,7 +24,7 @@ function init() {
 # 状态后端为rocksdb
 #function init() {
 #      echo -----------------------------------------------------------------------------------
-#      echo "------------------------------- ${flink_name} init -------------------------------"
+#      echo "------------------------------- ${flink_name} starting ---------------------------"
 #      echo -----------------------------------------------------------------------------------
 #      ${flink_bin} run-application \
 #      -p 10 \

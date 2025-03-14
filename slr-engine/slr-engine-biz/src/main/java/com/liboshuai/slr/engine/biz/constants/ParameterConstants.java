@@ -71,6 +71,7 @@ public interface ParameterConstants {
     String MYSQL_USERNAME = "mysql.username";
     String MYSQL_PASSWORD = "mysql.password";
     String MYSQL_DATABASE = "mysql.database";
+    String MYSQL_SERVERID = "mysql.serverId";
     String MYSQL_TABLE_RULEJSON = "mysql.table.ruleJson";
 
     /**
