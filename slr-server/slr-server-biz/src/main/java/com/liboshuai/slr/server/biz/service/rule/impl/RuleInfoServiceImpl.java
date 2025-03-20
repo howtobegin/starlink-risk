@@ -164,8 +164,25 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 .map(RuleCondSaveReqVO::getTimeRange).collect(Collectors.toList());
         ruleCondTimeRangeMapper.deleteByCondCodes(ruleCondCodeList);
         if (!CollectionUtils.isEmpty(timeRangeSaveReqVOList)) {
-            List<RuleCondTimeRangeDO> ruleCondTimeRangeDOList = timeRangeConvert.batchConvertRepVo2Do(timeRangeSaveReqVOList);
-            ruleCondTimeRangeMapper.insertBatch(ruleCondTimeRangeDOList);
+            List<RuleCondTimeRangeDO> timeRangeDOList = timeRangeSaveReqVOList.stream().map(
+                    timeRangeSaveReqVO -> {
+                        RuleCondTimeRangeDO ruleCondTimeRangeDO = BeanUtils.toBean(timeRangeSaveReqVO, RuleCondTimeRangeDO.class);
+                        if (Objects.isNull(ruleCondTimeRangeDO)) {
+                            return null;
+                        }
+                        if (StringUtils.hasText(timeRangeSaveReqVO.getStartTime())) {
+                            ruleCondTimeRangeDO.setStartTime(LocalDateTimeUtils.convertString2LocalTime(timeRangeSaveReqVO.getStartTime()));
+                        }
+                        if (StringUtils.hasText(timeRangeSaveReqVO.getEndTime())) {
+                            ruleCondTimeRangeDO.setEndTime(LocalDateTimeUtils.convertString2LocalTime(timeRangeSaveReqVO.getEndTime()));
+                        }
+                        if (!CollectionUtils.isEmpty(timeRangeSaveReqVO.getDaysOfWeek())) {
+                            ruleCondTimeRangeDO.setDaysOfWeek(String.join(DefaultConstants.COMMA, timeRangeSaveReqVO.getDaysOfWeek()));
+                        }
+                        return ruleCondTimeRangeDO;
+                    }
+            ).filter(Objects::nonNull).collect(Collectors.toList());
+            ruleCondTimeRangeMapper.insertBatch(timeRangeDOList);
         }
         // 更新 事件属性值信息
         List<String> condCodeList = ruleCondSaveReqVOList.stream().map(RuleCondSaveReqVO::getCondCode).collect(Collectors.toList());
@@ -533,9 +550,11 @@ public class RuleInfoServiceImpl implements RuleInfoService {
                 ));
         ruleEventAttrValueGroup.forEach(ruleEventAttrValueRespVO -> {
             RuleEventAttrDO ruleEventAttrDO = attrCodeAndAttrDoMap.get(ruleEventAttrValueRespVO.getAttrCode());
-            ruleEventAttrValueRespVO.setAttrField(ruleEventAttrDO.getAttrField());
-            ruleEventAttrValueRespVO.setAttrName(ruleEventAttrDO.getAttrName());
-            ruleEventAttrValueRespVO.setAttrType(ruleEventAttrDO.getAttrType());
+            if (Objects.nonNull(ruleEventAttrDO)) {
+                ruleEventAttrValueRespVO.setAttrField(ruleEventAttrDO.getAttrField());
+                ruleEventAttrValueRespVO.setAttrName(ruleEventAttrDO.getAttrName());
+                ruleEventAttrValueRespVO.setAttrType(ruleEventAttrDO.getAttrType());
+            }
         });
         Map<String, List<RuleEventAttrValueRespVO>> condCodeAndAttrValueMap = ruleEventAttrValueGroup.stream()
                 .collect(Collectors.groupingBy(RuleEventAttrValueRespVO::getCondCode));

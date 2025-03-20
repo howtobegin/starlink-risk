@@ -12,7 +12,7 @@ spring:
         allow: # 设置白名单，不填则允许所有访问
         url-pattern: /druid/*
         login-username: lbs # 控制台管理用户名和密码
-        login-password: Rongshu@2024
+        login-password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
       filter:
         stat:
           enabled: true
@@ -40,15 +40,15 @@ spring:
         master:
           url: jdbc:mysql://docker:3308/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           username: lbs
-          password: Rongshu@2024
+          password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
         slave:
           url: jdbc:mysql://one:9130/starlink_risk_local?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
-          password: Rongshu@2024
+          password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
   ############################## [redis 配置项] ##############################
   redis:
     database: 0
-    password: Rongshu@2024
+    password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
     namespace: starlink_risk_local
     timeout: 5000
     cluster:
@@ -79,7 +79,7 @@ spring:
       host: docker
       port: 27018
       username: root
-      password: Rongshu@2024
+      password: LBS(BJMQFVCQ5pkShzdex82tlFtxbLzHs5xl)
       database: starlink_risk_local
       authentication-database: admin
 

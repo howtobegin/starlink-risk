@@ -8,6 +8,7 @@ import com.liboshuai.slr.server.biz.controller.rule.vo.resp.RuleModelRespVO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 public interface RuleModelService {
     PageResult<RuleModelRespVO> page(@Valid RuleModelPageReqVO ruleModelPageReqVO);
@@ -17,4 +18,6 @@ public interface RuleModelService {
     Long create(@Valid RuleModelCreateReqVO ruleModelCreateReqVO);
 
     void update(@Valid RuleModelUpdateReqVO ruleModelUpdateReqVO);
+
+    List<RuleModelUpdateReqVO> list();
 }

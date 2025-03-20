@@ -10,7 +10,7 @@ savepoint_log="/app/rongshu/slr/log/savepoint.log"
 # 状态后端为内存
 function init() {
       echo -----------------------------------------------------------------------------------
-      echo "------------------------------- ${flink_name} starting ---------------------------"
+      echo "------------------------------- ${flink_name} init -------------------------------"
       echo -----------------------------------------------------------------------------------
       ${flink_bin} run-application \
       -p 10 \
@@ -24,7 +24,7 @@ function init() {
 # 状态后端为rocksdb
 #function init() {
 #      echo -----------------------------------------------------------------------------------
-#      echo "------------------------------- ${flink_name} starting ---------------------------"
+#      echo "------------------------------- ${flink_name} init -------------------------------"
 #      echo -----------------------------------------------------------------------------------
 #      ${flink_bin} run-application \
 #      -p 10 \
@@ -59,7 +59,7 @@ function cancal() {
     echo "-------------------------------- ${flink_name} cancal -------------------------"
     echo ---------------------------------------------------------------------------------
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     ${flink_bin} cancel -t yarn-application -Dyarn.application.id=$yarnId $JOB_ID
 }
@@ -83,7 +83,14 @@ function start() {
         savepointName=$1
         echo "用户手动指定传入的 savepoint 名称：$savepointName"
     fi
-    ${flink_bin} run-application -t yarn-application -Dyarn.application.name="${flink_name}" -s ${flink_savepoint}/$savepointName -c ${flink_main} ${flink_jar}
+    ${flink_bin} run-application \
+    -p 10 \
+    -t yarn-application \
+    -Dyarn.application.name="${flink_name}" \
+    -Dtaskmanager.memory.managed.size=0m \
+    -Drest.flamegraph.enabled=true \
+    -s ${flink_savepoint}/$savepointName \
+    -c ${flink_main} ${flink_jar}
 }
 
 function stop() {
@@ -91,7 +98,7 @@ function stop() {
     echo "-------------------------------- ${flink_name} stop -------------------------------------"
     echo "-----------------------------------------------------------------------------------------"
     yarnId=`yarn application  -list | grep -w  ${flink_name} | awk '{print $1}' | grep application_`
-    OUTPUT=$(/home/lbs/software/flink//bin/flink list -t yarn-application -Dyarn.application.id=$yarnId)
+    OUTPUT=$(${flink_bin} list -t yarn-application -Dyarn.application.id=$yarnId)
     JOB_ID=$(echo "$OUTPUT" | grep " : " | awk '{print $4}')
     STOP_RESULT=$(${flink_bin} stop --savepoint ${flink_savepoint} $JOB_ID -yid $yarnId)
 

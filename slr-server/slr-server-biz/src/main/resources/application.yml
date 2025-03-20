@@ -117,6 +117,20 @@ snowflake:
   workerId: ${workerId:1}
   dataCenterId: 1
 
+############################## [加密 配置项] ##############################
+jasypt:
+  encryptor:
+    # 配置加密算法
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+    # 生产环境应该采用JVM参数的方式传入，避免密钥泄露，参考：https://juejin.cn/post/7481279088620568613
+    password: $ozNW6^3Bp@Z8Gxc
+    property:
+      # 算法识别前缀(当算法发现配置文件中的值以这前缀开始，后缀结尾时，会使用指定算法解密)
+      prefix: LBS(
+      # 算法识别后缀
+      suffix: )
+
 ############################## [slr系统 配置项] ##############################
 slr:
   info:

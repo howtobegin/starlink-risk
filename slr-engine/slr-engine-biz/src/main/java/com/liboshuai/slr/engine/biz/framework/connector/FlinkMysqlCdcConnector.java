@@ -4,6 +4,7 @@ import com.liboshuai.slr.engine.api.dto.MysqlCdcDTO;
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.engine.biz.framework.serialization.MysqlCdcDeserializationSchema;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.jasypt.JasyptUtil;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +30,10 @@ public class FlinkMysqlCdcConnector {
         String hostname = parameterTool.get(ParameterConstants.MYSQL_HOSTNAME);
         String port = parameterTool.get(ParameterConstants.MYSQL_PORT);
         String username = parameterTool.get(ParameterConstants.MYSQL_USERNAME);
-//        String password = CryptoUtils.decrypt(parameterTool.get(ParameterConstants.MYSQL_PASSWORD));
-        String password = parameterTool.get(ParameterConstants.MYSQL_PASSWORD);
+        String decryptedPassword = parameterTool.get(ParameterConstants.MYSQL_PASSWORD);
+        String password = JasyptUtil.decrypt(decryptedPassword);
         String database = parameterTool.get(ParameterConstants.MYSQL_DATABASE);
+        String serverId = parameterTool.get(ParameterConstants.MYSQL_SERVERID);
         String table = parameterTool.get(ParameterConstants.MYSQL_TABLE_RULEJSON);
 
         MySqlSource<MysqlCdcDTO> ruleCdcSource = MySqlSource.<MysqlCdcDTO>builder()
@@ -44,6 +46,7 @@ public class FlinkMysqlCdcConnector {
                 .startupOptions(StartupOptions.initial())
                 // 请勿使用 JsonDebeziumDeserializationSchema，它对于long类型的序列化会出现乱码
                 .deserializer(new MysqlCdcDeserializationSchema())
+                .serverId(serverId)
                 .build();
         return env.fromSource(
                 ruleCdcSource, WatermarkStrategy.noWatermarks(), "MysqlCdc-[" + table + "]"

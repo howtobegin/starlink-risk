@@ -1,13 +1,13 @@
 package com.liboshuai.slr.server.biz.dal.dataobject.rule;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.liboshuai.slr.framework.mybatis.core.dataobject.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Accessors(chain = true)
 @TableName("starlink_risk_event")
-public class DorisEventDO implements Serializable {
+public class DorisEventDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
     private LocalDateTime eventTime;

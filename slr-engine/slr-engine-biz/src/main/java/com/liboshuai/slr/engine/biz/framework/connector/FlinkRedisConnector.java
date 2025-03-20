@@ -3,6 +3,7 @@ package com.liboshuai.slr.engine.biz.framework.connector;
 import com.liboshuai.slr.engine.biz.constants.ParameterConstants;
 import com.liboshuai.slr.engine.biz.util.ParameterUtil;
 import com.liboshuai.slr.framework.common.constants.DefaultConstants;
+import com.liboshuai.slr.framework.common.util.jasypt.JasyptUtil;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -21,7 +22,8 @@ public class FlinkRedisConnector {
         // 获取 Redis 集群节点信息
         String redisClusterNodes = parameterTool.get(ParameterConstants.REDIS_CLUSTER_NODES);
         // 获取 Redis 密码
-        String password = parameterTool.get(ParameterConstants.REDIS_PASSWORD);
+        String decryptedPassword = parameterTool.get(ParameterConstants.REDIS_PASSWORD);
+        String password = JasyptUtil.decrypt(decryptedPassword);
         // 设置超时时间
         int timeout = parameterTool.getInt(ParameterConstants.REDIS_CONNECTION_TIMEOUT);
         // 最小空闲连接数
