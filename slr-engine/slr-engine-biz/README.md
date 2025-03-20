@@ -36,7 +36,7 @@
 
 2. 项目根目录下执行命令，安装`flink-doris-connector`到本地maven仓库
     ```shell
-    mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/libs/flink-doris-connector-1.14_2.12-1.1.1.jar
+    mvn install:install-file -DgroupId=org.apache.doris -DartifactId=flink-connector-doris_2.12 -Dversion=1.14_2.12-1.1.1 -Dpackaging=jar -Dfile=slr-engine/slr-engine-biz/lib/flink-doris-connector-1.14_2.12-1.1.1.jar
     ```
 3. 项目根目录下执行命令，进行maven install
     ```shell

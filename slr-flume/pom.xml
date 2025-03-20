@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.liboshuai.starlink</groupId>
         <artifactId>starlink-risk</artifactId>
-        <version>1.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>slr-flume</artifactId>
