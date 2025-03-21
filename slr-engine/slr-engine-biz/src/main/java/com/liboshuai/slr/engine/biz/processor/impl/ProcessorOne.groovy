@@ -700,7 +700,9 @@
 //        Tuple2<Boolean, ProcessorDTO> processBigMapResult = processBigMap(ruleConditionMapByEventField, ruleInfoDTO.getRuleCondCombOp());
 //        // 处理预警结果
 //        handleAlertResult(ctx, timestamp, out, condType, processBigMapResult);
-//        return hasActiveEvents();
+//        // 业务方没有数据来，就不需要预警
+////        return hasActiveEvents();
+//        return false;
 //    }
 //
 //    private String getCondType(Map<String, RuleCondDTO> ruleConditionMapByEventField) {
