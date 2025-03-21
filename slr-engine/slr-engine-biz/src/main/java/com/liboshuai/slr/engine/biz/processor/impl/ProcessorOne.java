@@ -264,21 +264,21 @@ public class ProcessorOne implements Processor {
                 continue;
             }
             boolean isWithInTimeRange = TimeRangeUtil.isWithinRule(LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault()), timeRangeDTO);
-            Boolean inTimeRange = inTimeRangeMapState.get(flinkEventDTO.getTargetField());
+            Boolean inTimeRange = inTimeRangeMapState.get(ruleCondDTO.getEventField());
             if (Objects.isNull(inTimeRange)) {
                 inTimeRange = false;
-                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
+                inTimeRangeMapState.put(ruleCondDTO.getEventField(), inTimeRange);
                 log.debug("handleTimeRange - Objects.isNull(inTimeRange), key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
             }
             if (!inTimeRange && isWithInTimeRange) {
                 inTimeRange = true;
-                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
+                inTimeRangeMapState.put(ruleCondDTO.getEventField(), inTimeRange);
                 // 注册定时器为时间范围结束时刻
                 Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
                 ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
                 // 更新下次结束时刻
                 nextEndTimestampState.put(ruleCondDTO.getEventField(), nextEndTimestamp);
-                log.debug("handleTimeRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
+                log.debug("handleTimeRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}, nextEndTimestamp:{}", ctx.getCurrentKey(), timestamp, nextEndTimestamp);
             }
             if (!inTimeRange) {
                 log.debug("handleTimeRange - !inTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
