@@ -1,34 +1,37 @@
-//package com.liboshuai.slr.engine.biz.processor.impl
+//package com.liboshuai.slr.engine.biz.processor.impl;
 //
-//import com.liboshuai.slr.engine.api.dto.*
-//import com.liboshuai.slr.engine.api.enums.RuleCondCombOpEnum
-//import com.liboshuai.slr.engine.api.enums.RuleCondTypeEnum
-//import com.liboshuai.slr.engine.api.enums.TimeUnitEnum
-//import com.liboshuai.slr.engine.api.utils.TemplateUtil
-//import com.liboshuai.slr.engine.api.utils.TimeRangeUtil
-//import com.liboshuai.slr.engine.api.utils.TimeUtil
-//import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc
-//import com.liboshuai.slr.engine.biz.processor.Processor
-//import com.liboshuai.slr.engine.biz.util.CollectionUtil
-//import com.liboshuai.slr.engine.biz.util.RedisUtil
-//import com.liboshuai.slr.engine.biz.util.RuleEventAttrCompUtil
-//import com.liboshuai.slr.framework.common.constants.RedisKeyConstants
-//import com.liboshuai.slr.framework.common.enums.CommonStatusEnum
-//import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils
-//import com.liboshuai.slr.framework.common.util.json.JsonUtils
-//import org.apache.flink.api.common.functions.RuntimeContext
-//import org.apache.flink.api.common.state.*
-//import org.apache.flink.api.java.tuple.Tuple2
-//import org.apache.flink.api.java.tuple.Tuple3
-//import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction
-//import org.apache.flink.util.Collector
-//import org.apache.flink.util.StringUtils
-//import org.slf4j.Logger
-//import org.slf4j.LoggerFactory
+//import com.liboshuai.slr.engine.api.dto.*;
+//import com.liboshuai.slr.engine.api.enums.RuleCondCombOpEnum;
+//import com.liboshuai.slr.engine.api.enums.RuleCondTypeEnum;
+//import com.liboshuai.slr.engine.api.enums.TimeUnitEnum;
+//import com.liboshuai.slr.engine.api.utils.TemplateUtil;
+//import com.liboshuai.slr.engine.api.utils.TimeRangeUtil;
+//import com.liboshuai.slr.engine.api.utils.TimeUtil;
+//import com.liboshuai.slr.engine.biz.framework.state.ProcessorOneStateDesc;
+//import com.liboshuai.slr.engine.biz.processor.Processor;
+//import com.liboshuai.slr.engine.biz.util.CollectionUtil;
+//import com.liboshuai.slr.engine.biz.util.RedisUtil;
+//import com.liboshuai.slr.engine.biz.util.RuleEventAttrCompUtil;
+//import com.liboshuai.slr.framework.common.constants.RedisKeyConstants;
+//import com.liboshuai.slr.framework.common.enums.CommonStatusEnum;
+//import com.liboshuai.slr.framework.common.util.date.LocalDateTimeUtils;
+//import com.liboshuai.slr.framework.common.util.json.JsonUtils;
+//import org.apache.flink.api.common.functions.RuntimeContext;
+//import org.apache.flink.api.common.state.*;
+//import org.apache.flink.api.java.tuple.Tuple2;
+//import org.apache.flink.api.java.tuple.Tuple3;
+//import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
+//import org.apache.flink.util.Collector;
+//import org.apache.flink.util.StringUtils;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 //
-//import java.time.Instant
-//import java.time.LocalDateTime
-//import java.time.ZoneId
+//import java.io.IOException;
+//import java.time.Instant;
+//import java.time.LocalDateTime;
+//import java.time.ZoneId;
+//import java.util.*;
+//
 //
 //public class ProcessorOne implements Processor {
 //
@@ -260,25 +263,32 @@
 //                log.warn("因规则[{}]中事件条件类型为范围时间类型，而规则条件中时间范围信息为空，故跳过此次计算！当前事件数据：{}", ruleInfoDTO.getRuleCode(), flinkEventDTO);
 //                continue;
 //            }
+//            String currentKey = (String) ctx.getCurrentKey();
+//            Long endTimestamp = nextEndTimestampState.get(ruleCondDTO.getEventField());
+//            if (Objects.nonNull(endTimestamp) && timestamp >= endTimestamp) {
+//                log.debug("onTimerRange - value == timestamp, key:{}, timestamp:{}", currentKey, timestamp);
+//                smallMapState.remove(ruleCondDTO.getEventField());
+//                nextEndTimestampState.remove(ruleCondDTO.getEventField());
+//                inTimeRangeMapState.remove(ruleCondDTO.getEventField());
+//                latestEventThresholdMapState.remove(ruleCondDTO.getEventField());
+//            }
 //            boolean isWithInTimeRange = TimeRangeUtil.isWithinRule(LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault()), timeRangeDTO);
-//            Boolean inTimeRange = inTimeRangeMapState.get(flinkEventDTO.getTargetField());
+//            Boolean inTimeRange = inTimeRangeMapState.get(ruleCondDTO.getEventField());
 //            if (Objects.isNull(inTimeRange)) {
 //                inTimeRange = false;
-//                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
-//                log.debug("handleTimeRange - Objects.isNull(inTimeRange), key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
+//                inTimeRangeMapState.put(ruleCondDTO.getEventField(), inTimeRange);
+//                log.debug("handleTimeRange - Objects.isNull(inTimeRange), key:{}, timestamp:{}", currentKey, timestamp);
 //            }
 //            if (!inTimeRange && isWithInTimeRange) {
 //                inTimeRange = true;
-//                inTimeRangeMapState.put(flinkEventDTO.getTargetField(), inTimeRange);
-//                // 注册定时器为时间范围结束时刻
-//                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
-//                ctx.timerService().registerProcessingTimeTimer(nextEndTimestamp);
+//                inTimeRangeMapState.put(ruleCondDTO.getEventField(), inTimeRange);
 //                // 更新下次结束时刻
+//                Long nextEndTimestamp = TimeRangeUtil.getNextEndTimestamp(ctx.currentProcessingTime(), timeRangeDTO);
 //                nextEndTimestampState.put(ruleCondDTO.getEventField(), nextEndTimestamp);
-//                log.debug("handleTimeRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
+//                log.debug("handleTimeRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}, nextEndTimestamp:{}", ctx.getCurrentKey(), timestamp, nextEndTimestamp);
 //            }
 //            if (!inTimeRange) {
-//                log.debug("handleTimeRange - !inTimeRange, key:{}, timestamp:{}", ctx.getCurrentKey(), timestamp);
+//                log.debug("handleTimeRange - !inTimeRange, key:{}, timestamp:{}", currentKey, timestamp);
 //                continue;
 //            }
 //
@@ -649,33 +659,10 @@
 //        if (Objects.equals(condType, RuleCondTypeEnum.RECENT.getCode())) { // 最近时间类型
 //            return onTimerRecent(ctx, timestamp, out, condType, ruleConditionMapByEventField);
 //        } else if (Objects.equals(condType, RuleCondTypeEnum.RANGE.getCode())) { // 范围时间类型
-//            onTimerRange((String) ctx.getCurrentKey(), timestamp);
 //            return false;
 //        } else {
 //            log.warn("因规则[{}]中事件条件类型为未知值[{}]，故跳过此次计算！", ruleInfoDTO.getRuleCode(), condType);
 //            return false;
-//        }
-//    }
-//
-//    /**
-//     * 处理范围时间类型规则计算
-//     */
-//    private void onTimerRange(String currentKey, long timestamp) throws Exception {
-//        for (Map.Entry<String, Long> entry : nextEndTimestampState.entries()) {
-//            log.debug("onTimerRange - !inTimeRange && isWithInTimeRange, key:{}, timestamp:{}", currentKey, timestamp);
-//            String key = entry.getKey();
-//            Long value = entry.getValue();
-//            if (value == null) {
-//                log.debug("onTimerRange - value == null, key:{}, timestamp:{}", currentKey, timestamp);
-//                return;
-//            }
-//            if (value == timestamp) {
-//                log.debug("onTimerRange - value == timestamp, key:{}, timestamp:{}", currentKey, timestamp);
-//                smallMapState.remove(key);
-//                nextEndTimestampState.remove(key);
-//                inTimeRangeMapState.remove(key);
-//                latestEventThresholdMapState.remove(key);
-//            }
 //        }
 //    }
 //
